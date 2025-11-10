@@ -31,10 +31,10 @@ export default function Navbar() {
   }, [isMobileMenuOpen]);
 
   const navLinks = [
-    { label: "Explore Events", href: "#explore" },
-    { label: "Marketplace", href: "#marketplace" },
-    { label: "Community", href: "#community" },
-    { label: "About", href: "#about" },
+    { label: "Explore Events", href: "/explore-events" },
+    { label: "Marketplace", href: "/marketplace" },
+    { label: "Community", href: "/community" },
+    { label: "About", href: "/about" },
   ];
 
   return (

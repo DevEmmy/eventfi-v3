@@ -83,7 +83,15 @@ const Banner = () => {
       icon: PlayCircle,
       href: "#how-it-works",
     },
-    trustSignal: null,
+    trustSignal:  (
+        <>
+          Trusted by <span className="font-semibold text-foreground">500+</span>{" "}
+          organizers for{" "}
+          <span className="font-medium text-primary">Conferences</span>,{" "}
+          <span className="font-medium text-primary">Parties</span>, and{" "}
+          <span className="font-medium text-primary">Meetups</span>.
+        </>
+      ),
     visual: "attendee",
   };
 
@@ -162,52 +170,17 @@ const Banner = () => {
                 isTransitioning ? "opacity-0" : "opacity-100"
               }`}
             >
-              {activeSlide === 0 ? (
-                // Organizer trust signal
+              
                 <p className="text-sm md:text-base text-foreground/60">
                   {currentContent.trustSignal}
                 </p>
-              ) : (
-                // Attendee social proof ticker
-                <div className="relative overflow-hidden w-full">
-                  <div className="flex items-center gap-2 text-sm md:text-base">
-                    <span className="font-semibold text-primary whitespace-nowrap flex-shrink-0">
-                      Trending now:
-                    </span>
-                    <div className="flex-1 overflow-hidden">
-                      <div className="flex gap-4 animate-scroll-ticker">
-                        {trendingEvents.map((event, index) => (
-                          <span
-                            key={index}
-                            className="text-foreground/60 whitespace-nowrap flex-shrink-0 flex items-center gap-4"
-                          >
-                            {event}
-                            {index < trendingEvents.length - 1 && (
-                              <span className="text-foreground/30">•</span>
-                            )}
-                          </span>
-                        ))}
-                        {/* Duplicate for seamless loop */}
-                        {trendingEvents.map((event, index) => (
-                          <span
-                            key={`duplicate-${index}`}
-                            className="text-foreground/60 whitespace-nowrap flex-shrink-0 flex items-center gap-4"
-                          >
-                            {event}
-                            <span className="text-foreground/30">•</span>
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
+            
             </div>
           </div>
 
           {/* Right Side - Visual with transition */}
           <div
-            className={`relative h-[400px] lg:h-[600px] rounded-2xl overflow-hidden shadow-2xl transition-opacity duration-500 delay-75 ${
+            className={`relative h-[300px] sm:h-[350px] md:h-[400px] lg:h-[600px] rounded-2xl overflow-hidden shadow-2xl transition-opacity duration-500 delay-75 ${
               isTransitioning ? "opacity-0" : "opacity-100"
             }`}
           >
@@ -276,17 +249,17 @@ const Banner = () => {
               // Attendee Visual - High-energy Event Collage
               <div className="relative h-full bg-gradient-to-br from-secondary/10 via-accent/10 to-primary/10 rounded-xl overflow-hidden border border-primary/20">
                 {/* Event Collage Grid */}
-                <div className="absolute inset-0 grid grid-cols-3 grid-rows-3 gap-2 p-2">
+                <div className="absolute inset-0 grid grid-cols-3 grid-rows-3 gap-1.5 sm:gap-2 p-1.5 sm:p-2">
                   {/* Concert Scene */}
                   <div className="col-span-2 row-span-2 bg-gradient-to-br from-primary/20 to-primary/5 rounded-lg flex items-center justify-center relative overflow-hidden">
                     <MusicPlaylist
-                      size={48}
+                      size={24}
                       color="currentColor"
                       variant="Bold"
                       className="text-primary/40"
                     />
-                    <div className="absolute bottom-2 left-2 right-2">
-                      <div className="bg-background/80 backdrop-blur-sm rounded px-2 py-1 text-xs font-medium text-foreground/80">
+                    <div className="absolute bottom-1 sm:bottom-2 left-1 sm:left-2 right-1 sm:right-2">
+                      <div className="bg-background/80 backdrop-blur-sm rounded px-1.5 sm:px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs font-medium text-foreground/80">
                         Concerts
                       </div>
                     </div>
@@ -295,13 +268,13 @@ const Banner = () => {
                   {/* Tech Meetup */}
                   <div className="col-span-1 row-span-1 bg-gradient-to-br from-secondary/20 to-secondary/5 rounded-lg flex items-center justify-center relative overflow-hidden">
                     <Code
-                      size={32}
+                      size={16}
                       color="currentColor"
                       variant="Bold"
-                      className="text-secondary/40"
+                      className="text-secondary/40 sm:w-6 sm:h-6 md:w-8 md:h-8"
                     />
-                    <div className="absolute bottom-1 left-1 right-1">
-                      <div className="bg-background/80 backdrop-blur-sm rounded px-1.5 py-0.5 text-xs font-medium text-foreground/80">
+                    <div className="absolute bottom-0.5 sm:bottom-1 left-0.5 sm:left-1 right-0.5 sm:right-1">
+                      <div className="bg-background/80 backdrop-blur-sm rounded px-1 sm:px-1.5 py-0.5 text-[9px] sm:text-xs font-medium text-foreground/80">
                         Tech
                       </div>
                     </div>
@@ -310,49 +283,49 @@ const Banner = () => {
                   {/* Gaming Night */}
                   <div className="col-span-1 row-span-1 bg-gradient-to-br from-accent/20 to-accent/5 rounded-lg flex items-center justify-center relative overflow-hidden">
                     <Game
-                      size={32}
+                      size={16}
                       color="currentColor"
                       variant="Bold"
-                      className="text-accent/40"
+                      className="text-accent/40 sm:w-6 sm:h-6 md:w-8 md:h-8"
                     />
-                    <div className="absolute bottom-1 left-1 right-1">
-                      <div className="bg-background/80 backdrop-blur-sm rounded px-1.5 py-0.5 text-xs font-medium text-foreground/80">
+                    <div className="absolute bottom-0.5 sm:bottom-1 left-0.5 sm:left-1 right-0.5 sm:right-1">
+                      <div className="bg-background/80 backdrop-blur-sm rounded px-1 sm:px-1.5 py-0.5 text-[9px] sm:text-xs font-medium text-foreground/80">
                         Gaming
                       </div>
                     </div>
                   </div>
 
                   {/* People Icons - Multiple Event Types */}
-                  <div className="col-span-1 row-span-2 bg-gradient-to-br from-primary/15 to-accent/10 rounded-lg flex flex-col items-center justify-center gap-2 p-3">
-                    <div className="flex gap-1">
-                      <div className="w-8 h-8 rounded-full bg-primary/30"></div>
-                      <div className="w-8 h-8 rounded-full bg-accent/30"></div>
+                  <div className="col-span-1 row-span-2 bg-gradient-to-br from-primary/15 to-accent/10 rounded-lg flex flex-col items-center justify-center gap-1 sm:gap-2 p-2 sm:p-3">
+                    <div className="flex gap-0.5 sm:gap-1">
+                      <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-primary/30"></div>
+                      <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-accent/30"></div>
                     </div>
-                    <div className="flex gap-1">
-                      <div className="w-8 h-8 rounded-full bg-secondary/30"></div>
-                      <div className="w-8 h-8 rounded-full bg-primary/30"></div>
+                    <div className="flex gap-0.5 sm:gap-1">
+                      <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-secondary/30"></div>
+                      <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-primary/30"></div>
                     </div>
-                    <div className="text-xs font-medium text-foreground/60 mt-2 text-center">
+                    <div className="text-[9px] sm:text-xs font-medium text-foreground/60 mt-1 sm:mt-2 text-center">
                       Live Events
                     </div>
                   </div>
 
                   {/* More Event Types */}
-                  <div className="col-span-2 row-span-1 bg-gradient-to-br from-secondary/15 to-primary/10 rounded-lg flex items-center justify-center gap-3 p-2">
-                    <div className="flex gap-1">
-                      <div className="w-6 h-6 rounded-full bg-primary/20"></div>
-                      <div className="w-6 h-6 rounded-full bg-accent/20"></div>
-                      <div className="w-6 h-6 rounded-full bg-secondary/20"></div>
+                  <div className="col-span-2 row-span-1 bg-gradient-to-br from-secondary/15 to-primary/10 rounded-lg flex items-center justify-center gap-2 sm:gap-3 p-1.5 sm:p-2">
+                    <div className="flex gap-0.5 sm:gap-1">
+                      <div className="w-4 h-4 sm:w-6 sm:h-6 rounded-full bg-primary/20"></div>
+                      <div className="w-4 h-4 sm:w-6 sm:h-6 rounded-full bg-accent/20"></div>
+                      <div className="w-4 h-4 sm:w-6 sm:h-6 rounded-full bg-secondary/20"></div>
                     </div>
-                    <span className="text-xs font-medium text-foreground/60">
+                    <span className="text-[9px] sm:text-xs font-medium text-foreground/60">
                       And More...
                     </span>
                   </div>
                 </div>
 
                 {/* Overlay Label */}
-                <div className="absolute bottom-4 left-4 right-4">
-                  <div className="bg-background/90 backdrop-blur-sm rounded-lg px-3 py-2 text-xs font-medium text-foreground/80">
+                <div className="absolute bottom-2 sm:bottom-4 left-2 sm:left-4 right-2 sm:right-4">
+                  <div className="bg-background/90 backdrop-blur-sm rounded-lg px-2 sm:px-3 py-1.5 sm:py-2 text-[10px] sm:text-xs font-medium text-foreground/80">
                     Events Near You
                   </div>
                 </div>

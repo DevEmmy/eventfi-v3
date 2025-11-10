@@ -11,7 +11,7 @@ const SearchSection = () => {
         <div className="max-w-4xl mx-auto">
           {/* Section Title */}
           <div className="text-center mb-8">
-            <h2 className="text-3xl lg:text-4xl font-bold font-[family-name:var(--font-clash-display)] mb-3 text-foreground">
+            <h2 className="text-3xl lg:text-4xl font-bold  mb-3 text-foreground">
               Find Your Next Event
             </h2>
             <p className="text-foreground/60 text-lg">

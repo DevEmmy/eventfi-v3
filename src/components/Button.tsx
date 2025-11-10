@@ -84,7 +84,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     const isDisabled = disabled || isLoading;
 
     const baseClasses = `
-      inline-flex items-center justify-center gap-2
+      inline-flex items-center cursor-pointer justify-center gap-2
       rounded-full font-medium
       transition-all duration-200
       focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2
