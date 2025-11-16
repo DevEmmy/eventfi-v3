@@ -16,6 +16,7 @@ import {
   Map,
   People,
   Tag,
+  Chart,
 } from "iconsax-react";
 import { useRouter } from "next/navigation";
 
@@ -27,6 +28,10 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
   const router = useRouter();
   const [isFavorite, setIsFavorite] = useState(false);
   const [ticketQuantity, setTicketQuantity] = useState(1);
+
+  // Mock: Check if current user is the organizer
+  // In production, this would come from auth context
+  const isOrganizer = true; // Replace with actual auth check
 
   // Sample event data - Replace with API call
   const event = {
@@ -140,6 +145,16 @@ Whether you're a seasoned developer or just starting your tech journey, Tech Fes
 
         {/* Action Buttons */}
         <div className="absolute top-4 right-4 flex gap-2">
+          {isOrganizer && (
+            <button
+              onClick={() => router.push(`/events/${eventId}/manage`)}
+              className="px-4 py-2 rounded-full bg-primary text-white text-sm font-semibold hover:bg-primary/90 transition-colors backdrop-blur-sm flex items-center gap-2"
+              aria-label="Manage event"
+            >
+              <Chart size={16} color="currentColor" variant="Bold" />
+              Manage
+            </button>
+          )}
           <button
             onClick={() => setIsFavorite(!isFavorite)}
             className="w-10 h-10 rounded-full bg-background/90 backdrop-blur-sm flex items-center justify-center hover:bg-background transition-colors"

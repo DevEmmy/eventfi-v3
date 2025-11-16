@@ -3,7 +3,7 @@
 import React from "react";
 import EventCard, { EventCardProps } from "@/components/Homepage/EventCard";
 import Button from "@/components/Button";
-import { CalendarAdd, Document } from "iconsax-react";
+import { CalendarAdd, Document, Chart, Eye } from "iconsax-react";
 
 interface MyEventsProps {
   events: EventCardProps[];
@@ -65,13 +65,38 @@ const MyEvents: React.FC<MyEventsProps> = ({ events, onCreateEvent }) => {
       {/* Events Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {events.map((event) => (
-          <div
-            key={event.id}
-            onClick={() => {
-              window.location.href = `/events/${event.id}`;
-            }}
-          >
-            <EventCard {...event} />
+          <div key={event.id} className="group relative">
+            <div
+              onClick={() => {
+                window.location.href = `/events/${event.id}`;
+              }}
+              className="cursor-pointer"
+            >
+              <EventCard {...event} />
+            </div>
+            {/* Quick Actions Overlay */}
+            <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  window.location.href = `/events/${event.id}/manage`;
+                }}
+                className="p-2 bg-background/90 backdrop-blur-sm rounded-lg hover:bg-background transition-colors shadow-lg"
+                title="Manage Event"
+              >
+                <Chart size={18} color="currentColor" variant="Bold" className="text-primary" />
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  window.location.href = `/events/${event.id}`;
+                }}
+                className="p-2 bg-background/90 backdrop-blur-sm rounded-lg hover:bg-background transition-colors shadow-lg"
+                title="View Public Page"
+              >
+                <Eye size={18} color="currentColor" variant="Outline" />
+              </button>
+            </div>
           </div>
         ))}
       </div>

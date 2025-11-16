@@ -23,7 +23,7 @@ const RoleSelectionStep = () => {
         router.push("/");
         break;
       case "organizer":
-        router.push("/organizer/dashboard");
+        router.push("/profile?tab=dashboard");
         break;
       case "vendor":
         router.push("/vendor/profile");

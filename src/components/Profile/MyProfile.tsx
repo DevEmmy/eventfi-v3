@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import ProfileHeader from "./ProfileHeader";
 import ProfileTabs from "./ProfileTabs";
 import QuickActions from "./QuickActions";
@@ -8,7 +9,8 @@ import MyEvents from "./MyEvents";
 import MyTickets from "./MyTickets";
 import VendorProfileSection from "./VendorProfileSection";
 import SettingsSection from "./SettingsSection";
-import { Calendar, Ticket, Shop, Setting2, Home2 } from "iconsax-react";
+import DashboardContent from "./DashboardContent";
+import { Calendar, Ticket, Shop, Setting2, Home2, Chart } from "iconsax-react";
 import EventCard, { EventCardProps } from "@/components/Homepage/EventCard";
 
 interface MyProfileProps {
@@ -31,7 +33,16 @@ interface MyProfileProps {
 }
 
 const MyProfile: React.FC<MyProfileProps> = ({ userData }) => {
-  const [activeTab, setActiveTab] = useState("overview");
+  const searchParams = useSearchParams();
+  const tabParam = searchParams.get("tab");
+  const [activeTab, setActiveTab] = useState(tabParam || "overview");
+
+  // Update active tab when URL param changes
+  useEffect(() => {
+    if (tabParam) {
+      setActiveTab(tabParam);
+    }
+  }, [tabParam]);
 
   // Mock user data - replace with actual auth context
   const currentUser = userData || {
@@ -109,12 +120,33 @@ const MyProfile: React.FC<MyProfileProps> = ({ userData }) => {
     },
   ];
 
-  const tabs = [
+  const tabs: {
+    id: string;
+    label: string;
+    icon: React.ComponentType<{
+      size?: number;
+      color?: string;
+      variant?: "Linear" | "Outline" | "Bold" | "Broken" | "Bulk" | "TwoTone";
+    }>;
+    count?: number;
+  }[] = [
     {
       id: "overview",
       label: "Overview",
       icon: Home2,
     },
+  ];
+
+  // Add Dashboard tab for organizers
+  if (isOrganizer) {
+    tabs.push({
+      id: "dashboard",
+      label: "Dashboard",
+      icon: Chart,
+    });
+  }
+
+  tabs.push(
     {
       id: "events",
       label: "My Events",
@@ -126,8 +158,8 @@ const MyProfile: React.FC<MyProfileProps> = ({ userData }) => {
       label: "My Tickets",
       icon: Ticket,
       count: myTickets.filter((t) => t.status === "upcoming").length,
-    },
-  ];
+    }
+  );
 
   // Add vendor tab if user has vendor profile or can create one
   if (hasVendorProfile || isOrganizer) {
@@ -206,6 +238,9 @@ const MyProfile: React.FC<MyProfileProps> = ({ userData }) => {
             )}
           </div>
         );
+
+      case "dashboard":
+        return <DashboardContent events={myEvents} />;
 
       case "events":
         return (
