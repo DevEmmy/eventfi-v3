@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { HambergerMenu, CloseCircle, CalendarAdd, Login } from "iconsax-react";
+import NotificationCenter from "@/components/Notifications/NotificationCenter";
 
 export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -78,6 +79,8 @@ export default function Navbar() {
 
             {/* Desktop Actions - Right */}
             <div className="hidden lg:flex items-center gap-4">
+              {/* Notification Center */}
+              <NotificationCenter userRole="dual" />
               <button
                 className="flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-full font-medium hover:bg-primary/90 transition-all duration-200 "
                 aria-label="Create Event"

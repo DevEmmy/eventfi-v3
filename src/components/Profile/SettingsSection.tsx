@@ -19,8 +19,16 @@ const SettingsSection = () => {
     push: true,
     sms: false,
     eventReminders: true,
+    eventNearby: true,
+    ticketSales: true,
+    bookingRequests: true,
+    bookingConfirmations: true,
+    reviews: true,
     newMessages: true,
     marketing: false,
+    locationBased: true,
+    eventUpdates: true,
+    paymentNotifications: true,
   });
 
   const [privacy, setPrivacy] = useState({
@@ -165,6 +173,78 @@ const SettingsSection = () => {
               <span
                 className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform duration-200 ${
                   notifications.eventReminders ? "translate-x-6" : "translate-x-0"
+                }`}
+              />
+            </button>
+          </div>
+          <div className="flex items-center justify-between p-4 border border-foreground/10 rounded-xl">
+            <div className="flex-1">
+              <div className="font-semibold text-foreground mb-1">Events Near You</div>
+              <div className="text-sm text-foreground/60">Get notified about nearby events</div>
+            </div>
+            <button
+              onClick={() => handleNotificationChange("eventNearby")}
+              className={`relative w-12 h-6 rounded-full transition-colors duration-200 ${
+                notifications.eventNearby ? "bg-primary" : "bg-foreground/20"
+              }`}
+            >
+              <span
+                className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform duration-200 ${
+                  notifications.eventNearby ? "translate-x-6" : "translate-x-0"
+                }`}
+              />
+            </button>
+          </div>
+          <div className="flex items-center justify-between p-4 border border-foreground/10 rounded-xl">
+            <div className="flex-1">
+              <div className="font-semibold text-foreground mb-1">Ticket Sales (Organizers)</div>
+              <div className="text-sm text-foreground/60">Get notified when tickets are sold</div>
+            </div>
+            <button
+              onClick={() => handleNotificationChange("ticketSales")}
+              className={`relative w-12 h-6 rounded-full transition-colors duration-200 ${
+                notifications.ticketSales ? "bg-primary" : "bg-foreground/20"
+              }`}
+            >
+              <span
+                className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform duration-200 ${
+                  notifications.ticketSales ? "translate-x-6" : "translate-x-0"
+                }`}
+              />
+            </button>
+          </div>
+          <div className="flex items-center justify-between p-4 border border-foreground/10 rounded-xl">
+            <div className="flex-1">
+              <div className="font-semibold text-foreground mb-1">Booking Requests (Vendors)</div>
+              <div className="text-sm text-foreground/60">Get notified when someone requests your services</div>
+            </div>
+            <button
+              onClick={() => handleNotificationChange("bookingRequests")}
+              className={`relative w-12 h-6 rounded-full transition-colors duration-200 ${
+                notifications.bookingRequests ? "bg-primary" : "bg-foreground/20"
+              }`}
+            >
+              <span
+                className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform duration-200 ${
+                  notifications.bookingRequests ? "translate-x-6" : "translate-x-0"
+                }`}
+              />
+            </button>
+          </div>
+          <div className="flex items-center justify-between p-4 border border-foreground/10 rounded-xl">
+            <div className="flex-1">
+              <div className="font-semibold text-foreground mb-1">Reviews & Ratings</div>
+              <div className="text-sm text-foreground/60">Get notified when you receive reviews</div>
+            </div>
+            <button
+              onClick={() => handleNotificationChange("reviews")}
+              className={`relative w-12 h-6 rounded-full transition-colors duration-200 ${
+                notifications.reviews ? "bg-primary" : "bg-foreground/20"
+              }`}
+            >
+              <span
+                className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform duration-200 ${
+                  notifications.reviews ? "translate-x-6" : "translate-x-0"
                 }`}
               />
             </button>

@@ -10,6 +10,7 @@ import MyTickets from "./MyTickets";
 import VendorProfileSection from "./VendorProfileSection";
 import SettingsSection from "./SettingsSection";
 import DashboardContent from "./DashboardContent";
+import VendorDashboardContent from "./VendorDashboardContent";
 import { Calendar, Ticket, Shop, Setting2, Home2, Chart } from "iconsax-react";
 import EventCard, { EventCardProps } from "@/components/Homepage/EventCard";
 
@@ -141,8 +142,17 @@ const MyProfile: React.FC<MyProfileProps> = ({ userData }) => {
   if (isOrganizer) {
     tabs.push({
       id: "dashboard",
-      label: "Dashboard",
+      label: "Organizer Dashboard",
       icon: Chart,
+    });
+  }
+
+  // Add Vendor Dashboard tab for vendors
+  if (hasVendorProfile) {
+    tabs.push({
+      id: "vendor-dashboard",
+      label: "Vendor Dashboard",
+      icon: Shop,
     });
   }
 
@@ -217,11 +227,72 @@ const MyProfile: React.FC<MyProfileProps> = ({ userData }) => {
               onCreateVendor={handleCreateVendor}
               onViewTickets={handleViewTickets}
             />
+            
+            {/* Dual Role Banner - Show if user is both organizer and vendor */}
+            {isOrganizer && hasVendorProfile && (
+              <div className="bg-gradient-to-r from-primary/10 via-secondary/10 to-accent/10 border-2 border-primary/20 rounded-2xl p-6">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="w-16 h-16 rounded-xl bg-background/50 backdrop-blur-sm flex items-center justify-center">
+                    <div className="flex items-center gap-2">
+                      <Chart size={24} color="currentColor" variant="Bold" className="text-primary" />
+                      <Shop size={24} color="currentColor" variant="Bold" className="text-secondary" />
+                    </div>
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-xl font-bold font-[family-name:var(--font-clash-display)] text-foreground mb-1">
+                      You're Both an Organizer & Vendor! 🎉
+                    </h3>
+                    <p className="text-foreground/70 text-sm">
+                      Manage your events and vendor services from one place. Switch between dashboards to see insights for each role.
+                    </p>
+                  </div>
+                </div>
+                <div className="grid sm:grid-cols-2 gap-3">
+                  <button
+                    onClick={() => setActiveTab("dashboard")}
+                    className="p-4 bg-background/50 backdrop-blur-sm rounded-xl border border-foreground/10 hover:border-primary transition-all text-left group"
+                  >
+                    <div className="flex items-center gap-2 mb-2">
+                      <Chart size={20} color="currentColor" variant="Bold" className="text-primary" />
+                      <span className="font-semibold text-foreground group-hover:text-primary transition-colors">
+                        Organizer Dashboard
+                      </span>
+                    </div>
+                    <p className="text-sm text-foreground/60">
+                      View event statistics, attendees, and revenue
+                    </p>
+                  </button>
+                  <button
+                    onClick={() => setActiveTab("vendor-dashboard")}
+                    className="p-4 bg-background/50 backdrop-blur-sm rounded-xl border border-foreground/10 hover:border-secondary transition-all text-left group"
+                  >
+                    <div className="flex items-center gap-2 mb-2">
+                      <Shop size={20} color="currentColor" variant="Bold" className="text-secondary" />
+                      <span className="font-semibold text-foreground group-hover:text-secondary transition-colors">
+                        Vendor Dashboard
+                      </span>
+                    </div>
+                    <p className="text-sm text-foreground/60">
+                      Track bookings, reviews, and service performance
+                    </p>
+                  </button>
+                </div>
+              </div>
+            )}
+
             {isOrganizer && (
               <div>
-                <h3 className="text-xl font-bold mb-4 text-foreground">
-                  Recent Events
-                </h3>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-xl font-bold text-foreground">
+                    Recent Events
+                  </h3>
+                  <button
+                    onClick={() => setActiveTab("dashboard")}
+                    className="text-sm text-primary hover:underline"
+                  >
+                    View Dashboard →
+                  </button>
+                </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                   {myEvents.slice(0, 4).map((event) => (
                     <div
@@ -236,11 +307,48 @@ const MyProfile: React.FC<MyProfileProps> = ({ userData }) => {
                 </div>
               </div>
             )}
+
+            {hasVendorProfile && !isOrganizer && (
+              <div className="bg-background border border-foreground/10 rounded-2xl p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-xl font-bold text-foreground">
+                    Vendor Performance
+                  </h3>
+                  <button
+                    onClick={() => setActiveTab("vendor-dashboard")}
+                    className="text-sm text-primary hover:underline"
+                  >
+                    View Dashboard →
+                  </button>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                  <div className="text-center p-4 bg-foreground/5 rounded-xl">
+                    <div className="text-2xl font-bold text-primary mb-1">48</div>
+                    <div className="text-xs text-foreground/60">Total Bookings</div>
+                  </div>
+                  <div className="text-center p-4 bg-foreground/5 rounded-xl">
+                    <div className="text-2xl font-bold text-secondary mb-1">₦3.2M</div>
+                    <div className="text-xs text-foreground/60">Revenue</div>
+                  </div>
+                  <div className="text-center p-4 bg-foreground/5 rounded-xl">
+                    <div className="text-2xl font-bold text-accent mb-1">4.8</div>
+                    <div className="text-xs text-foreground/60">Rating</div>
+                  </div>
+                  <div className="text-center p-4 bg-foreground/5 rounded-xl">
+                    <div className="text-2xl font-bold text-primary mb-1">94%</div>
+                    <div className="text-xs text-foreground/60">Response Rate</div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         );
 
       case "dashboard":
         return <DashboardContent events={myEvents} />;
+
+      case "vendor-dashboard":
+        return <VendorDashboardContent />;
 
       case "events":
         return (
