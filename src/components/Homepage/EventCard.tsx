@@ -1,8 +1,8 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Image from "next/image";
-import { Calendar, Location, Clock, Ticket } from "iconsax-react";
+import { Calendar, Location, Clock, Ticket, Heart } from "iconsax-react";
 
 export interface EventCardProps {
   id: string;
@@ -18,6 +18,7 @@ export interface EventCardProps {
 }
 
 const EventCard: React.FC<EventCardProps> = ({
+  id,
   title,
   date,
   time,
@@ -28,6 +29,24 @@ const EventCard: React.FC<EventCardProps> = ({
   attendees,
   onClick,
 }) => {
+  const [isFavorite, setIsFavorite] = useState(false);
+
+  // Check if event is favorited (from localStorage or API)
+  React.useEffect(() => {
+    const favorites = JSON.parse(localStorage.getItem("favoriteEvents") || "[]");
+    setIsFavorite(favorites.includes(id));
+  }, [id]);
+
+  const handleFavoriteClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const favorites = JSON.parse(localStorage.getItem("favoriteEvents") || "[]");
+    const newFavorites = isFavorite
+      ? favorites.filter((favId: string) => favId !== id)
+      : [...favorites, id];
+    localStorage.setItem("favoriteEvents", JSON.stringify(newFavorites));
+    setIsFavorite(!isFavorite);
+  };
+
   return (
     <div
       className="group relative bg-background rounded-2xl overflow-hidden border border-foreground/10 hover:border-primary/30 transition-all duration-300 hover:shadow-xl cursor-pointer flex flex-col h-full"
@@ -59,6 +78,20 @@ const EventCard: React.FC<EventCardProps> = ({
             {category}
           </span>
         </div>
+
+        {/* Favorite Button */}
+        <button
+          onClick={handleFavoriteClick}
+          className="absolute top-3 right-3 p-2 bg-background/90 backdrop-blur-sm rounded-full hover:bg-background transition-colors z-10"
+          aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
+        >
+          <Heart
+            size={20}
+            color="currentColor"
+            variant={isFavorite ? "Bold" : "Outline"}
+            className={isFavorite ? "text-primary" : "text-foreground"}
+          />
+        </button>
 
         {/* Gradient Overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-background/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>

@@ -11,7 +11,8 @@ import VendorProfileSection from "./VendorProfileSection";
 import SettingsSection from "./SettingsSection";
 import DashboardContent from "./DashboardContent";
 import VendorDashboardContent from "./VendorDashboardContent";
-import { Calendar, Ticket, Shop, Setting2, Home2, Chart } from "iconsax-react";
+import SavedEvents from "./SavedEvents";
+import { Calendar, Ticket, Shop, Setting2, Home2, Chart, Heart } from "iconsax-react";
 import EventCard, { EventCardProps } from "@/components/Homepage/EventCard";
 
 interface MyProfileProps {
@@ -168,6 +169,11 @@ const MyProfile: React.FC<MyProfileProps> = ({ userData }) => {
       label: "My Tickets",
       icon: Ticket,
       count: myTickets.filter((t) => t.status === "upcoming").length,
+    },
+    {
+      id: "saved",
+      label: "Saved Events",
+      icon: Heart,
     }
   );
 
@@ -357,6 +363,9 @@ const MyProfile: React.FC<MyProfileProps> = ({ userData }) => {
 
       case "tickets":
         return <MyTickets tickets={myTickets} />;
+
+      case "saved":
+        return <SavedEvents />;
 
       case "vendor":
         return (

@@ -90,7 +90,18 @@ const ExploreEventsPage = () => {
     const matchesCategory =
       selectedCategory === "all" || event.category === selectedCategory;
 
-    return matchesSearch && matchesCategory;
+    const matchesLocation =
+      selectedLocation === "all" ||
+      selectedLocation === "nearby" ||
+      event.location.toLowerCase().includes(selectedLocation.toLowerCase());
+
+    const matchesDate =
+      selectedDate === "all" ||
+      (selectedDate === "today" && event.date === new Date().toLocaleDateString()) ||
+      (selectedDate === "this-week" && /* date logic */ true) ||
+      (selectedDate === "this-month" && /* date logic */ true);
+
+    return matchesSearch && matchesCategory && matchesLocation && matchesDate;
   });
 
   const handleClearFilters = () => {
@@ -121,12 +132,24 @@ const ExploreEventsPage = () => {
       )}
 
       {filteredEvents.length > 0 ? (
-        <EventsList
-          events={filteredEvents}
-          viewMode={viewMode}
-          searchQuery={searchQuery}
-          onViewModeChange={setViewMode}
-        />
+        <>
+          {/* Recommendations Section - Show at top if no filters applied */}
+          {selectedCategory === "all" &&
+            selectedDate === "all" &&
+            selectedLocation === "all" &&
+            searchQuery === "" && (
+              <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                <EventRecommendations />
+              </div>
+            )}
+
+          <EventsList
+            events={filteredEvents}
+            viewMode={viewMode}
+            searchQuery={searchQuery}
+            onViewModeChange={setViewMode}
+          />
+        </>
       ) : (
         <EmptyState onClearFilters={handleClearFilters} />
       )}

@@ -197,30 +197,31 @@ const FloatingMessenger: React.FC = () => {
   }, [isOpen, activeChat]);
 
   const handleSendMessage = () => {
-    if (!messageInput.trim() || !activeConversation) return;
+    if (!messageInput.trim() || !activeChat) return;
 
-    const conversation = conversations.find((c) => c.id === activeConversation);
-    if (!conversation) return;
+    const eventChat = eventChats.find((c) => c.id === activeChat);
+    if (!eventChat) return;
 
     const newMessage: Message = {
       id: `m${Date.now()}`,
       senderId: "current",
       senderName: "You",
+      senderRole: eventChat.isOrganizer ? "organizer" : eventChat.isVendor ? "vendor" : "attendee",
       content: messageInput.trim(),
       timestamp: new Date(),
       read: false,
     };
 
-    setConversations((prev) =>
-      prev.map((conv) =>
-        conv.id === activeConversation
+    setEventChats((prev) =>
+      prev.map((chat) =>
+        chat.id === activeChat
           ? {
-              ...conv,
-              lastMessage: newMessage.content,
+              ...chat,
+              lastMessage: `${newMessage.senderName}: ${newMessage.content}`,
               lastMessageTime: newMessage.timestamp,
-              messages: [...conv.messages, newMessage],
+              messages: [...chat.messages, newMessage],
             }
-          : conv
+          : chat
       )
     );
 
@@ -234,9 +235,9 @@ const FloatingMessenger: React.FC = () => {
     }
   };
 
-  const activeConv = conversations.find((c) => c.id === activeConversation);
-  const filteredConversations = conversations.filter((conv) =>
-    conv.participantName.toLowerCase().includes(searchQuery.toLowerCase())
+  const activeEventChat = eventChats.find((c) => c.id === activeChat);
+  const filteredChats = eventChats.filter((chat) =>
+    chat.eventName.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const formatTime = (date: Date) => {
@@ -287,49 +288,56 @@ const FloatingMessenger: React.FC = () => {
         >
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b border-foreground/10 bg-background">
-            {activeConversation ? (
+            {activeChat ? (
               <>
                 <button
-                  onClick={() => setActiveConversation(null)}
+                  onClick={() => setActiveChat(null)}
                   className="md:hidden p-2 hover:bg-foreground/10 rounded-lg transition-colors"
                 >
                   <ArrowLeft2 size={20} color="currentColor" variant="Outline" />
                 </button>
-                <div className="flex items-center gap-3 flex-1">
-                  {activeConv?.participantAvatar ? (
+                <div className="flex items-center gap-3 flex-1 min-w-0">
+                  {activeEventChat?.eventImage ? (
                     <img
-                      src={activeConv.participantAvatar}
-                      alt={activeConv.participantName}
-                      className="w-10 h-10 rounded-full"
+                      src={activeEventChat.eventImage}
+                      alt={activeEventChat.eventName}
+                      className="w-10 h-10 rounded-xl object-cover"
                     />
                   ) : (
-                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                      <User size={20} color="currentColor" variant="Bold" className="text-primary" />
+                    <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                      <Calendar size={20} color="currentColor" variant="Bold" className="text-primary" />
                     </div>
                   )}
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-foreground truncate">
-                      {activeConv?.participantName}
+                    <h3 className="font-semibold text-foreground truncate text-sm">
+                      {activeEventChat?.eventName}
                     </h3>
-                    {activeConv?.isOnline && (
-                      <p className="text-xs text-green-500">Online</p>
-                    )}
+                    <div className="flex items-center gap-2 text-xs text-foreground/60">
+                      <People size={12} color="currentColor" variant="Outline" />
+                      <span>{activeEventChat?.participantCount.toLocaleString()} participants</span>
+                    </div>
                   </div>
                 </div>
-                <button
-                  className="p-2 hover:bg-foreground/10 rounded-lg transition-colors"
-                  onClick={() => setIsOpen(false)}
-                >
-                  <CloseCircle size={20} color="currentColor" variant="Outline" />
-                </button>
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    onClick={() => router.push(`/events/${activeEventChat?.eventId}`)}
+                    className="p-2 hover:bg-foreground/10 rounded-lg transition-colors"
+                    title="View Event"
+                  >
+                    <Calendar size={18} color="currentColor" variant="Outline" />
+                  </button>
+                  <button
+                    className="p-2 hover:bg-foreground/10 rounded-lg transition-colors"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    <CloseCircle size={20} color="currentColor" variant="Outline" />
+                  </button>
+                </div>
               </>
             ) : (
               <>
-                <h3 className="text-lg font-bold text-foreground">Messages</h3>
+                <h3 className="text-lg font-bold text-foreground">Event Chats</h3>
                 <div className="flex items-center gap-2">
-                  <button className="p-2 hover:bg-foreground/10 rounded-lg transition-colors">
-                    <Add size={20} color="currentColor" variant="Outline" />
-                  </button>
                   <button
                     className="p-2 hover:bg-foreground/10 rounded-lg transition-colors"
                     onClick={() => setIsOpen(false)}
@@ -343,13 +351,33 @@ const FloatingMessenger: React.FC = () => {
 
           {/* Content */}
           <div className="flex-1 overflow-hidden flex flex-col">
-            {activeConversation ? (
+            {activeChat ? (
               // Chat View
               <>
+                {/* Event Info Banner */}
+                {activeEventChat && (
+                  <div className="p-3 bg-primary/5 border-b border-foreground/10">
+                    <div className="flex items-center gap-2 text-xs text-foreground/70">
+                      <Calendar size={14} color="currentColor" variant="Outline" />
+                      <span>{activeEventChat.eventDate}</span>
+                      <span>•</span>
+                      <Location size={14} color="currentColor" variant="Outline" />
+                      <span className="truncate">{activeEventChat.eventLocation}</span>
+                    </div>
+                  </div>
+                )}
+
                 {/* Messages */}
                 <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                  {activeConv?.messages.map((message) => {
+                  {activeEventChat?.messages.map((message) => {
                     const isOwnMessage = message.senderId === "current";
+                    const roleColors = {
+                      organizer: "bg-primary/20 text-primary border-primary/30",
+                      vendor: "bg-secondary/20 text-secondary border-secondary/30",
+                      attendee: "bg-foreground/5 text-foreground border-foreground/10",
+                    };
+                    const roleColor = message.senderRole ? roleColors[message.senderRole] : roleColors.attendee;
+
                     return (
                       <div
                         key={message.id}
@@ -359,9 +387,9 @@ const FloatingMessenger: React.FC = () => {
                       >
                         {!isOwnMessage && (
                           <div className="w-8 h-8 rounded-full bg-foreground/5 flex items-center justify-center shrink-0">
-                            {activeConv?.participantAvatar ? (
+                            {message.senderAvatar ? (
                               <img
-                                src={activeConv.participantAvatar}
+                                src={message.senderAvatar}
                                 alt={message.senderName}
                                 className="w-full h-full rounded-full"
                               />
@@ -375,6 +403,20 @@ const FloatingMessenger: React.FC = () => {
                             isOwnMessage ? "items-end" : "items-start"
                           } flex flex-col gap-1`}
                         >
+                          {!isOwnMessage && (
+                            <div className="flex items-center gap-2 px-1">
+                              <span className="text-xs font-semibold text-foreground">
+                                {message.senderName}
+                              </span>
+                              {message.senderRole && (
+                                <span
+                                  className={`text-xs px-2 py-0.5 rounded-full border ${roleColor}`}
+                                >
+                                  {message.senderRole}
+                                </span>
+                              )}
+                            </div>
+                          )}
                           <div
                             className={`px-4 py-2 rounded-2xl ${
                               isOwnMessage
@@ -428,7 +470,7 @@ const FloatingMessenger: React.FC = () => {
                 </div>
               </>
             ) : (
-              // Conversations List
+              // Event Chats List
               <>
                 {/* Search */}
                 <div className="p-4 border-b border-foreground/10">
@@ -443,77 +485,91 @@ const FloatingMessenger: React.FC = () => {
                       type="text"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      placeholder="Search conversations..."
+                      placeholder="Search events..."
                       className="w-full pl-10 pr-4 py-2 bg-foreground/5 border border-foreground/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-foreground placeholder:text-foreground/40"
                     />
                   </div>
                 </div>
 
-                {/* Conversations */}
+                {/* Event Chats */}
                 <div className="flex-1 overflow-y-auto">
-                  {filteredConversations.length === 0 ? (
+                  {filteredChats.length === 0 ? (
                     <div className="p-8 text-center">
-                      <MessageText1
+                      <Calendar
                         size={48}
                         color="currentColor"
                         variant="Outline"
                         className="text-foreground/30 mx-auto mb-3"
                       />
                       <p className="text-foreground/60">
-                        {searchQuery ? "No conversations found" : "No messages yet"}
+                        {searchQuery ? "No events found" : "No event chats yet"}
+                      </p>
+                      <p className="text-sm text-foreground/50 mt-2">
+                        Join events to start chatting with the community!
                       </p>
                     </div>
                   ) : (
                     <div className="divide-y divide-foreground/10">
-                      {filteredConversations.map((conversation) => (
+                      {filteredChats.map((chat) => (
                         <button
-                          key={conversation.id}
+                          key={chat.id}
                           onClick={() => {
-                            setActiveConversation(conversation.id);
+                            setActiveChat(chat.id);
                             // Mark as read
-                            setConversations((prev) =>
-                              prev.map((conv) =>
-                                conv.id === conversation.id
-                                  ? { ...conv, unreadCount: 0, messages: conv.messages.map((m) => ({ ...m, read: true })) }
-                                  : conv
+                            setEventChats((prev) =>
+                              prev.map((c) =>
+                                c.id === chat.id
+                                  ? { ...c, unreadCount: 0, messages: c.messages.map((m) => ({ ...m, read: true })) }
+                                  : c
                               )
                             );
                           }}
                           className="w-full p-4 hover:bg-foreground/5 transition-colors text-left"
                         >
                           <div className="flex items-start gap-3">
-                            <div className="relative">
-                              {conversation.participantAvatar ? (
-                                <img
-                                  src={conversation.participantAvatar}
-                                  alt={conversation.participantName}
-                                  className="w-12 h-12 rounded-full"
-                                />
-                              ) : (
-                                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                                  <User size={20} color="currentColor" variant="Bold" className="text-primary" />
-                                </div>
-                              )}
-                              {conversation.isOnline && (
-                                <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-background" />
-                              )}
-                            </div>
+                            {chat.eventImage ? (
+                              <img
+                                src={chat.eventImage}
+                                alt={chat.eventName}
+                                className="w-14 h-14 rounded-xl object-cover shrink-0"
+                              />
+                            ) : (
+                              <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                                <Calendar size={24} color="currentColor" variant="Bold" className="text-primary" />
+                              </div>
+                            )}
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center justify-between mb-1">
-                                <h4 className="font-semibold text-foreground truncate">
-                                  {conversation.participantName}
+                                <h4 className="font-semibold text-foreground truncate text-sm">
+                                  {chat.eventName}
                                 </h4>
                                 <span className="text-xs text-foreground/50 shrink-0 ml-2">
-                                  {formatTime(conversation.lastMessageTime)}
+                                  {formatTime(chat.lastMessageTime)}
                                 </span>
+                              </div>
+                              <div className="flex items-center gap-2 mb-1 text-xs text-foreground/60">
+                                <People size={12} color="currentColor" variant="Outline" />
+                                <span>{chat.participantCount.toLocaleString()}</span>
+                                {chat.isOrganizer && (
+                                  <>
+                                    <span>•</span>
+                                    <span className="text-primary font-medium">Organizer</span>
+                                  </>
+                                )}
+                                {chat.isVendor && (
+                                  <>
+                                    <span>•</span>
+                                    <span className="text-secondary font-medium">Vendor</span>
+                                  </>
+                                )}
                               </div>
                               <div className="flex items-center justify-between gap-2">
                                 <p className="text-sm text-foreground/70 truncate">
-                                  {conversation.lastMessage}
+                                  {chat.lastMessage}
                                 </p>
-                                {conversation.unreadCount > 0 && (
+                                {chat.unreadCount > 0 && (
                                   <span className="w-5 h-5 bg-primary text-white text-xs font-bold rounded-full flex items-center justify-center shrink-0">
-                                    {conversation.unreadCount > 9 ? "9+" : conversation.unreadCount}
+                                    {chat.unreadCount > 9 ? "9+" : chat.unreadCount}
                                   </span>
                                 )}
                               </div>

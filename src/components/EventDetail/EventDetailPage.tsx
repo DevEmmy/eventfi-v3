@@ -17,6 +17,9 @@ import {
   People,
   Tag,
   Chart,
+  MessageText1,
+  Star1,
+  TickCircle,
 } from "iconsax-react";
 import { useRouter } from "next/navigation";
 
@@ -32,6 +35,8 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
   // Mock: Check if current user is the organizer
   // In production, this would come from auth context
   const isOrganizer = true; // Replace with actual auth check
+  const hasAttended = true; // Replace with actual check - user must have attended to review
+  const hasReviewed = false; // Replace with actual check
 
   // Sample event data - Replace with API call
   const event = {
@@ -45,6 +50,8 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
     category: "Technology",
     attendees: 1250,
     image: undefined,
+    rating: 4.6,
+    reviewCount: 127,
     organizer: {
       name: "Tech Events Nigeria",
       verified: true,
@@ -302,6 +309,207 @@ Whether you're a seasoned developer or just starting your tech journey, Tech Fes
               </div>
             </div>
 
+            {/* Reviews Section */}
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-2xl font-bold font-[family-name:var(--font-clash-display)] text-foreground">
+                  Reviews ({event.reviewCount})
+                </h2>
+                { (
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={() => router.push(`/events/${eventId}/review`)}
+                  >
+                    Write a Review
+                  </Button>
+                )}
+              </div>
+
+              {/* Rating Summary */}
+              <div className="bg-foreground/5 rounded-2xl border border-foreground/10 p-6 mb-6">
+                <div className="flex items-center gap-6 mb-4">
+                  <div className="text-center">
+                    <div className="text-5xl font-bold text-foreground mb-1">
+                      {event.rating.toFixed(1)}
+                    </div>
+                    <div className="flex items-center justify-center gap-1">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <Star1
+                          key={star}
+                          size={20}
+                          color="currentColor"
+                          variant={star <= Math.round(event.rating) ? "Bold" : "Outline"}
+                          className={
+                            star <= Math.round(event.rating)
+                              ? "text-primary"
+                              : "text-foreground/30"
+                          }
+                        />
+                      ))}
+                    </div>
+                    <p className="text-sm text-foreground/60 mt-2">
+                      Based on {event.reviewCount} reviews
+                    </p>
+                  </div>
+                  <div className="flex-1 space-y-2">
+                    {[5, 4, 3, 2, 1].map((star) => {
+                      const percentage = Math.random() * 30 + 50; // Mock percentage
+                      return (
+                        <div key={star} className="flex items-center gap-3">
+                          <div className="flex items-center gap-1 w-16">
+                            <span className="text-sm font-semibold text-foreground">
+                              {star}
+                            </span>
+                            <Star1
+                              size={14}
+                              color="currentColor"
+                              variant="Bold"
+                              className="text-primary"
+                            />
+                          </div>
+                          <div className="flex-1 h-2 bg-foreground/10 rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-primary rounded-full"
+                              style={{ width: `${percentage}%` }}
+                            />
+                          </div>
+                          <span className="text-sm text-foreground/60 w-12 text-right">
+                            {Math.round(percentage)}%
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+
+              {/* Reviews List */}
+              <div className="space-y-4">
+                {[
+                  {
+                    id: "1",
+                    userName: "Sarah Johnson",
+                    userAvatar: undefined,
+                    rating: 5,
+                    title: "Amazing experience!",
+                    comment:
+                      "This was one of the best tech events I've attended. Great speakers, excellent networking opportunities, and well-organized. Highly recommend!",
+                    date: "2 days ago",
+                    helpful: 24,
+                    photos: [],
+                  },
+                  {
+                    id: "2",
+                    userName: "Mike Chen",
+                    userAvatar: undefined,
+                    rating: 4,
+                    title: "Great event overall",
+                    comment:
+                      "Really enjoyed the workshops and the networking session. The venue was good, though parking was a bit challenging. Will definitely attend again!",
+                    date: "1 week ago",
+                    helpful: 18,
+                    photos: [],
+                  },
+                  {
+                    id: "3",
+                    userName: "Emma Wilson",
+                    userAvatar: undefined,
+                    rating: 5,
+                    title: "Exceeded expectations",
+                    comment:
+                      "The keynote speakers were incredible and the breakout sessions were very informative. The food was also great!",
+                    date: "2 weeks ago",
+                    helpful: 31,
+                    photos: [],
+                  },
+                ].map((review) => (
+                  <div
+                    key={review.id}
+                    className="bg-foreground/5 rounded-2xl border border-foreground/10 p-6"
+                  >
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex items-start gap-4 flex-1">
+                        {review.userAvatar ? (
+                          <img
+                            src={review.userAvatar}
+                            alt={review.userName}
+                            className="w-12 h-12 rounded-full"
+                          />
+                        ) : (
+                          <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                            <User size={24} color="currentColor" variant="Bold" className="text-primary" />
+                          </div>
+                        )}
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <h4 className="font-semibold text-foreground">
+                              {review.userName}
+                            </h4>
+                            <div className="flex items-center gap-1">
+                              {[1, 2, 3, 4, 5].map((star) => (
+                                <Star1
+                                  key={star}
+                                  size={16}
+                                  color="currentColor"
+                                  variant={star <= review.rating ? "Bold" : "Outline"}
+                                  className={
+                                    star <= review.rating
+                                      ? "text-primary"
+                                      : "text-foreground/30"
+                                  }
+                                />
+                              ))}
+                            </div>
+                          </div>
+                          {review.title && (
+                            <h5 className="font-medium text-foreground mb-1">
+                              {review.title}
+                            </h5>
+                          )}
+                          <p className="text-sm text-foreground/60">{review.date}</p>
+                        </div>
+                      </div>
+                    </div>
+                    <p className="text-foreground/70 mb-4 leading-relaxed">
+                      {review.comment}
+                    </p>
+                    {review.photos && review.photos.length > 0 && (
+                      <div className="grid grid-cols-3 gap-2 mb-4">
+                        {review.photos.map((photo, index) => (
+                          <div
+                            key={index}
+                            className="aspect-square rounded-xl overflow-hidden border border-foreground/10"
+                          >
+                            <img
+                              src={photo}
+                              alt={`Review photo ${index + 1}`}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    <div className="flex items-center gap-4 pt-4 border-t border-foreground/10">
+                      <button className="flex items-center gap-2 text-sm text-foreground/60 hover:text-primary transition-colors">
+                        <TickCircle size={16} color="currentColor" variant="Outline" />
+                        <span>Helpful ({review.helpful})</span>
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Load More */}
+              {event.reviewCount > 3 && (
+                <div className="text-center mt-6">
+                  <Button variant="outline" size="md">
+                    Load More Reviews
+                  </Button>
+                </div>
+              )}
+            </div>
+
             {/* Related Events */}
             {relatedEvents.length > 0 && (
               <div>
@@ -392,6 +600,22 @@ Whether you're a seasoned developer or just starting your tech journey, Tech Fes
                 >
                   <Ticket size={20} color="currentColor" variant="Bold" />
                   Get Tickets
+                </Button>
+
+                {/* Join Event Chat Button */}
+                <Button
+                  variant="outline"
+                  size="md"
+                  fullWidth
+                  onClick={() => {
+                    // Open floating messenger and navigate to this event's chat
+                    // In a real app, this would trigger the messenger to open with this event's chat
+                    window.location.href = `/messages?event=${eventId}`;
+                  }}
+                  className="mt-3"
+                >
+                  <MessageText1 size={18} color="currentColor" variant="Outline" />
+                  Join Event Chat
                 </Button>
 
                 {/* Additional Info */}

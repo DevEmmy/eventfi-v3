@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { Location } from "iconsax-react";
 
 interface ExploreFiltersProps {
   selectedCategory: string;
@@ -93,23 +94,50 @@ const ExploreFilters: React.FC<ExploreFiltersProps> = ({
               <label className="block text-sm font-semibold text-foreground mb-3">
                 Location
               </label>
-              <div className="flex flex-wrap gap-2">
-                {locations.map((location) => (
-                  <button
-                    key={location}
-                    onClick={() =>
-                      onLocationChange(location === "All" ? "all" : location)
+              <div className="space-y-3">
+                {/* Use Current Location */}
+                <button
+                  onClick={() => {
+                    if (navigator.geolocation) {
+                      navigator.geolocation.getCurrentPosition(
+                        (position) => {
+                          // In a real app, you'd reverse geocode and set location
+                          alert("Location detected! Filtering events near you...");
+                          onLocationChange("nearby");
+                        },
+                        () => {
+                          alert("Unable to detect location. Please select manually.");
+                        }
+                      );
+                    } else {
+                      alert("Geolocation not supported by your browser.");
                     }
-                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
-                      selectedLocation === location.toLowerCase() ||
-                      (location === "All" && selectedLocation === "all")
-                        ? "bg-primary text-white"
-                        : "bg-foreground/5 text-foreground/70 hover:bg-primary/10 hover:text-primary"
-                    }`}
-                  >
-                    {location}
-                  </button>
-                ))}
+                  }}
+                  className="w-full px-4 py-2.5 rounded-xl bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-colors text-sm font-medium flex items-center justify-center gap-2"
+                >
+                  <Location size={18} color="currentColor" variant="Bold" />
+                  Use My Location
+                </button>
+                
+                {/* Location Pills */}
+                <div className="flex flex-wrap gap-2">
+                  {locations.map((location) => (
+                    <button
+                      key={location}
+                      onClick={() =>
+                        onLocationChange(location === "All" ? "all" : location)
+                      }
+                      className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+                        selectedLocation === location.toLowerCase() ||
+                        (location === "All" && selectedLocation === "all")
+                          ? "bg-primary text-white"
+                          : "bg-foreground/5 text-foreground/70 hover:bg-primary/10 hover:text-primary"
+                      }`}
+                    >
+                      {location}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
