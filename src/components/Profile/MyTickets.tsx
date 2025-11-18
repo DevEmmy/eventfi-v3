@@ -100,13 +100,13 @@ const MyTickets: React.FC<MyTicketsProps> = ({ tickets }) => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {pastTickets.map((ticket) => (
               <div key={ticket.ticketId} className="relative group">
-                <div
-                  onClick={() => {
-                    window.location.href = `/events/${ticket.id}`;
-                  }}
+              <div
+                onClick={() => {
+                  window.location.href = `/events/${ticket.id}`;
+                }}
                   className="opacity-60 cursor-pointer"
-                >
-                  <EventCard {...ticket} />
+              >
+                <EventCard {...ticket} />
                 </div>
                 {/* Review Button Overlay */}
                 <div className="absolute bottom-4 left-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
