@@ -3,9 +3,12 @@
 import React, { useState } from "react";
 import Button from "@/components/Button";
 import { Share, Wallet3 } from "iconsax-react";
+import Link from "next/link";
 
-const AuthPage = () => {
-  const [isLogin, setIsLogin] = useState(false);
+
+
+const AuthForm = ({ mode }: { mode: "login" | "signup" }) => {
+
   const [showEmailForm, setShowEmailForm] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -24,6 +27,7 @@ const AuthPage = () => {
     // After successful auth, redirect to onboarding step 1
     window.location.href = "/onboarding/identity";
   };
+  const heading = mode === "login" ? "Log In" : "Sign Up";
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
@@ -37,9 +41,7 @@ const AuthPage = () => {
         <div className="bg-background border-2 border-foreground/10 rounded-2xl p-8 shadow-xl">
           {/* Header */}
           <div className="text-center mb-8">
-            <h2 className="text-2xl lg:text-3xl font-bold font-[family-name:var(--font-clash-display)] mb-2 text-foreground">
-              Welcome to EventFi
-            </h2>
+            <h2 className="text-2xl lg:text-3xl font-bold font-[family-name:var(--font-clash-display)] mb-2 text-foreground">{heading}</h2>
             <p className="text-foreground/70">
               The all-in-one platform for modern events
             </p>
@@ -130,10 +132,29 @@ const AuthPage = () => {
                 fullWidth
                 disabled={!email || !password}
               >
-                {isLogin ? "Log In" : "Sign Up"}
+                {mode === "login" ? "Log In" : "Sign Up"}
               </Button>
             </form>
           )}
+          {mode === "login" && (
+            <p className="text-sm text-foreground/70 mt-2">
+              <Link href="/auth/forgot-password" className="text-primary hover:underline">Forgot password?</Link>
+            </p>
+          )}
+
+
+          {/* Switch between login and signup */}
+          <div className="text-center mt-4">
+            {mode === "login" ? (
+              <p className="text-sm text-foreground/70">
+                Don't have an account? <Link href="/auth/signup" className="text-primary hover:underline">Sign up</Link>
+              </p>
+            ) : (
+              <p className="text-sm text-foreground/70">
+                Already have an account? <Link href="/auth/login" className="text-primary hover:underline">Log in</Link>
+              </p>
+            )}
+          </div>
 
           {/* Web3 Teaser */}
           <div className="mb-6 pt-6 border-t border-foreground/10">
@@ -148,22 +169,14 @@ const AuthPage = () => {
             </button>
           </div>
 
-          {/* Footer Switch */}
-          <div className="text-center">
-            <button
-              onClick={() => setIsLogin(!isLogin)}
-              className="text-sm text-foreground/70 hover:text-primary transition-colors"
-            >
-              {isLogin
-                ? "Don't have an account? Sign up"
-                : "Already have an account? Log in"}
-            </button>
-          </div>
+
         </div>
       </div>
     </div>
   );
 };
 
-export default AuthPage;
+export const LoginForm = () => <AuthForm mode="login" />;
+export const SignupForm = () => <AuthForm mode="signup" />;
+export default AuthForm;
 
