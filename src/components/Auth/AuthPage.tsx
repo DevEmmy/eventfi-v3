@@ -4,28 +4,43 @@ import React, { useState } from "react";
 import Button from "@/components/Button";
 import { Share, Wallet3 } from "iconsax-react";
 import Link from "next/link";
-
-
+import axiosInstance from "@/lib/axios";
+import { useUserStore } from "@/store/useUserStore";
+import toast from "react-hot-toast";
 
 const AuthForm = ({ mode }: { mode: "login" | "signup" }) => {
-
   const [showEmailForm, setShowEmailForm] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const setUser = useUserStore((state) => state.setUser);
 
   const handleSocialAuth = (provider: string) => {
-    // Handle social authentication
     console.log(`Authenticating with ${provider}`);
-    // After successful auth, redirect to onboarding step 1
     window.location.href = "/onboarding/identity";
   };
 
-  const handleEmailAuth = (e: React.FormEvent) => {
+  const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle email/password authentication
-    console.log("Email auth:", { email, password });
-    // After successful auth, redirect to onboarding step 1
-    window.location.href = "/onboarding/identity";
+    setIsLoading(true);
+
+    const endpoint = mode === "login" ? "/auth/login" : "/auth/signup";
+
+    try {
+      const response = await axiosInstance.post(endpoint, { email, password });
+      const { user, token } = response.data.data;
+
+      setUser(user, token);
+      toast.success(mode === "login" ? "Welcome back!" : "Account created successfully!");
+
+      // Redirect to onboarding
+      window.location.href = "/onboarding/identity";
+    } catch (error: any) {
+      const message = error.response?.data?.message || "Something went wrong. Please try again.";
+      toast.error(message);
+    } finally {
+      setIsLoading(false);
+    }
   };
   const heading = mode === "login" ? "Log In" : "Sign Up";
 
@@ -130,7 +145,8 @@ const AuthForm = ({ mode }: { mode: "login" | "signup" }) => {
                 variant="primary"
                 size="lg"
                 fullWidth
-                disabled={!email || !password}
+                disabled={!email || !password || isLoading}
+                isLoading={isLoading}
               >
                 {mode === "login" ? "Log In" : "Sign Up"}
               </Button>

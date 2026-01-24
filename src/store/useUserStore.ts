@@ -4,9 +4,9 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 export interface User {
     id: string;
     email: string;
-    name?: string;
-    avatar?: string;
-    role?: string;
+    username: string | null;
+    displayName: string | null;
+    isVerified: boolean;
 }
 
 interface UserState {
