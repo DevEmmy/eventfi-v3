@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import EventCard, { EventCardProps } from "@/components/Homepage/EventCard";
-import { Sparkles, TrendingUp, Map, Calendar } from "iconsax-react";
+import { Star1, TrendUp, Map, Calendar } from "iconsax-react";
+import { EventService } from "@/services/events";
 
 interface EventRecommendationsProps {
   userId?: string;
@@ -15,107 +16,102 @@ const EventRecommendations: React.FC<EventRecommendationsProps> = ({
   userInterests = [],
   userLocation,
 }) => {
+  // State
   const [recommendations, setRecommendations] = useState<EventCardProps[]>([]);
+  const [loading, setLoading] = useState(true);
   const [recommendationType, setRecommendationType] = useState<
     "interests" | "location" | "trending"
   >("interests");
 
-  // Mock events - Replace with API call
-  const allEvents: EventCardProps[] = [
-    {
-      id: "1",
-      title: "Tech Fest Lagos 2024",
-      date: "March 15, 2024",
-      time: "10:00 AM - 6:00 PM",
-      location: "Lagos Convention Centre",
-      price: "₦5,000",
-      category: "Technology",
-      attendees: 1250,
-    },
-    {
-      id: "2",
-      title: "Design Conference 2025",
-      date: "Feb 10, 2025",
-      time: "9:00 AM",
-      location: "Eko Hotel & Suites",
-      price: "₦15,000",
-      category: "Design",
-      attendees: 450,
-    },
-    {
-      id: "3",
-      title: "Afro Nation Festival",
-      date: "Mar 15, 2025",
-      time: "4:00 PM",
-      location: "Tafawa Balewa Square",
-      price: "₦10,000",
-      category: "Music",
-      attendees: 5000,
-    },
-    {
-      id: "4",
-      title: "Startup Summit 2024",
-      date: "April 5, 2024",
-      time: "8:00 AM - 7:00 PM",
-      location: "Eko Hotel & Suites",
-      price: "₦10,000",
-      category: "Business",
-      attendees: 2100,
-    },
-    {
-      id: "5",
-      title: "DevFest Lagos",
-      date: "March 30, 2024",
-      time: "9:00 AM - 5:00 PM",
-      location: "Google Developer Space",
-      price: "Free",
-      category: "Technology",
-      attendees: 800,
-    },
-  ];
+  // Format date helper
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric'
+    });
+  };
 
-  // Get user interests from localStorage or mock
+  // Format price helper
+  const formatPrice = (tickets: any[]) => {
+    if (!tickets || tickets.length === 0) return "Free";
+    const paidTickets = tickets.filter(t => t.type === 'PAID');
+    if (paidTickets.length === 0) return "Free";
+    const minPrice = Math.min(...paidTickets.map(t => t.price));
+    return `₦${minPrice.toLocaleString()}`;
+  };
+
   useEffect(() => {
-    const savedInterests = JSON.parse(
-      localStorage.getItem("userInterests") || "[]"
-    );
-    const interests = savedInterests.length > 0 ? savedInterests : ["Technology", "Business"];
+    const fetchEvents = async () => {
+      setLoading(true);
+      try {
+        let events: any[] = [];
 
-    // Recommendations based on interests
-    const interestBased = allEvents.filter((event) =>
-      interests.some((interest: string) =>
-        event.category.toLowerCase().includes(interest.toLowerCase())
-      )
-    );
+        switch (recommendationType) {
+          case "interests":
+            // Try api recommendations first, fallback to general if empty or error
+            try {
+              events = await EventService.getRecommendations();
+            } catch (err) {
+              console.warn("Failed to fetch recommendations, falling back to general", err);
+              const response = await EventService.getEvents({ limit: 6 });
+              events = response.data;
+            }
+            break;
 
-    // Recommendations based on location
-    const locationBased = userLocation
-      ? allEvents.filter((event) =>
-          event.location.toLowerCase().includes(userLocation.toLowerCase())
-        )
-      : [];
+          case "location":
+            if (userLocation) {
+              const response = await EventService.getEvents({
+                city: userLocation,
+                limit: 6
+              });
+              events = response.data;
+            } else {
+              // Fallback if no location set
+              const response = await EventService.getEvents({ limit: 6 });
+              events = response.data;
+            }
+            break;
 
-    // Trending events (most attendees)
-    const trending = [...allEvents]
-      .sort((a, b) => (b.attendees || 0) - (a.attendees || 0))
-      .slice(0, 3);
+          case "trending":
+            // For trending, we might fetch more and sort, or use a specific endpoint if available. 
+            // Using general getEvents for now, assuming backend handles trending logic or we just show latest.
+            const response = await EventService.getEvents({ limit: 6 });
+            events = response.data;
+            // Client side sort by attendees if available in response
+            if (events.length > 0 && events[0].attendeesCount !== undefined) {
+              events.sort((a, b) => (b.attendeesCount || 0) - (a.attendeesCount || 0));
+            }
+            break;
+        }
 
-    switch (recommendationType) {
-      case "interests":
-        setRecommendations(interestBased.slice(0, 6));
-        break;
-      case "location":
-        setRecommendations(locationBased.length > 0 ? locationBased : allEvents.slice(0, 6));
-        break;
-      case "trending":
-        setRecommendations(trending);
-        break;
-    }
+        // Map API response to EventCardProps
+        const mappedEvents: EventCardProps[] = events.map(event => ({
+          id: event.id,
+          title: event.title,
+          date: formatDate(event.startDate),
+          time: `${event.startTime} - ${event.endTime}`,
+          location: event.venueName || event.city || "Online",
+          price: formatPrice(event.tickets),
+          category: event.category,
+          image: event.coverImage,
+          attendees: event.attendeesCount
+        }));
+
+        setRecommendations(mappedEvents);
+      } catch (error) {
+        console.error("Error fetching events:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEvents();
   }, [recommendationType, userLocation]);
 
-  if (recommendations.length === 0) {
-    return null;
-  }
+  // if (recommendations.length === 0) {
+  //   return null;
+  // }
 
   return (
     <div className="space-y-6">
@@ -123,7 +119,7 @@ const EventRecommendations: React.FC<EventRecommendationsProps> = ({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-            <Sparkles size={24} color="currentColor" variant="Bold" className="text-primary" />
+            <Star1 size={24} color="currentColor" variant="Bold" className="text-primary" />
           </div>
           <div>
             <h2 className="text-2xl font-bold font-[family-name:var(--font-clash-display)] text-foreground">
@@ -140,24 +136,22 @@ const EventRecommendations: React.FC<EventRecommendationsProps> = ({
       <div className="flex items-center gap-2 border-b border-foreground/10">
         <button
           onClick={() => setRecommendationType("interests")}
-          className={`px-4 py-2 border-b-2 font-medium transition-colors ${
-            recommendationType === "interests"
-              ? "border-primary text-primary"
-              : "border-transparent text-foreground/60 hover:text-foreground"
-          }`}
+          className={`px-4 py-2 border-b-2 font-medium transition-colors ${recommendationType === "interests"
+            ? "border-primary text-primary"
+            : "border-transparent text-foreground/60 hover:text-foreground"
+            }`}
         >
           <div className="flex items-center gap-2">
-            <Sparkles size={16} color="currentColor" variant="Outline" />
+            <Star1 size={16} color="currentColor" variant="Outline" />
             <span>Based on Interests</span>
           </div>
         </button>
         <button
           onClick={() => setRecommendationType("location")}
-          className={`px-4 py-2 border-b-2 font-medium transition-colors ${
-            recommendationType === "location"
-              ? "border-primary text-primary"
-              : "border-transparent text-foreground/60 hover:text-foreground"
-          }`}
+          className={`px-4 py-2 border-b-2 font-medium transition-colors ${recommendationType === "location"
+            ? "border-primary text-primary"
+            : "border-transparent text-foreground/60 hover:text-foreground"
+            }`}
         >
           <div className="flex items-center gap-2">
             <Map size={16} color="currentColor" variant="Outline" />
@@ -166,14 +160,13 @@ const EventRecommendations: React.FC<EventRecommendationsProps> = ({
         </button>
         <button
           onClick={() => setRecommendationType("trending")}
-          className={`px-4 py-2 border-b-2 font-medium transition-colors ${
-            recommendationType === "trending"
-              ? "border-primary text-primary"
-              : "border-transparent text-foreground/60 hover:text-foreground"
-          }`}
+          className={`px-4 py-2 border-b-2 font-medium transition-colors ${recommendationType === "trending"
+            ? "border-primary text-primary"
+            : "border-transparent text-foreground/60 hover:text-foreground"
+            }`}
         >
           <div className="flex items-center gap-2">
-            <TrendingUp size={16} color="currentColor" variant="Outline" />
+            <TrendUp size={16} color="currentColor" variant="Outline" />
             <span>Trending</span>
           </div>
         </button>

@@ -1,12 +1,18 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { HambergerMenu, CloseCircle, CalendarAdd, Login } from "iconsax-react";
+import { HambergerMenu, CloseCircle, CalendarAdd, Login, User, LogoutCurve } from "iconsax-react";
 import NotificationCenter from "@/components/Notifications/NotificationCenter";
+import { useUserStore } from "@/store/useUserStore";
+import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const { isAuthenticated, user, logout } = useUserStore();
+  const router = useRouter();
 
   // Handle scroll effect for shadow
   useEffect(() => {
@@ -31,6 +37,12 @@ export default function Navbar() {
     };
   }, [isMobileMenuOpen]);
 
+  const handleLogout = () => {
+    logout();
+    router.push("/auth/login");
+    setIsMobileMenuOpen(false);
+  };
+
   const navLinks = [
     { label: "Explore Events", href: "/explore-events" },
     { label: "Marketplace", href: "/marketplace" },
@@ -41,11 +53,10 @@ export default function Navbar() {
   return (
     <>
       <header
-        className={`sticky top-0 z-50 w-full duration-300 ${
-          isScrolled
-            ? " bg-background/95 backdrop-blur-sm"
-            : "bg-background"
-        }`}
+        className={`sticky top-0 z-50 w-full duration-300 ${isScrolled
+          ? " bg-background/95 backdrop-blur-sm"
+          : "bg-background"
+          }`}
         role="banner"
       >
         <nav
@@ -81,20 +92,63 @@ export default function Navbar() {
             <div className="hidden lg:flex items-center gap-4">
               {/* Notification Center */}
               <NotificationCenter userRole="dual" />
-              <button
-                className="flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-full font-medium hover:bg-primary/90 transition-all duration-200 "
-                aria-label="Create Event"
-              >
-                <CalendarAdd size={20} color="currentColor" variant="Bold" />
-                <span>Create Event</span>
-              </button>
-              <button
-                className="flex items-center gap-2 px-5 py-2.5 border-2 border-foreground/20 text-foreground rounded-full font-medium hover:border-primary hover:text-primary transition-all duration-200"
-                aria-label="Sign In"
-              >
-                <Login size={20} color="currentColor" variant="Outline" />
-                <span>Sign In</span>
-              </button>
+              <Link href="/events/create">
+                <button
+                  className="flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-full font-medium hover:bg-primary/90 transition-all duration-200 "
+                  aria-label="Create Event"
+                >
+                  <CalendarAdd size={20} color="currentColor" variant="Bold" />
+                  <span>Create Event</span>
+                </button>
+              </Link>
+
+              {isAuthenticated ? (
+                <div className="flex items-center gap-3">
+                  <Link href="/profile">
+                    <button
+                      className="flex items-center gap-2 px-2 py-1 hover:bg-foreground/5 rounded-full transition-colors group"
+                      aria-label="Profile"
+                    >
+                      <div className="w-10 h-10 rounded-full bg-foreground/10 overflow-hidden relative border border-foreground/10">
+                        {user?.avatar || user?.profilePhoto ? ( // Handle generic avatar field
+                          <Image
+                            src={user?.avatar || user?.profilePhoto || ""}
+                            alt="Profile"
+                            fill
+                            className="object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center bg-primary/10 text-primary">
+                            <User size={20} variant="Bold" />
+                          </div>
+                        )}
+                      </div>
+                      <div className="text-left hidden xl:block">
+                        <p className="text-sm font-medium text-foreground leading-none">{user?.displayName || "User"}</p>
+                        <p className="text-xs text-foreground/60 leading-none mt-1">@{user?.username || "username"}</p>
+                      </div>
+                    </button>
+                  </Link>
+                  <button
+                    onClick={handleLogout}
+                    className="p-2.5 text-foreground/70 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors"
+                    aria-label="Logout"
+                    title="Logout"
+                  >
+                    <LogoutCurve size={20} variant="Outline" />
+                  </button>
+                </div>
+              ) : (
+                <Link href="/auth/login">
+                  <button
+                    className="flex items-center gap-2 px-5 py-2.5 border-2 border-foreground/20 text-foreground rounded-full font-medium hover:border-primary hover:text-primary transition-all duration-200"
+                    aria-label="Sign In"
+                  >
+                    <Login size={20} color="currentColor" variant="Outline" />
+                    <span>Sign In</span>
+                  </button>
+                </Link>
+              )}
             </div>
 
             {/* Mobile Hamburger Menu Button */}
@@ -112,11 +166,10 @@ export default function Navbar() {
 
       {/* Mobile Menu Drawer */}
       <div
-        className={`fixed inset-0 z-50 lg:hidden transition-opacity duration-300 ${
-          isMobileMenuOpen
-            ? "opacity-100 pointer-events-auto"
-            : "opacity-0 pointer-events-none"
-        }`}
+        className={`fixed inset-0 z-50 lg:hidden transition-opacity duration-300 ${isMobileMenuOpen
+          ? "opacity-100 pointer-events-auto"
+          : "opacity-0 pointer-events-none"
+          }`}
         aria-hidden={!isMobileMenuOpen}
       >
         {/* Backdrop */}
@@ -128,9 +181,8 @@ export default function Navbar() {
 
         {/* Drawer */}
         <div
-          className={`absolute right-0 top-0 h-full w-full max-w-sm bg-background transform transition-transform duration-300 ease-in-out ${
-            isMobileMenuOpen ? "translate-x-0" : "translate-x-full"
-          }`}
+          className={`absolute right-0 top-0 h-full w-full max-w-sm bg-background transform transition-transform duration-300 ease-in-out ${isMobileMenuOpen ? "translate-x-0" : "translate-x-full"
+            }`}
           role="dialog"
           aria-modal="true"
           aria-label="Mobile navigation menu"
@@ -169,22 +221,48 @@ export default function Navbar() {
 
             {/* Mobile Actions */}
             <div className="p-6 border-t border-foreground/10 space-y-4">
+              <Link href="/events/create">
               <button
-                className="w-full flex items-center justify-center gap-2 px-6 py-3.5 bg-primary text-white rounded-full font-medium hover:bg-primary/90 transition-all duration-200 "
+                className="w-full flex items-center cursor-pointer justify-center gap-2 px-6 py-3.5 bg-primary text-white rounded-full font-medium hover:bg-primary/90 transition-all duration-200 "
                 onClick={() => setIsMobileMenuOpen(false)}
                 aria-label="Create Event"
               >
                 <CalendarAdd size={20} color="currentColor" variant="Bold" />
                 <span>Create Event</span>
               </button>
-              <button
-                className="w-full flex items-center justify-center gap-2 px-6 py-3.5 border-2 border-foreground/20 text-foreground rounded-full font-medium hover:border-primary hover:text-primary transition-all duration-200"
-                onClick={() => setIsMobileMenuOpen(false)}
-                aria-label="Sign In"
-              >
-                <Login size={20} color="currentColor" variant="Outline" />
-                <span>Sign In</span>
-              </button>
+              </Link>
+
+              {isAuthenticated ? (
+                <>
+                  <Link href="/profile" onClick={() => setIsMobileMenuOpen(false)} className="block w-full">
+                    <button
+                      className="w-full flex items-center justify-center gap-2 px-6 py-3.5 border-2 border-foreground/20 text-foreground rounded-full font-medium hover:border-primary hover:text-primary transition-all duration-200"
+                      aria-label="My Profile"
+                    >
+                      <User size={20} color="currentColor" variant="Outline" />
+                      <span>My Profile</span>
+                    </button>
+                  </Link>
+                  <button
+                    className="w-full flex items-center justify-center gap-2 px-6 py-3.5 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-full font-medium transition-all duration-200"
+                    onClick={handleLogout}
+                    aria-label="Logout"
+                  >
+                    <LogoutCurve size={20} color="currentColor" variant="Outline" />
+                    <span>Logout</span>
+                  </button>
+                </>
+              ) : (
+                <Link href="/auth/login" onClick={() => setIsMobileMenuOpen(false)} className="block w-full">
+                  <button
+                    className="w-full flex items-center justify-center gap-2 px-6 py-3.5 border-2 border-foreground/20 text-foreground rounded-full font-medium hover:border-primary hover:text-primary transition-all duration-200"
+                    aria-label="Sign In"
+                  >
+                    <Login size={20} color="currentColor" variant="Outline" />
+                    <span>Sign In</span>
+                  </button>
+                </Link>
+              )}
             </div>
           </div>
         </div>

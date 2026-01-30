@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
+import axiosInstance from '@/lib/axios';
 
 export interface User {
     id: string;
@@ -7,6 +8,8 @@ export interface User {
     username: string | null;
     displayName: string | null;
     isVerified: boolean;
+    avatar?: string | null;
+    profilePhoto?: string | null;
 }
 
 interface UserState {
@@ -16,6 +19,7 @@ interface UserState {
     setUser: (user: User, token?: string) => void;
     updateUser: (user: Partial<User>) => void;
     logout: () => void;
+    fetchUser: () => Promise<void>;
 }
 
 export const useUserStore = create<UserState>()(
@@ -38,6 +42,16 @@ export const useUserStore = create<UserState>()(
                 localStorage.removeItem('token');
                 set({ user: null, isAuthenticated: false, token: null });
                 window.location.href = '/auth/login';
+            },
+            fetchUser: async () => {
+                try {
+                    const response = await axiosInstance.get('/auth/profile');
+                    if (response.data.status === 'success' && response.data.data) {
+                        set({ user: response.data.data, isAuthenticated: true });
+                    }
+                } catch (error) {
+                    console.error('Failed to fetch user:', error);
+                }
             },
         }),
         {

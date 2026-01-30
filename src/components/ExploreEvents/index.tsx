@@ -1,11 +1,15 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { EventService } from "@/services/events";
+import { EventCategory } from "@/types/event";
+import { getApiCategory } from "@/utils/event-utils";
 import ExploreHero from "@/components/ExploreEvents/ExploreHero";
 import ExploreFilters from "@/components/ExploreEvents/ExploreFilters";
 import EventsList from "@/components/ExploreEvents/EventsList";
 import EmptyState from "@/components/ExploreEvents/EmptyState";
 import { EventCardProps } from "@/components/Homepage/EventCard";
+import EventRecommendations from "@/components/Events/EventRecommendations";
 
 const ExploreEventsPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -15,94 +19,79 @@ const ExploreEventsPage = () => {
   const [selectedDate, setSelectedDate] = useState<string>("all");
   const [selectedLocation, setSelectedLocation] = useState<string>("all");
 
-  // Sample event data - Replace with actual API data
-  const events: EventCardProps[] = [
-    {
-      id: "1",
-      title: "Tech Fest Lagos 2024",
-      date: "March 15, 2024",
-      time: "10:00 AM - 6:00 PM",
-      location: "Lagos Convention Centre",
-      price: "₦5,000",
-      category: "Technology",
-      attendees: 1250,
-    },
-    {
-      id: "2",
-      title: "Afro Nation Music Festival",
-      date: "March 22, 2024",
-      time: "2:00 PM - 11:00 PM",
-      location: "Tafawa Balewa Square",
-      price: "₦15,000",
-      category: "Music",
-      attendees: 3500,
-    },
-    {
-      id: "3",
-      title: "DevFest Lagos",
-      date: "March 30, 2024",
-      time: "9:00 AM - 5:00 PM",
-      location: "Google Developer Space",
-      price: "Free",
-      category: "Tech Meetup",
-      attendees: 800,
-    },
-    {
-      id: "4",
-      title: "Startup Summit 2024",
-      date: "April 5, 2024",
-      time: "8:00 AM - 7:00 PM",
-      location: "Eko Hotel & Suites",
-      price: "₦10,000",
-      category: "Business",
-      attendees: 2100,
-    },
-    {
-      id: "5",
-      title: "Gaming Night Championship",
-      date: "April 12, 2024",
-      time: "6:00 PM - 12:00 AM",
-      location: "Gaming Arena Lagos",
-      price: "₦3,000",
-      category: "Gaming",
-      attendees: 450,
-    },
-    {
-      id: "6",
-      title: "Art Exhibition Opening",
-      date: "April 18, 2024",
-      time: "5:00 PM - 9:00 PM",
-      location: "National Gallery",
-      price: "₦2,500",
-      category: "Arts",
-      attendees: 320,
-    },
-  ];
+  const [events, setEvents] = useState<EventCardProps[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Filter events based on search and filters
-  const filteredEvents = events.filter((event) => {
-    const matchesSearch =
-      searchQuery === "" ||
-      event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      event.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      event.category.toLowerCase().includes(searchQuery.toLowerCase());
+  // Helper to format date
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric'
+    });
+  };
 
-    const matchesCategory =
-      selectedCategory === "all" || event.category === selectedCategory;
+  // Helper to format price
+  const formatPrice = (tickets: any[]) => {
+    if (!tickets || tickets.length === 0) return "Free";
+    const paidTickets = tickets.filter(t => t.type === 'PAID');
+    if (paidTickets.length === 0) return "Free";
+    const minPrice = Math.min(...paidTickets.map(t => t.price));
+    return `₦${minPrice.toLocaleString()}`;
+  };
 
-    const matchesLocation =
-      selectedLocation === "all" ||
-      selectedLocation === "nearby" ||
-      event.location.toLowerCase().includes(selectedLocation.toLowerCase());
+  useEffect(() => {
+    const fetchEvents = async () => {
+      setLoading(true);
+      try {
+        const params: any = { limit: 20 };
 
-    const matchesDate =
-      selectedDate === "all" ||
-      (selectedDate === "today" && event.date === new Date().toLocaleDateString()) ||
-      (selectedDate === "this-week" && /* date logic */ true) ||
-      (selectedDate === "this-month" && /* date logic */ true);
+        if (searchQuery) params.search = searchQuery;
 
-    return matchesSearch && matchesCategory && matchesLocation && matchesDate;
-  });
+        if (selectedCategory && selectedCategory !== 'all') {
+          const apiCategory = getApiCategory(selectedCategory);
+          if (apiCategory) {
+            params.category = apiCategory;
+          } else {
+            // Fallback or ignore if no match, or try sending upper case
+            params.category = selectedCategory.toUpperCase();
+          }
+        }
+
+        if (selectedLocation && selectedLocation !== 'all' && selectedLocation !== 'nearby') {
+          params.city = selectedLocation;
+        }
+
+        // Date filter mapping could be added here
+
+        const response = await EventService.getEvents(params);
+
+        const mappedEvents = response.data.map((event: any) => ({
+          id: event.id,
+          title: event.title,
+          date: formatDate(event.startDate),
+          time: `${event.startTime} - ${event.endTime}`,
+          location: event.venueName || event.city || "Online",
+          price: formatPrice(event.tickets),
+          category: event.category,
+          image: event.coverImage,
+          attendees: event.attendeesCount
+        }));
+
+        setEvents(mappedEvents);
+      } catch (error) {
+        console.error("Failed to fetch events:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const debounceId = setTimeout(() => {
+      fetchEvents();
+    }, 500);
+
+    return () => clearTimeout(debounceId);
+  }, [searchQuery, selectedCategory, selectedLocation, selectedDate]);
 
   const handleClearFilters = () => {
     setSearchQuery("");
@@ -131,7 +120,11 @@ const ExploreEventsPage = () => {
         />
       )}
 
-      {filteredEvents.length > 0 ? (
+      {loading ? (
+        <div className="flex justify-center items-center py-20">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+        </div>
+      ) : events.length > 0 ? (
         <>
           {/* Recommendations Section - Show at top if no filters applied */}
           {selectedCategory === "all" &&
@@ -144,7 +137,7 @@ const ExploreEventsPage = () => {
             )}
 
           <EventsList
-            events={filteredEvents}
+            events={events}
             viewMode={viewMode}
             searchQuery={searchQuery}
             onViewModeChange={setViewMode}

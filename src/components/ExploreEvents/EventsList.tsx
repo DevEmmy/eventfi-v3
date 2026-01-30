@@ -3,6 +3,7 @@
 import React from "react";
 import EventCard, { EventCardProps } from "@/components/Homepage/EventCard";
 import { Grid3, RowVertical } from "iconsax-react";
+import { EventService } from "@/services/events";
 
 interface EventsListProps {
   events: EventCardProps[];
@@ -37,22 +38,20 @@ const EventsList: React.FC<EventsListProps> = ({
           <div className="flex items-center gap-2">
             <button
               onClick={() => onViewModeChange("grid")}
-              className={`p-2 rounded-lg transition-all duration-200 ${
-                viewMode === "grid"
-                  ? "bg-primary text-white"
-                  : "bg-foreground/5 text-foreground/70 hover:bg-primary/10"
-              }`}
+              className={`p-2 rounded-lg transition-all duration-200 ${viewMode === "grid"
+                ? "bg-primary text-white"
+                : "bg-foreground/5 text-foreground/70 hover:bg-primary/10"
+                }`}
               aria-label="Grid view"
             >
               <Grid3 size={20} color="currentColor" variant="Outline" />
             </button>
             <button
               onClick={() => onViewModeChange("list")}
-              className={`p-2 rounded-lg transition-all duration-200 ${
-                viewMode === "list"
-                  ? "bg-primary text-white"
-                  : "bg-foreground/5 text-foreground/70 hover:bg-primary/10"
-              }`}
+              className={`p-2 rounded-lg transition-all duration-200 ${viewMode === "list"
+                ? "bg-primary text-white"
+                : "bg-foreground/5 text-foreground/70 hover:bg-primary/10"
+                }`}
               aria-label="List view"
             >
               <RowVertical size={20} color="currentColor" variant="Outline" />
@@ -88,4 +87,3 @@ const EventsList: React.FC<EventsListProps> = ({
 };
 
 export default EventsList;
-

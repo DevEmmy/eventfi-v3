@@ -6,7 +6,7 @@ import { Share, Wallet3 } from "iconsax-react";
 import Link from "next/link";
 import axiosInstance from "@/lib/axios";
 import { useUserStore } from "@/store/useUserStore";
-import toast from "react-hot-toast";
+import toast from "@/lib/toast";
 
 const AuthForm = ({ mode }: { mode: "login" | "signup" }) => {
   const [showEmailForm, setShowEmailForm] = useState(false);

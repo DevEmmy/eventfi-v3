@@ -1,53 +1,45 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import EventCard from "./EventCard";
 import { ArrowRight } from "iconsax-react";
+import { EventService } from "@/services/events";
 
 const TrendingEventsSection = () => {
-  // Sample event data - Replace with actual data from your API
-  const trendingEvents = [
-    {
-      id: "1",
-      title: "Tech Fest Lagos 2024",
-      date: "March 15, 2024",
-      time: "10:00 AM - 6:00 PM",
-      location: "Lagos Convention Centre",
-      price: "₦5,000",
-      category: "Technology",
-      attendees: 1250,
-    },
-    {
-      id: "2",
-      title: "Afro Nation Music Festival",
-      date: "March 22, 2024",
-      time: "2:00 PM - 11:00 PM",
-      location: "Tafawa Balewa Square",
-      price: "₦15,000",
-      category: "Music",
-      attendees: 3500,
-    },
-    {
-      id: "3",
-      title: "DevFest Lagos",
-      date: "March 30, 2024",
-      time: "9:00 AM - 5:00 PM",
-      location: "Google Developer Space",
-      price: "Free",
-      category: "Tech Meetup",
-      attendees: 800,
-    },
-    {
-      id: "4",
-      title: "Startup Summit 2024",
-      date: "April 5, 2024",
-      time: "8:00 AM - 7:00 PM",
-      location: "Eko Hotel & Suites",
-      price: "₦10,000",
-      category: "Business",
-      attendees: 2100,
-    },
-  ];
+  const [trendingEvents, setTrendingEvents] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchTrendingEvents = async () => {
+      try {
+        setLoading(true);
+        const data = await EventService.getTrendingEvents(8);
+
+        // Map API response to component format
+        const mappedEvents = data.map((event: any) => ({
+          id: event.id,
+          title: event.title,
+          date: new Date(event.startDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
+          time: `${event.startTime} - ${event.endTime}`,
+          location: event.venueName || event.city || "Online",
+          price: event.tickets && event.tickets.length > 0
+            ? (event.tickets[0].type === 'FREE' ? 'Free' : `₦${event.tickets[0].price.toLocaleString()}`)
+            : "Free",
+          category: event.category,
+          attendees: event.attendeesCount || 0,
+          image: event.coverImage,
+        }));
+
+        setTrendingEvents(mappedEvents);
+      } catch (error) {
+        console.error("Failed to fetch trending events:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTrendingEvents();
+  }, []);
 
   return (
     <section className="py-16 lg:py-24 bg-background">
@@ -62,12 +54,12 @@ const TrendingEventsSection = () => {
               Discover what's happening this week
             </p>
           </div>
-          
+
           {/* View All Button - Desktop Only */}
           <button
             className="hidden lg:flex items-center gap-2 text-primary hover:text-primary/80 font-medium transition-colors"
             onClick={() => {
-              window.location.href = "#all-events";
+              window.location.href = "/explore-events";
             }}
           >
             View All
@@ -77,31 +69,43 @@ const TrendingEventsSection = () => {
 
         {/* Events Grid/Scroll */}
         <div className="relative">
-          {/* Horizontal Scroll Container */}
-          <div className="overflow-x-auto scrollbar-hide pb-4 -mx-4 px-4">
-            <div className="flex gap-6 lg:grid lg:grid-cols-4 lg:gap-6">
-              {trendingEvents.map((event) => (
-                <div
-                  key={event.id}
-                  className="min-w-[300px] lg:min-w-0"
-                  onClick={() => {
-                    window.location.href = `/events/${event.id}`;
-                  }}
-                >
-                  <EventCard {...event} />
+          {loading ? (
+            <div className="flex justify-center items-center py-12">
+              <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary"></div>
+            </div>
+          ) : trendingEvents.length === 0 ? (
+            <div className="text-center py-12 text-foreground/60">
+              No trending events at the moment
+            </div>
+          ) : (
+            <>
+              {/* Horizontal Scroll Container */}
+              <div className="overflow-x-auto scrollbar-hide pb-4 -mx-4 px-4">
+                <div className="flex gap-6 lg:grid lg:grid-cols-4 lg:gap-6">
+                  {trendingEvents.map((event) => (
+                    <div
+                      key={event.id}
+                      className="min-w-[300px] lg:min-w-0"
+                      onClick={() => {
+                        window.location.href = `/events/${event.id}`;
+                      }}
+                    >
+                      <EventCard {...event} />
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </div>
+              </div>
 
-          {/* Scroll Indicator - Mobile Only */}
-          <div className="lg:hidden flex justify-center mt-4">
-            <div className="flex gap-1">
-              <div className="w-2 h-2 rounded-full bg-primary/30"></div>
-              <div className="w-2 h-2 rounded-full bg-primary/30"></div>
-              <div className="w-2 h-2 rounded-full bg-primary/30"></div>
-            </div>
-          </div>
+              {/* Scroll Indicator - Mobile Only */}
+              <div className="lg:hidden flex justify-center mt-4">
+                <div className="flex gap-1">
+                  <div className="w-2 h-2 rounded-full bg-primary/30"></div>
+                  <div className="w-2 h-2 rounded-full bg-primary/30"></div>
+                  <div className="w-2 h-2 rounded-full bg-primary/30"></div>
+                </div>
+              </div>
+            </>
+          )}
         </div>
 
         {/* View All Button - Mobile */}
@@ -109,7 +113,7 @@ const TrendingEventsSection = () => {
           <button
             className="inline-flex items-center gap-2 text-primary hover:text-primary/80 font-medium transition-colors"
             onClick={() => {
-              window.location.href = "#all-events";
+              window.location.href = "/explore-events";
             }}
           >
             View All Events

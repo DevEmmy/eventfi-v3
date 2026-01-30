@@ -4,36 +4,77 @@ import React, { useState } from "react";
 import Button from "@/components/Button";
 import { User, ArrowRight2 } from "iconsax-react";
 import Image from "next/image";
+import axios from "axios";
+import axiosInstance from "@/lib/axios";
+import toast from "@/lib/toast";
 
 const IdentityStep = () => {
   const [displayName, setDisplayName] = useState("");
   const [username, setUsername] = useState("");
   const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   const handleSkip = () => {
     // Use email prefix as username, default avatar
     window.location.href = "/onboarding/role";
   };
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
     if (displayName && username) {
-      // Save profile data
-      window.location.href = "/onboarding/role";
+      setLoading(true);
+      try {
+        await axiosInstance.patch("/auth/profile", {
+          displayName,
+          username,
+          avatar: profilePhoto,
+        });
+
+        toast.success("Profile updated successfully");
+        window.location.href = "/onboarding/role";
+      } catch (error: any) {
+        console.error(error);
+        toast.error(error.response?.data?.message || "Failed to update profile");
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
-  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      // Show preview
       const reader = new FileReader();
       reader.onloadend = () => {
         setProfilePhoto(reader.result as string);
       };
       reader.readAsDataURL(file);
+
+      // Upload to Cloudinary via backend
+      setUploading(true);
+      const formData = new FormData();
+      formData.append("file", file);
+
+      try {
+        const res = await axios.post("/api/upload", formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
+
+        setProfilePhoto(res.data.url);
+        toast.success("Image uploaded successfully");
+      } catch (error) {
+        console.error("Upload failed", error);
+        toast.error("Failed to upload image");
+      } finally {
+        setUploading(false);
+      }
     }
   };
 
-  const isFormValid = displayName.trim() !== "" && username.trim() !== "";
+  const isFormValid = displayName.trim() !== "" && username.trim() !== "" && !uploading;
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
@@ -66,7 +107,7 @@ const IdentityStep = () => {
               Profile Photo
             </label>
             <div className="flex justify-center">
-              <label className="relative w-32 h-32 rounded-full bg-foreground/5 border-2 border-dashed border-foreground/20 flex items-center justify-center cursor-pointer hover:border-primary transition-colors group">
+              <label className={`relative w-32 h-32 rounded-full bg-foreground/5 border-2 border-dashed border-foreground/20 flex items-center justify-center cursor-pointer hover:border-primary transition-colors group ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`}>
                 {profilePhoto ? (
                   <Image
                     src={profilePhoto}
@@ -87,9 +128,11 @@ const IdentityStep = () => {
                   accept="image/*"
                   onChange={handlePhotoUpload}
                   className="hidden"
+                  disabled={uploading}
                 />
               </label>
             </div>
+            {uploading && <p className="text-xs text-center mt-2 text-primary">Uploading image...</p>}
           </div>
 
           {/* Display Name */}
@@ -132,8 +175,9 @@ const IdentityStep = () => {
             size="lg"
             fullWidth
             rightIcon={ArrowRight2}
-            disabled={!isFormValid}
+            disabled={!isFormValid || loading}
             onClick={handleContinue}
+            isLoading={loading}
           >
             Continue
           </Button>
