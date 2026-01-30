@@ -14,9 +14,10 @@ import VendorDashboardContent from "./VendorDashboardContent";
 import SavedEvents from "./SavedEvents";
 import { Calendar, Ticket, Shop, Setting2, Home2, Chart, Heart } from "iconsax-react";
 import EventCard, { EventCardProps } from "@/components/Homepage/EventCard";
+import { useUserStore } from "@/store/useUserStore";
 
 interface MyProfileProps {
-  // This would typically come from auth context
+  // Optional prop to override user data (for testing or server-side)
   userData?: {
     username: string;
     displayName: string;
@@ -39,6 +40,16 @@ const MyProfile: React.FC<MyProfileProps> = ({ userData }) => {
   const tabParam = searchParams.get("tab");
   const [activeTab, setActiveTab] = useState(tabParam || "overview");
 
+  // Get user from store
+  const { user, loading, fetchUser } = useUserStore();
+
+  // Fetch user on mount if not available
+  useEffect(() => {
+    if (!user && !userData) {
+      fetchUser();
+    }
+  }, [user, userData, fetchUser]);
+
   // Update active tab when URL param changes
   useEffect(() => {
     if (tabParam) {
@@ -46,81 +57,115 @@ const MyProfile: React.FC<MyProfileProps> = ({ userData }) => {
     }
   }, [tabParam]);
 
-  // Mock user data - replace with actual auth context
+  // Show loading state
+  if (loading && !user && !userData) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  // Build current user from store or fallback
   const currentUser = userData || {
-    username: "alex-johnson",
-    displayName: "Alex Johnson",
-    bio: "Event organizer passionate about bringing communities together. Hosting tech meetups, conferences, and networking events across Lagos.",
-    location: "Lagos, Nigeria",
-    avatar: undefined,
-    isVerified: true,
-    roles: ["Organizer", "Community Builder"],
-    stats: {
-      eventsHosted: 24,
-      eventsAttended: 156,
-      followers: 1240,
-      following: 342,
+    username: user?.username || "user",
+    displayName: user?.displayName || "User",
+    bio: user?.bio || "",
+    location: user?.location || "",
+    avatar: user?.avatar || undefined,
+    isVerified: user?.isVerified || false,
+    roles: user?.roles || ["attendee"],
+    stats: user?.stats || {
+      eventsHosted: 0,
+      eventsAttended: 0,
+      followers: 0,
+      following: 0,
     },
   };
 
-  const hasVendorProfile = true;
-  const isOrganizer = currentUser.roles.some((role) => 
+  const hasVendorProfile = currentUser.roles.some((role) =>
+    role.toLowerCase().includes("vendor")
+  );
+  const isOrganizer = currentUser.roles.some((role) =>
     role.toLowerCase().includes("organizer") || role.toLowerCase().includes("host")
   );
 
-  // Mock events data
-  const myEvents: EventCardProps[] = [
-    {
-      id: "1",
-      title: "Tech Meetup Lagos - January Edition",
-      date: "Jan 25, 2025",
-      time: "6:00 PM",
-      location: "Lagos Tech Hub",
-      price: "Free",
-      category: "Tech",
-      attendees: 120,
-    },
-    {
-      id: "2",
-      title: "Design Conference 2025",
-      date: "Feb 10, 2025",
-      time: "9:00 AM",
-      location: "Eko Hotel & Suites",
-      price: "₦15,000",
-      category: "Design",
-      attendees: 450,
-    },
-  ];
+  // State for events and tickets
+  const [myEvents, setMyEvents] = useState<EventCardProps[]>([]);
+  const [myTickets, setMyTickets] = useState<any[]>([]);
+  const [eventsLoading, setEventsLoading] = useState(true);
+  const [ticketsLoading, setTicketsLoading] = useState(true);
 
-  // Mock tickets data
-  const myTickets = [
-    {
-      id: "3",
-      title: "Afro Nation Festival",
-      date: "Mar 15, 2025",
-      time: "4:00 PM",
-      location: "Tafawa Balewa Square",
-      price: "₦25,000",
-      category: "Music",
-      attendees: 5000,
-      ticketId: "TKT-001",
-      status: "upcoming" as const,
-      purchaseDate: "Jan 10, 2025",
-    },
-    {
-      id: "4",
-      title: "DevFest Lagos 2024",
-      date: "Dec 20, 2024",
-      time: "9:00 AM",
-      location: "Landmark Centre",
-      price: "₦10,000",
-      category: "Tech",
-      attendees: 800,
-      ticketId: "TKT-002",
-      status: "past" as const,
-      purchaseDate: "Nov 15, 2024",
-    },
-  ];
+  // Fetch user's events
+  useEffect(() => {
+    const fetchUserEvents = async () => {
+      try {
+        setEventsLoading(true);
+        const { UserService } = await import("@/services/user");
+        const response = await UserService.getUserEvents({ limit: 10 });
+
+        const mappedEvents = response.data.map((event: any) => ({
+          id: event.id,
+          title: event.title,
+          date: new Date(event.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+          time: `${event.startTime} - ${event.endTime}`,
+          location: event.venueName || event.city || "Online",
+          price: event.tickets && event.tickets.length > 0
+            ? (event.tickets[0].type === 'FREE' ? 'Free' : `₦${event.tickets[0].price.toLocaleString()}`)
+            : "Free",
+          category: event.category,
+          attendees: event.attendeesCount || 0,
+          image: event.coverImage,
+        }));
+
+        setMyEvents(mappedEvents);
+      } catch (error) {
+        console.error("Failed to fetch user events:", error);
+      } finally {
+        setEventsLoading(false);
+      }
+    };
+
+    if (user || userData) {
+      fetchUserEvents();
+    }
+  }, [user, userData]);
+
+  // Fetch user's tickets
+  useEffect(() => {
+    const fetchUserTickets = async () => {
+      try {
+        setTicketsLoading(true);
+        const { UserService } = await import("@/services/user");
+        const response = await UserService.getUserTickets({ limit: 20 });
+
+        const mappedTickets = response.data.map((ticket: any) => ({
+          id: ticket.event.id,
+          title: ticket.event.title,
+          date: new Date(ticket.event.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+          time: `${ticket.event.startTime} - ${ticket.event.endTime}`,
+          location: ticket.event.venueName || ticket.event.city || "Online",
+          price: ticket.ticketName || "Standard",
+          category: ticket.event.category,
+          attendees: 0,
+          image: ticket.event.coverImage,
+          ticketId: ticket.id,
+          status: new Date(ticket.event.startDate) > new Date() ? "upcoming" : "past",
+          purchaseDate: new Date(ticket.purchaseDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+        }));
+
+        setMyTickets(mappedTickets);
+      } catch (error) {
+        console.error("Failed to fetch user tickets:", error);
+      } finally {
+        setTicketsLoading(false);
+      }
+    };
+
+    if (user || userData) {
+      fetchUserTickets();
+    }
+  }, [user, userData]);
 
   const tabs: {
     id: string;
@@ -132,12 +177,12 @@ const MyProfile: React.FC<MyProfileProps> = ({ userData }) => {
     }>;
     count?: number;
   }[] = [
-    {
-      id: "overview",
-      label: "Overview",
-      icon: Home2,
-    },
-  ];
+      {
+        id: "overview",
+        label: "Overview",
+        icon: Home2,
+      },
+    ];
 
   // Add Dashboard tab for organizers
   if (isOrganizer) {
@@ -233,7 +278,7 @@ const MyProfile: React.FC<MyProfileProps> = ({ userData }) => {
               onCreateVendor={handleCreateVendor}
               onViewTickets={handleViewTickets}
             />
-            
+
             {/* Dual Role Banner - Show if user is both organizer and vendor */}
             {isOrganizer && hasVendorProfile && (
               <div className="bg-gradient-to-r from-primary/10 via-secondary/10 to-accent/10 border-2 border-primary/20 rounded-2xl p-6">
@@ -374,25 +419,25 @@ const MyProfile: React.FC<MyProfileProps> = ({ userData }) => {
             vendorData={
               hasVendorProfile
                 ? {
-                    name: "Alex Photography",
-                    category: "Photography",
-                    rating: 4.8,
-                    reviews: 124,
-                    isVerified: true,
-                    description: "Professional event photography services with 5+ years of experience. We specialize in capturing life's most precious moments at weddings, corporate events, and special occasions. Our team of skilled photographers uses state-of-the-art equipment to deliver stunning, high-quality images that tell your story beautifully.",
-                    location: "Lagos, Nigeria",
-                    address: "123 Victoria Island, Lagos",
-                    phone: "+234 800 123 4567",
-                    email: "contact@alexphotography.com",
-                    website: "https://www.alexphotography.com",
-                    priceRange: "₦50,000 - ₦200,000",
-                    specialties: ["Wedding Photography", "Corporate Events", "Portrait Sessions", "Event Coverage"],
-                    yearsOfExperience: "5",
-                    availability: "available" as const,
-                    coverImage: undefined,
-                    logo: undefined,
-                    portfolio: [],
-                  }
+                  name: "Alex Photography",
+                  category: "Photography",
+                  rating: 4.8,
+                  reviews: 124,
+                  isVerified: true,
+                  description: "Professional event photography services with 5+ years of experience. We specialize in capturing life's most precious moments at weddings, corporate events, and special occasions. Our team of skilled photographers uses state-of-the-art equipment to deliver stunning, high-quality images that tell your story beautifully.",
+                  location: "Lagos, Nigeria",
+                  address: "123 Victoria Island, Lagos",
+                  phone: "+234 800 123 4567",
+                  email: "contact@alexphotography.com",
+                  website: "https://www.alexphotography.com",
+                  priceRange: "₦50,000 - ₦200,000",
+                  specialties: ["Wedding Photography", "Corporate Events", "Portrait Sessions", "Event Coverage"],
+                  yearsOfExperience: "5",
+                  availability: "available" as const,
+                  coverImage: undefined,
+                  logo: undefined,
+                  portfolio: [],
+                }
                 : undefined
             }
             onCreateVendor={handleCreateVendor}

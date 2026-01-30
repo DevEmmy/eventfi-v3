@@ -110,9 +110,9 @@ export default function Navbar() {
                       aria-label="Profile"
                     >
                       <div className="w-10 h-10 rounded-full bg-foreground/10 overflow-hidden relative border border-foreground/10">
-                        {user?.avatar || user?.profilePhoto ? ( // Handle generic avatar field
+                        {user?.avatar ? ( // Handle generic avatar field
                           <Image
-                            src={user?.avatar || user?.profilePhoto || ""}
+                            src={user?.avatar || ""}
                             alt="Profile"
                             fill
                             className="object-cover"

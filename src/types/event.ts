@@ -137,6 +137,7 @@ export interface EventQueryParams {
     country?: string;
     startDate?: string;
     endDate?: string;
+    organizerId?: string;
 }
 
 export interface Meta {

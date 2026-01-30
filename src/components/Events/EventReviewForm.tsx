@@ -12,6 +12,8 @@ import {
   Image as ImageIcon,
   Trash,
 } from "iconsax-react";
+import { EventService } from "@/services/events";
+import customToast from "@/lib/toast";
 
 interface EventReviewFormProps {
   eventId: string;
@@ -33,6 +35,7 @@ const EventReviewForm: React.FC<EventReviewFormProps> = ({
   const [review, setReview] = useState("");
   const [photos, setPhotos] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -56,21 +59,39 @@ const EventReviewForm: React.FC<EventReviewFormProps> = ({
 
   const handleSubmit = async () => {
     if (rating === 0) {
-      alert("Please select a rating");
+      customToast.error("Please select a rating");
       return;
     }
     if (!review.trim()) {
-      alert("Please write a review");
+      customToast.error("Please write a review");
+      return;
+    }
+    if (review.trim().length < 10) {
+      customToast.error("Review must be at least 10 characters");
       return;
     }
 
     setIsSubmitting(true);
-    // Simulate API call
-    setTimeout(() => {
-      setIsSubmitting(false);
-      alert("Review submitted successfully!");
+    setError(null);
+
+    try {
+      await EventService.createReview(eventId, {
+        rating,
+        title: title.trim() || undefined,
+        comment: review.trim(),
+        photos: photos.length > 0 ? photos : undefined,
+      });
+
+      customToast.success("Review submitted successfully!");
       router.push(`/events/${eventId}`);
-    }, 1500);
+    } catch (err: any) {
+      console.error("Failed to submit review:", err);
+      const errorMessage = err.response?.data?.message || "Failed to submit review. Please try again.";
+      setError(errorMessage);
+      customToast.error(errorMessage);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const isFormValid = rating > 0 && review.trim().length >= 10;

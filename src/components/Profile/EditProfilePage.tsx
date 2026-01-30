@@ -1,43 +1,54 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Button from "@/components/Button";
 import {
   ArrowLeft2,
   User,
   Location,
-  DocumentText,
   TickCircle,
   Trash,
   Edit2,
 } from "iconsax-react";
 import Image from "next/image";
+import { useUserStore } from "@/store/useUserStore";
+import { UserService } from "@/services/user";
+import customToast from "@/lib/toast";
 
 const EditProfilePage = () => {
   const router = useRouter();
-
-  // Mock existing user data - Replace with API call to fetch current user data
-  const existingUserData = {
-    username: "alex-johnson",
-    displayName: "Alex Johnson",
-    bio: "Event organizer passionate about bringing communities together. Hosting tech meetups, conferences, and networking events across Lagos.",
-    location: "Lagos, Nigeria",
-    avatar: undefined as string | null | undefined,
-    isVerified: true,
-    roles: ["Organizer", "Community Builder"],
-  };
+  const { user, fetchUser, updateUser } = useUserStore();
 
   const [formData, setFormData] = useState({
-    displayName: existingUserData.displayName,
-    username: existingUserData.username,
-    bio: existingUserData.bio || "",
-    location: existingUserData.location || "",
-    avatar: existingUserData.avatar || null,
+    displayName: "",
+    username: "",
+    bio: "",
+    location: "",
+    avatar: null as string | null,
+    website: "",
   });
 
   const [isSaving, setIsSaving] = useState(false);
   const [usernameError, setUsernameError] = useState("");
+  const [saveError, setSaveError] = useState("");
+
+  // Load user data on mount
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        displayName: user.displayName || "",
+        username: user.username || "",
+        bio: user.bio || "",
+        location: user.location || "",
+        avatar: user.avatar || null,
+        website: user.website || "",
+      });
+    } else {
+      // Fetch user if not loaded
+      fetchUser();
+    }
+  }, [user, fetchUser]);
 
   const locations = [
     "Lagos, Nigeria",
@@ -56,16 +67,17 @@ const EditProfilePage = () => {
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    setSaveError("");
 
     // Validate username
     if (name === "username") {
-      const usernameRegex = /^[a-z0-9_]+$/i;
+      const usernameRegex = /^[a-z0-9_-]+$/i;
       if (value && !usernameRegex.test(value)) {
-        setUsernameError("Username can only contain letters, numbers, and underscores");
+        setUsernameError("Username can only contain letters, numbers, underscores and hyphens");
       } else if (value.length < 3) {
         setUsernameError("Username must be at least 3 characters");
-      } else if (value.length > 20) {
-        setUsernameError("Username must be less than 20 characters");
+      } else if (value.length > 30) {
+        setUsernameError("Username must be less than 30 characters");
       } else {
         setUsernameError("");
       }
@@ -107,16 +119,53 @@ const EditProfilePage = () => {
     }
 
     setIsSaving(true);
+    setSaveError("");
 
-    // Simulate API call
-    setTimeout(() => {
-      setIsSaving(false);
-      console.log("Updating profile:", formData);
-      alert("Profile updated successfully!");
+    try {
+      const updatedProfile = await UserService.updateProfile({
+        displayName: formData.displayName,
+        username: formData.username,
+        bio: formData.bio || undefined,
+        location: formData.location || undefined,
+        avatar: formData.avatar || undefined,
+        website: formData.website || undefined,
+      });
+
+      // Show success toast
+      customToast.success("Profile updated successfully!");
+
+      // Update local store with new data
+      updateUser({
+        displayName: updatedProfile.displayName,
+        username: updatedProfile.username,
+        bio: updatedProfile.bio,
+        location: updatedProfile.location,
+        avatar: updatedProfile.avatar,
+        website: updatedProfile.website,
+      });
+
+
+    
       // Redirect back to profile
       router.push("/profile");
-    }, 1500);
+    } catch (error: any) {
+      console.error("Failed to update profile:", error);
+      const errorMessage = error.response?.data?.message || "Failed to update profile. Please try again.";
+      setSaveError(errorMessage);
+      customToast.error(errorMessage);
+    } finally {
+      setIsSaving(false);
+    }
   };
+
+  // Show loading if user not loaded yet
+  if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -138,6 +187,13 @@ const EditProfilePage = () => {
               Update your personal information and profile settings
             </p>
           </div>
+
+          {/* Error Message */}
+          {saveError && (
+            <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-500">
+              {saveError}
+            </div>
+          )}
 
           {/* Form */}
           <div className="bg-background border border-foreground/10 rounded-2xl p-6 lg:p-8 space-y-8">
@@ -226,7 +282,7 @@ const EditProfilePage = () => {
                   name="username"
                   value={formData.username}
                   onChange={(e) => {
-                    const value = e.target.value.replace(/[^a-z0-9_]/gi, "");
+                    const value = e.target.value.replace(/[^a-z0-9_-]/gi, "").toLowerCase();
                     handleInputChange({
                       ...e,
                       target: { ...e.target, value },
@@ -297,8 +353,23 @@ const EditProfilePage = () => {
               </div>
             </div>
 
+            {/* Website */}
+            <div>
+              <label className="block text-sm font-semibold text-foreground mb-2">
+                Website
+              </label>
+              <input
+                type="url"
+                name="website"
+                value={formData.website}
+                onChange={handleInputChange}
+                placeholder="https://yourwebsite.com"
+                className="w-full px-4 py-3 bg-background border border-foreground/20 rounded-xl text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200"
+              />
+            </div>
+
             {/* Verification Badge Info */}
-            {existingUserData.isVerified && (
+            {user.isVerified && (
               <div className="p-4 bg-primary/10 border border-primary/20 rounded-xl">
                 <div className="flex items-center gap-3">
                   <TickCircle
@@ -318,16 +389,16 @@ const EditProfilePage = () => {
             )}
 
             {/* Roles Info */}
-            {existingUserData.roles.length > 0 && (
+            {user.roles && user.roles.length > 0 && (
               <div>
                 <label className="block text-sm font-semibold text-foreground mb-2">
                   Roles
                 </label>
                 <div className="flex flex-wrap gap-2">
-                  {existingUserData.roles.map((role, index) => (
+                  {user.roles.map((role, index) => (
                     <span
                       key={index}
-                      className="inline-flex items-center gap-2 px-3 py-1.5 bg-foreground/5 border border-foreground/10 rounded-full text-sm text-foreground"
+                      className="inline-flex items-center gap-2 px-3 py-1.5 bg-foreground/5 border border-foreground/10 rounded-full text-sm text-foreground capitalize"
                     >
                       {role}
                     </span>

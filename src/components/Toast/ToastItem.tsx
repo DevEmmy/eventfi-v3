@@ -25,15 +25,15 @@ export default function ToastItem({ t, title, message, type = "custom" }: ToastI
     const getIcon = () => {
         switch (type) {
             case "success":
-                return <TickCircle size={24} variant="Bold" className="text-green-500" />;
+                return <TickCircle size={24} variant="Bold" color="#22c55e" />;
             case "error":
-                return <CloseCircle size={24} variant="Bold" className="text-red-500" />;
+                return <CloseCircle size={24} variant="Bold" color="#ef4444" />;
             case "loading":
                 return (
                     <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
                 );
             default:
-                return <InfoCircle size={24} variant="Bold" className="text-primary" />;
+                return <InfoCircle size={24} variant="Bold" color="currentColor" className="text-primary" />;
         }
     };
 

@@ -4,71 +4,60 @@ import React, { useState, useEffect } from "react";
 import EventCard, { EventCardProps } from "@/components/Homepage/EventCard";
 import { Heart, Trash } from "iconsax-react";
 import Button from "@/components/Button";
+import { UserService } from "@/services/user";
 
 const SavedEvents: React.FC = () => {
-  const [savedEventIds, setSavedEventIds] = useState<string[]>([]);
   const [savedEvents, setSavedEvents] = useState<EventCardProps[]>([]);
-
-  // Mock all events - Replace with API call
-  const allEvents: EventCardProps[] = [
-    {
-      id: "1",
-      title: "Tech Fest Lagos 2024",
-      date: "March 15, 2024",
-      time: "10:00 AM - 6:00 PM",
-      location: "Lagos Convention Centre",
-      price: "₦5,000",
-      category: "Technology",
-      attendees: 1250,
-    },
-    {
-      id: "2",
-      title: "Design Conference 2025",
-      date: "Feb 10, 2025",
-      time: "9:00 AM",
-      location: "Eko Hotel & Suites",
-      price: "₦15,000",
-      category: "Design",
-      attendees: 450,
-    },
-    {
-      id: "3",
-      title: "Afro Nation Festival",
-      date: "Mar 15, 2025",
-      time: "4:00 PM",
-      location: "Tafawa Balewa Square",
-      price: "₦10,000",
-      category: "Music",
-      attendees: 5000,
-    },
-    {
-      id: "4",
-      title: "Startup Summit 2024",
-      date: "April 5, 2024",
-      time: "8:00 AM - 7:00 PM",
-      location: "Eko Hotel & Suites",
-      price: "₦10,000",
-      category: "Business",
-      attendees: 2100,
-    },
-  ];
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Load saved events from localStorage
-    const favorites = JSON.parse(localStorage.getItem("favoriteEvents") || "[]");
-    setSavedEventIds(favorites);
-    
-    // Filter events that are saved
-    const saved = allEvents.filter((event) => favorites.includes(event.id));
-    setSavedEvents(saved);
+    const fetchSavedEvents = async () => {
+      try {
+        setLoading(true);
+        const response = await UserService.getFavorites(1, 20);
+
+        // Map API data to EventCardProps
+        const mappedEvents = response.data.map((event: any) => ({
+          id: event.id,
+          title: event.title,
+          date: new Date(event.startDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
+          time: `${event.startTime} - ${event.endTime}`,
+          location: event.venueName || event.city || "Online",
+          price: event.tickets && event.tickets.length > 0
+            ? (event.tickets[0].type === 'FREE' ? 'Free' : `₦${event.tickets[0].price.toLocaleString()}`)
+            : "Free",
+          category: event.category,
+          attendees: event.attendeesCount || 0,
+          image: event.coverImage,
+        }));
+
+        setSavedEvents(mappedEvents);
+      } catch (error) {
+        console.error("Failed to fetch saved events:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSavedEvents();
   }, []);
 
-  const handleRemoveFavorite = (eventId: string) => {
-    const newFavorites = savedEventIds.filter((id) => id !== eventId);
-    localStorage.setItem("favoriteEvents", JSON.stringify(newFavorites));
-    setSavedEventIds(newFavorites);
-    setSavedEvents((prev) => prev.filter((event) => event.id !== eventId));
+  const handleRemoveFavorite = async (eventId: string) => {
+    try {
+      await UserService.removeFavorite(eventId);
+      setSavedEvents((prev) => prev.filter((event) => event.id !== eventId));
+    } catch (error) {
+      console.error("Failed to remove favorite:", error);
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center py-12">
+        <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   if (savedEvents.length === 0) {
     return (
@@ -143,5 +132,3 @@ const SavedEvents: React.FC = () => {
 };
 
 export default SavedEvents;
-
-
