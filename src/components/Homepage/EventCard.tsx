@@ -3,6 +3,8 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import { Calendar, Location, Clock, Ticket, Heart } from "iconsax-react";
+import { UserService } from "@/services/user";
+import customToast from "@/lib/toast";
 
 export interface EventCardProps {
   id: string;
@@ -14,6 +16,7 @@ export interface EventCardProps {
   category: string;
   image?: string;
   attendees?: number;
+  isSaved?: boolean;
   onClick?: () => void;
 }
 
@@ -27,24 +30,39 @@ const EventCard: React.FC<EventCardProps> = ({
   category,
   image,
   attendees,
+  isSaved = false,
   onClick,
 }) => {
-  const [isFavorite, setIsFavorite] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(isSaved);
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Check if event is favorited (from localStorage or API)
-  React.useEffect(() => {
-    const favorites = JSON.parse(localStorage.getItem("favoriteEvents") || "[]");
-    setIsFavorite(favorites.includes(id));
-  }, [id]);
-
-  const handleFavoriteClick = (e: React.MouseEvent) => {
+  const handleFavoriteClick = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    const favorites = JSON.parse(localStorage.getItem("favoriteEvents") || "[]");
-    const newFavorites = isFavorite
-      ? favorites.filter((favId: string) => favId !== id)
-      : [...favorites, id];
-    localStorage.setItem("favoriteEvents", JSON.stringify(newFavorites));
-    setIsFavorite(!isFavorite);
+
+    if (isLoading) return;
+
+    setIsLoading(true);
+    try {
+      if (isFavorite) {
+        await UserService.removeFavorite(id);
+        setIsFavorite(false);
+        customToast.success("Event removed from saved");
+      } else {
+        await UserService.addFavorite(id);
+        setIsFavorite(true);
+        customToast.success("Event saved!");
+      }
+    } catch (error: any) {
+      console.error("Failed to update favorite:", error);
+      // If unauthorized, show login message
+      if (error.response?.status === 401) {
+        customToast.error("Please login to save events");
+      } else {
+        customToast.error("Failed to save event. Please try again.");
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -71,7 +89,7 @@ const EventCard: React.FC<EventCardProps> = ({
             />
           </div>
         )}
-        
+
         {/* Category Badge */}
         <div className="absolute top-3 left-3">
           <span className="px-3 py-1 bg-background/90 backdrop-blur-sm rounded-full text-xs font-semibold text-primary">

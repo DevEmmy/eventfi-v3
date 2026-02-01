@@ -11,6 +11,8 @@ import {
   TickCircle,
   Warning2,
 } from "iconsax-react";
+import { SettingsService } from "@/services/settings";
+import customToast from "@/lib/toast";
 
 const ChangePasswordPage = () => {
   const router = useRouter();
@@ -145,17 +147,32 @@ const ChangePasswordPage = () => {
 
     setIsSaving(true);
 
-    // Simulate API call
-    setTimeout(() => {
-      setIsSaving(false);
+    try {
+      await SettingsService.changePassword({
+        currentPassword: formData.currentPassword,
+        newPassword: formData.newPassword,
+        confirmPassword: formData.confirmPassword,
+      });
+
       setSuccess(true);
-      console.log("Password changed successfully");
+      customToast.success("Password changed successfully!");
 
       // Redirect after 2 seconds
       setTimeout(() => {
         router.push("/profile");
       }, 2000);
-    }, 1500);
+    } catch (error: any) {
+      console.error("Failed to change password:", error);
+      const errorMessage = error.response?.data?.message || "Failed to change password. Please check your current password.";
+
+      if (error.response?.status === 401) {
+        setErrors((prev) => ({ ...prev, currentPassword: "Current password is incorrect" }));
+      } else {
+        customToast.error(errorMessage);
+      }
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   if (success) {
@@ -225,11 +242,10 @@ const ChangePasswordPage = () => {
                     value={formData.currentPassword}
                     onChange={handleInputChange}
                     placeholder="Enter your current password"
-                    className={`w-full pl-12 pr-12 py-3 bg-background border ${
-                      errors.currentPassword
+                    className={`w-full pl-12 pr-12 py-3 bg-background border ${errors.currentPassword
                         ? "border-red-500"
                         : "border-foreground/20"
-                    } rounded-xl text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200`}
+                      } rounded-xl text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200`}
                     required
                   />
                   <button
@@ -270,13 +286,12 @@ const ChangePasswordPage = () => {
                     value={formData.newPassword}
                     onChange={handleInputChange}
                     placeholder="Enter your new password"
-                    className={`w-full pl-12 pr-12 py-3 bg-background border ${
-                      errors.newPassword
+                    className={`w-full pl-12 pr-12 py-3 bg-background border ${errors.newPassword
                         ? "border-red-500"
                         : formData.newPassword && allRequirementsMet
-                        ? "border-green-500"
-                        : "border-foreground/20"
-                    } rounded-xl text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200`}
+                          ? "border-green-500"
+                          : "border-foreground/20"
+                      } rounded-xl text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200`}
                     required
                   />
                   <button
@@ -303,13 +318,12 @@ const ChangePasswordPage = () => {
                     </div>
                     <div className="w-full h-2 bg-foreground/10 rounded-full overflow-hidden">
                       <div
-                        className={`h-full transition-all duration-300 ${
-                          passwordStrength.strength === 1
+                        className={`h-full transition-all duration-300 ${passwordStrength.strength === 1
                             ? "bg-red-500 w-1/3"
                             : passwordStrength.strength === 2
-                            ? "bg-yellow-500 w-2/3"
-                            : "bg-green-500 w-full"
-                        }`}
+                              ? "bg-yellow-500 w-2/3"
+                              : "bg-green-500 w-full"
+                          }`}
                       />
                     </div>
                   </div>
@@ -356,9 +370,8 @@ const ChangePasswordPage = () => {
                             <div className="w-4 h-4 rounded-full border-2 border-foreground/20" />
                           )}
                           <span
-                            className={`text-xs ${
-                              req.met ? "text-foreground/70" : "text-foreground/50"
-                            }`}
+                            className={`text-xs ${req.met ? "text-foreground/70" : "text-foreground/50"
+                              }`}
                           >
                             {req.text}
                           </span>
@@ -394,14 +407,13 @@ const ChangePasswordPage = () => {
                     value={formData.confirmPassword}
                     onChange={handleInputChange}
                     placeholder="Confirm your new password"
-                    className={`w-full pl-12 pr-12 py-3 bg-background border ${
-                      errors.confirmPassword
+                    className={`w-full pl-12 pr-12 py-3 bg-background border ${errors.confirmPassword
                         ? "border-red-500"
                         : formData.confirmPassword &&
                           formData.confirmPassword === formData.newPassword
-                        ? "border-green-500"
-                        : "border-foreground/20"
-                    } rounded-xl text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200`}
+                          ? "border-green-500"
+                          : "border-foreground/20"
+                      } rounded-xl text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200`}
                     required
                   />
                   <button

@@ -126,19 +126,19 @@ export const UserService = {
     },
 
     /**
-     * Add event to favorites
-     * @param eventId Event ID to favorite
+     * Save event to favorites
+     * @param eventId Event ID to save
      */
     addFavorite: async (eventId: string): Promise<void> => {
-        await axiosInstance.post(`/events/${eventId}/favorite`);
+        await axiosInstance.post(`/users/events/${eventId}/save`);
     },
 
     /**
      * Remove event from favorites
-     * @param eventId Event ID to unfavorite
+     * @param eventId Event ID to unsave
      */
     removeFavorite: async (eventId: string): Promise<void> => {
-        await axiosInstance.delete(`/events/${eventId}/favorite`);
+        await axiosInstance.delete(`/users/events/${eventId}/save`);
     },
 };
 

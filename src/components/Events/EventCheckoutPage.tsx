@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Button from "@/components/Button";
 import {
@@ -9,34 +9,38 @@ import {
   Location,
   Clock,
   Ticket,
-  User,
   Card,
   Bank,
   Mobile,
   Lock,
   TickCircle,
-  DocumentText,
 } from "iconsax-react";
 import Image from "next/image";
+import { BookingService } from "@/services/booking";
+import { EventService } from "@/services/events";
+import customToast from "@/lib/toast";
+import { Event } from "@/types/event";
+import { BookingOrder, AttendeeInput, PaymentMethod } from "@/types/booking";
 
 interface EventCheckoutPageProps {
   eventId: string;
 }
 
-interface AttendeeInfo {
-  name: string;
-  email: string;
-  phone: string;
-}
-
 const EventCheckoutPage: React.FC<EventCheckoutPageProps> = ({ eventId }) => {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const quantity = parseInt(searchParams.get("qty") || "1");
+  const initialQuantity = parseInt(searchParams.get("qty") || "1");
+  const initialTicketTypeId = searchParams.get("typeId") || "";
 
-  const [attendees, setAttendees] = useState<AttendeeInfo[]>([]);
-  const [paymentMethod, setPaymentMethod] = useState<"card" | "bank" | "mobile">("card");
+  const [selectedTicketId, setSelectedTicketId] = useState<string>(initialTicketTypeId);
+  const [quantity, setQuantity] = useState<number>(initialQuantity);
+  const [attendees, setAttendees] = useState<AttendeeInput[]>([]);
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("card");
   const [isProcessing, setIsProcessing] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [event, setEvent] = useState<Event | null>(null);
+  const [order, setOrder] = useState<BookingOrder | null>(null);
+
   const [cardDetails, setCardDetails] = useState({
     number: "",
     name: "",
@@ -44,40 +48,49 @@ const EventCheckoutPage: React.FC<EventCheckoutPageProps> = ({ eventId }) => {
     cvv: "",
   });
 
-  // Initialize attendees array based on quantity
+  // Fetch event details
+  useEffect(() => {
+    const fetchEvent = async () => {
+      try {
+        const eventData = await EventService.getEventById(eventId);
+        setEvent(eventData);
+        // Auto-select first ticket if none selected and only one exists
+        if (!initialTicketTypeId && eventData.tickets.length > 0) {
+          setSelectedTicketId(eventData.tickets[0].id || "");
+        }
+      } catch (error) {
+        console.error("Failed to fetch event:", error);
+        customToast.error("Failed to load event details");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchEvent();
+  }, [eventId, initialTicketTypeId]);
+
+  // Initialize attendees array based on quantity and selected ticket
   useEffect(() => {
     setAttendees(
       Array.from({ length: quantity }, () => ({
+        ticketTypeId: selectedTicketId,
         name: "",
         email: "",
         phone: "",
       }))
     );
-  }, [quantity]);
+  }, [quantity, selectedTicketId]);
 
-  // Sample event data - Replace with API call
-  const event = {
-    id: eventId,
-    title: "Tech Fest Lagos 2024",
-    date: "March 15, 2024",
-    time: "10:00 AM - 6:00 PM",
-    location: "Lagos Convention Centre",
-    address: "Victoria Island, Lagos, Nigeria",
-    price: "₦5,000",
-    category: "Technology",
-    image: undefined,
-    organizer: {
-      name: "Tech Events Nigeria",
-      verified: true,
-    },
-  };
+  const selectedTicket = useMemo(() => {
+    return event?.tickets.find(t => t.id === selectedTicketId);
+  }, [event, selectedTicketId]);
 
-  const ticketPrice = parseInt(event.price.replace(/[₦,]/g, "")) || 0;
+  const ticketPrice = selectedTicket ? selectedTicket.price : 0;
   const subtotal = ticketPrice * quantity;
   const serviceFee = subtotal * 0.05; // 5% service fee
   const total = subtotal + serviceFee;
+  const isFree = total === 0;
 
-  const handleAttendeeChange = (index: number, field: keyof AttendeeInfo, value: string) => {
+  const handleAttendeeChange = (index: number, field: keyof AttendeeInput, value: string) => {
     setAttendees((prev) =>
       prev.map((attendee, i) => (i === index ? { ...attendee, [field]: value } : attendee))
     );
@@ -111,12 +124,10 @@ const EventCheckoutPage: React.FC<EventCheckoutPageProps> = ({ eventId }) => {
   };
 
   const isFormValid = () => {
-    // Check if all attendees have required info
-    const allAttendeesValid = attendees.every(
-      (a) => a.name.trim() && a.email.trim() && a.phone.trim()
-    );
+    const allAttendeesValid = attendees.every((a) => a.name.trim() && a.email.trim() && a.phone?.trim());
 
-    // Check payment method
+    if (isFree) return allAttendeesValid;
+
     if (paymentMethod === "card") {
       return (
         allAttendeesValid &&
@@ -131,19 +142,58 @@ const EventCheckoutPage: React.FC<EventCheckoutPageProps> = ({ eventId }) => {
   };
 
   const handleCheckout = async () => {
-    if (!isFormValid()) {
+    if (!isFormValid() || !event || !selectedTicketId) {
+      if (!selectedTicketId) {
+        customToast.error("Please select a ticket type");
+      }
       return;
     }
-
     setIsProcessing(true);
 
-    // Simulate payment processing
-    setTimeout(() => {
+    try {
+      // 1. Initiate Booking if not already created
+      let activeOrder = order;
+      if (!activeOrder) {
+        activeOrder = await BookingService.initiateBooking({
+          eventId,
+          items: [{ ticketTypeId: selectedTicketId, quantity }],
+        });
+        setOrder(activeOrder);
+      }
+
+      // 2. Update Attendees
+      await BookingService.updateAttendees(activeOrder.id, attendees);
+
+      // 3. Process Payment or Confirm Free Order
+      if (isFree) {
+        await BookingService.confirmFreeOrder(activeOrder.id, attendees);
+        customToast.success("Tickets booked successfully!");
+        router.push(`/profile?purchased=${quantity}&event=${eventId}`);
+      } else {
+        const payment = await BookingService.initializePayment(
+          activeOrder.id,
+          paymentMethod,
+          `${window.location.origin}/profile?payment_success=true`
+        );
+        // Redirect to payment gateway
+        window.location.href = payment.paymentUrl;
+      }
+
+    } catch (error: any) {
+      console.error("Checkout failed:", error);
+      customToast.error(error.response?.data?.message || "Failed to process booking");
+    } finally {
       setIsProcessing(false);
-      // Navigate to profile page to view tickets
-      router.push(`/profile?purchased=${quantity}&event=${eventId}`);
-    }, 2000);
+    }
   };
+
+  if (loading || !event) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -181,10 +231,10 @@ const EventCheckoutPage: React.FC<EventCheckoutPageProps> = ({ eventId }) => {
                   Event Summary
                 </h2>
                 <div className="flex gap-4">
-                  {event.image ? (
+                  {event.coverImage ? (
                     <div className="relative w-24 h-24 rounded-xl overflow-hidden shrink-0">
                       <Image
-                        src={event.image}
+                        src={event.coverImage}
                         alt={event.title}
                         fill
                         className="object-cover"
@@ -202,19 +252,92 @@ const EventCheckoutPage: React.FC<EventCheckoutPageProps> = ({ eventId }) => {
                     <div className="space-y-1 text-sm text-foreground/70">
                       <div className="flex items-center gap-2">
                         <Calendar size={16} color="currentColor" variant="Outline" />
-                        <span>{event.date}</span>
+                        <span>{new Date(event.startDate).toLocaleDateString()}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <Clock size={16} color="currentColor" variant="Outline" />
-                        <span>{event.time}</span>
+                        <span>{event.startTime}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <Location size={16} color="currentColor" variant="Outline" />
-                        <span className="truncate">{event.location}</span>
+                        <span className="truncate">{event.venueName || event.address}</span>
                       </div>
                     </div>
                   </div>
                 </div>
+              </div>
+
+              {/* Ticket Selection */}
+              <div className="bg-foreground/5 rounded-2xl p-6 border border-foreground/10">
+                <h2 className="text-xl font-bold font-[family-name:var(--font-clash-display)] mb-4 text-foreground">
+                  Select Tickets
+                </h2>
+                <div className="space-y-4">
+                  {event.tickets.map((ticket) => (
+                    <button
+                      key={ticket.id}
+                      onClick={() => {
+                        setSelectedTicketId(ticket.id || "");
+                        setOrder(null); // Reset order when ticket changes
+                      }}
+                      className={`w-full p-4 rounded-xl border-2 text-left transition-all ${selectedTicketId === ticket.id
+                          ? "border-primary bg-primary/10"
+                          : "border-foreground/20 hover:border-primary/50"
+                        }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${selectedTicketId === ticket.id
+                              ? "border-primary bg-primary"
+                              : "border-foreground/40"
+                            }`}>
+                            {selectedTicketId === ticket.id && (
+                              <div className="w-2 h-2 rounded-full bg-white" />
+                            )}
+                          </div>
+                          <div>
+                            <p className="font-semibold text-foreground">{ticket.name}</p>
+                            {ticket.description && (
+                              <p className="text-sm text-foreground/60">{ticket.description}</p>
+                            )}
+                            <p className="text-xs text-foreground/50">
+                              {ticket.remaining !== undefined ? `${ticket.remaining} available` : `${ticket.quantity} total`}
+                            </p>
+                          </div>
+                        </div>
+                        <span className="font-bold text-lg text-primary">
+                          {ticket.type === "FREE" ? "Free" : `₦${ticket.price.toLocaleString()}`}
+                        </span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+
+                {/* Quantity Selector */}
+                {selectedTicket && (
+                  <div className="mt-6 pt-6 border-t border-foreground/10">
+                    <div className="flex items-center justify-between">
+                      <span className="font-semibold text-foreground">Quantity</span>
+                      <div className="flex items-center gap-3">
+                        <button
+                          onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                          disabled={quantity <= 1}
+                          className="w-10 h-10 rounded-full border-2 border-foreground/20 flex items-center justify-center text-foreground/70 hover:border-primary hover:text-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          -
+                        </button>
+                        <span className="w-8 text-center font-bold text-foreground">{quantity}</span>
+                        <button
+                          onClick={() => setQuantity(Math.min(selectedTicket.maxPerUser || 10, quantity + 1))}
+                          disabled={quantity >= (selectedTicket.maxPerUser || 10)}
+                          className="w-10 h-10 rounded-full border-2 border-foreground/20 flex items-center justify-center text-foreground/70 hover:border-primary hover:text-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          +
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Attendee Information */}
@@ -271,7 +394,7 @@ const EventCheckoutPage: React.FC<EventCheckoutPageProps> = ({ eventId }) => {
                           </label>
                           <input
                             type="tel"
-                            value={attendee.phone}
+                            value={attendee.phone || ""}
                             onChange={(e) =>
                               handleAttendeeChange(index, "phone", e.target.value)
                             }
@@ -286,8 +409,8 @@ const EventCheckoutPage: React.FC<EventCheckoutPageProps> = ({ eventId }) => {
                 </div>
               </div>
 
-              {/* Payment Method */}
-              {ticketPrice > 0 && (
+              {/* Payment Method - Only show if not free */}
+              {!isFree && (
                 <div>
                   <h2 className="text-xl font-bold font-[family-name:var(--font-clash-display)] mb-4 text-foreground">
                     Payment Method
@@ -297,72 +420,63 @@ const EventCheckoutPage: React.FC<EventCheckoutPageProps> = ({ eventId }) => {
                     <div className="grid sm:grid-cols-3 gap-4">
                       <button
                         onClick={() => setPaymentMethod("card")}
-                        className={`p-4 rounded-xl border-2 transition-all ${
-                          paymentMethod === "card"
-                            ? "border-primary bg-primary/10"
-                            : "border-foreground/20 hover:border-primary/50"
-                        }`}
+                        className={`p-4 rounded-xl border-2 transition-all ${paymentMethod === "card"
+                          ? "border-primary bg-primary/10"
+                          : "border-foreground/20 hover:border-primary/50"
+                          }`}
                       >
                         <Card
                           size={24}
                           color="currentColor"
                           variant={paymentMethod === "card" ? "Bold" : "Outline"}
-                          className={`mx-auto mb-2 ${
-                            paymentMethod === "card" ? "text-primary" : "text-foreground/60"
-                          }`}
+                          className={`mx-auto mb-2 ${paymentMethod === "card" ? "text-primary" : "text-foreground/60"
+                            }`}
                         />
                         <p
-                          className={`text-sm font-medium ${
-                            paymentMethod === "card" ? "text-primary" : "text-foreground/70"
-                          }`}
+                          className={`text-sm font-medium ${paymentMethod === "card" ? "text-primary" : "text-foreground/70"
+                            }`}
                         >
                           Card
                         </p>
                       </button>
                       <button
-                        onClick={() => setPaymentMethod("bank")}
-                        className={`p-4 rounded-xl border-2 transition-all ${
-                          paymentMethod === "bank"
-                            ? "border-primary bg-primary/10"
-                            : "border-foreground/20 hover:border-primary/50"
-                        }`}
+                        onClick={() => setPaymentMethod("bank_transfer")}
+                        className={`p-4 rounded-xl border-2 transition-all ${paymentMethod === "bank_transfer"
+                          ? "border-primary bg-primary/10"
+                          : "border-foreground/20 hover:border-primary/50"
+                          }`}
                       >
                         <Bank
                           size={24}
                           color="currentColor"
-                          variant={paymentMethod === "bank" ? "Bold" : "Outline"}
-                          className={`mx-auto mb-2 ${
-                            paymentMethod === "bank" ? "text-primary" : "text-foreground/60"
-                          }`}
+                          variant={paymentMethod === "bank_transfer" ? "Bold" : "Outline"}
+                          className={`mx-auto mb-2 ${paymentMethod === "bank_transfer" ? "text-primary" : "text-foreground/60"
+                            }`}
                         />
                         <p
-                          className={`text-sm font-medium ${
-                            paymentMethod === "bank" ? "text-primary" : "text-foreground/70"
-                          }`}
+                          className={`text-sm font-medium ${paymentMethod === "bank_transfer" ? "text-primary" : "text-foreground/70"
+                            }`}
                         >
                           Bank Transfer
                         </p>
                       </button>
                       <button
-                        onClick={() => setPaymentMethod("mobile")}
-                        className={`p-4 rounded-xl border-2 transition-all ${
-                          paymentMethod === "mobile"
-                            ? "border-primary bg-primary/10"
-                            : "border-foreground/20 hover:border-primary/50"
-                        }`}
+                        onClick={() => setPaymentMethod("mobile_money")}
+                        className={`p-4 rounded-xl border-2 transition-all ${paymentMethod === "mobile_money"
+                          ? "border-primary bg-primary/10"
+                          : "border-foreground/20 hover:border-primary/50"
+                          }`}
                       >
                         <Mobile
                           size={24}
                           color="currentColor"
-                          variant={paymentMethod === "mobile" ? "Bold" : "Outline"}
-                          className={`mx-auto mb-2 ${
-                            paymentMethod === "mobile" ? "text-primary" : "text-foreground/60"
-                          }`}
+                          variant={paymentMethod === "mobile_money" ? "Bold" : "Outline"}
+                          className={`mx-auto mb-2 ${paymentMethod === "mobile_money" ? "text-primary" : "text-foreground/60"
+                            }`}
                         />
                         <p
-                          className={`text-sm font-medium ${
-                            paymentMethod === "mobile" ? "text-primary" : "text-foreground/70"
-                          }`}
+                          className={`text-sm font-medium ${paymentMethod === "mobile_money" ? "text-primary" : "text-foreground/70"
+                            }`}
                         >
                           Mobile Money
                         </p>
@@ -448,7 +562,7 @@ const EventCheckoutPage: React.FC<EventCheckoutPageProps> = ({ eventId }) => {
                     )}
 
                     {/* Bank Transfer Info */}
-                    {paymentMethod === "bank" && (
+                    {paymentMethod === "bank_transfer" && (
                       <div className="bg-foreground/5 rounded-2xl p-6 border border-foreground/10">
                         <p className="text-foreground/70 mb-4">
                           You will receive bank transfer details after completing your order.
@@ -467,7 +581,7 @@ const EventCheckoutPage: React.FC<EventCheckoutPageProps> = ({ eventId }) => {
                     )}
 
                     {/* Mobile Money Info */}
-                    {paymentMethod === "mobile" && (
+                    {paymentMethod === "mobile_money" && (
                       <div className="bg-foreground/5 rounded-2xl p-6 border border-foreground/10">
                         <p className="text-foreground/70 mb-4">
                           You will receive payment instructions via SMS after completing your order.
@@ -505,12 +619,17 @@ const EventCheckoutPage: React.FC<EventCheckoutPageProps> = ({ eventId }) => {
                         <span className="text-foreground/70">
                           {quantity} {quantity === 1 ? "Ticket" : "Tickets"}
                         </span>
+                        {selectedTicket && (
+                          <span className="text-xs text-foreground/50 border border-foreground/20 px-1 rounded">
+                            {selectedTicket.name}
+                          </span>
+                        )}
                       </div>
                       <span className="font-semibold text-foreground">
-                        {event.price === "Free" ? "Free" : `₦${ticketPrice.toLocaleString()}`}
+                        {isFree ? "Free" : `₦${ticketPrice.toLocaleString()}`}
                       </span>
                     </div>
-                    {event.price !== "Free" && (
+                    {!isFree && (
                       <>
                         <div className="flex items-center justify-between text-sm">
                           <span className="text-foreground/60">Subtotal</span>
@@ -532,7 +651,7 @@ const EventCheckoutPage: React.FC<EventCheckoutPageProps> = ({ eventId }) => {
                     <div className="flex items-center justify-between">
                       <span className="text-lg font-bold text-foreground">Total</span>
                       <span className="text-2xl font-bold text-primary">
-                        {event.price === "Free" ? "Free" : `₦${total.toLocaleString()}`}
+                        {isFree ? "Free" : `₦${total.toLocaleString()}`}
                       </span>
                     </div>
                   </div>
@@ -560,7 +679,7 @@ const EventCheckoutPage: React.FC<EventCheckoutPageProps> = ({ eventId }) => {
                     isLoading={isProcessing}
                     leftIcon={Lock}
                   >
-                    {event.price === "Free" ? "Confirm Tickets" : "Complete Payment"}
+                    {isFree ? "Confirm Tickets" : "Complete Payment"}
                   </Button>
 
                   {/* Terms */}
@@ -585,4 +704,3 @@ const EventCheckoutPage: React.FC<EventCheckoutPageProps> = ({ eventId }) => {
 };
 
 export default EventCheckoutPage;
-

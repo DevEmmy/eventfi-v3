@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Button from "@/components/Button";
 import {
   Setting2,
@@ -12,9 +12,20 @@ import {
   Edit2,
   TickCircle,
 } from "iconsax-react";
+import { SettingsService } from "@/services/settings";
+import { NotificationSettings, PrivacySettings } from "@/types/settings";
+import { useUserStore } from "@/store/useUserStore";
+import customToast from "@/lib/toast";
+import { useRouter } from "next/navigation";
 
 const SettingsSection = () => {
-  const [notifications, setNotifications] = useState({
+  const router = useRouter();
+  const { logout: storeLogout } = useUserStore();
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [hasChanges, setHasChanges] = useState(false);
+
+  const [notifications, setNotifications] = useState<NotificationSettings>({
     email: true,
     push: true,
     sms: false,
@@ -31,25 +42,89 @@ const SettingsSection = () => {
     paymentNotifications: true,
   });
 
-  const [privacy, setPrivacy] = useState({
-    profileVisibility: "public" as "public" | "private" | "friends",
+  const [privacy, setPrivacy] = useState<PrivacySettings>({
+    profileVisibility: "public",
     showEmail: false,
     showPhone: false,
     allowMessages: true,
   });
 
-  const handleNotificationChange = (key: keyof typeof notifications) => {
+  // Fetch settings on mount
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const settings = await SettingsService.getSettings();
+        setNotifications(settings.notifications);
+        setPrivacy(settings.privacy);
+      } catch (error) {
+        console.error("Failed to fetch settings:", error);
+        // Keep defaults if fetch fails
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchSettings();
+  }, []);
+
+  const handleNotificationChange = (key: keyof NotificationSettings) => {
     setNotifications((prev) => ({ ...prev, [key]: !prev[key] }));
+    setHasChanges(true);
   };
 
-  const handlePrivacyChange = (key: keyof typeof privacy, value: any) => {
+  const handlePrivacyChange = (key: keyof PrivacySettings, value: any) => {
     setPrivacy((prev) => ({ ...prev, [key]: value }));
+    setHasChanges(true);
   };
 
-  const handleSaveSettings = () => {
-    console.log("Saving settings:", { notifications, privacy });
-    alert("Settings saved successfully!");
+  const handleSaveSettings = async () => {
+    setSaving(true);
+    try {
+      await SettingsService.updateSettings({ notifications, privacy });
+      customToast.success("Settings saved successfully!");
+      setHasChanges(false);
+    } catch (error: any) {
+      console.error("Failed to save settings:", error);
+      customToast.error(error.response?.data?.message || "Failed to save settings");
+    } finally {
+      setSaving(false);
+    }
   };
+
+  const handleLogout = async () => {
+    try {
+      await SettingsService.logout();
+      storeLogout();
+    } catch (error) {
+      // Still logout locally even if API fails
+      storeLogout();
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    const password = prompt("Please enter your password to confirm account deletion:");
+    if (!password) return;
+
+    const reason = prompt("(Optional) Why are you leaving?");
+
+    if (confirm("Are you sure you want to delete your account? This action cannot be undone after 30 days.")) {
+      try {
+        await SettingsService.deleteAccount({ password, reason: reason || undefined });
+        customToast.success("Account scheduled for deletion. You have 30 days to recover it.");
+        storeLogout();
+      } catch (error: any) {
+        console.error("Failed to delete account:", error);
+        customToast.error(error.response?.data?.message || "Failed to delete account. Check your password.");
+      }
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -112,14 +187,12 @@ const SettingsSection = () => {
             </div>
             <button
               onClick={() => handleNotificationChange("email")}
-              className={`relative w-12 h-6 rounded-full transition-colors duration-200 ${
-                notifications.email ? "bg-primary" : "bg-foreground/20"
-              }`}
+              className={`relative w-12 h-6 rounded-full transition-colors duration-200 ${notifications.email ? "bg-primary" : "bg-foreground/20"
+                }`}
             >
               <span
-                className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform duration-200 ${
-                  notifications.email ? "translate-x-6" : "translate-x-0"
-                }`}
+                className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform duration-200 ${notifications.email ? "translate-x-6" : "translate-x-0"
+                  }`}
               />
             </button>
           </div>
@@ -130,14 +203,12 @@ const SettingsSection = () => {
             </div>
             <button
               onClick={() => handleNotificationChange("push")}
-              className={`relative w-12 h-6 rounded-full transition-colors duration-200 ${
-                notifications.push ? "bg-primary" : "bg-foreground/20"
-              }`}
+              className={`relative w-12 h-6 rounded-full transition-colors duration-200 ${notifications.push ? "bg-primary" : "bg-foreground/20"
+                }`}
             >
               <span
-                className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform duration-200 ${
-                  notifications.push ? "translate-x-6" : "translate-x-0"
-                }`}
+                className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform duration-200 ${notifications.push ? "translate-x-6" : "translate-x-0"
+                  }`}
               />
             </button>
           </div>
@@ -148,14 +219,12 @@ const SettingsSection = () => {
             </div>
             <button
               onClick={() => handleNotificationChange("sms")}
-              className={`relative w-12 h-6 rounded-full transition-colors duration-200 ${
-                notifications.sms ? "bg-primary" : "bg-foreground/20"
-              }`}
+              className={`relative w-12 h-6 rounded-full transition-colors duration-200 ${notifications.sms ? "bg-primary" : "bg-foreground/20"
+                }`}
             >
               <span
-                className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform duration-200 ${
-                  notifications.sms ? "translate-x-6" : "translate-x-0"
-                }`}
+                className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform duration-200 ${notifications.sms ? "translate-x-6" : "translate-x-0"
+                  }`}
               />
             </button>
           </div>
@@ -166,14 +235,12 @@ const SettingsSection = () => {
             </div>
             <button
               onClick={() => handleNotificationChange("eventReminders")}
-              className={`relative w-12 h-6 rounded-full transition-colors duration-200 ${
-                notifications.eventReminders ? "bg-primary" : "bg-foreground/20"
-              }`}
+              className={`relative w-12 h-6 rounded-full transition-colors duration-200 ${notifications.eventReminders ? "bg-primary" : "bg-foreground/20"
+                }`}
             >
               <span
-                className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform duration-200 ${
-                  notifications.eventReminders ? "translate-x-6" : "translate-x-0"
-                }`}
+                className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform duration-200 ${notifications.eventReminders ? "translate-x-6" : "translate-x-0"
+                  }`}
               />
             </button>
           </div>
@@ -184,14 +251,12 @@ const SettingsSection = () => {
             </div>
             <button
               onClick={() => handleNotificationChange("eventNearby")}
-              className={`relative w-12 h-6 rounded-full transition-colors duration-200 ${
-                notifications.eventNearby ? "bg-primary" : "bg-foreground/20"
-              }`}
+              className={`relative w-12 h-6 rounded-full transition-colors duration-200 ${notifications.eventNearby ? "bg-primary" : "bg-foreground/20"
+                }`}
             >
               <span
-                className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform duration-200 ${
-                  notifications.eventNearby ? "translate-x-6" : "translate-x-0"
-                }`}
+                className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform duration-200 ${notifications.eventNearby ? "translate-x-6" : "translate-x-0"
+                  }`}
               />
             </button>
           </div>
@@ -202,14 +267,12 @@ const SettingsSection = () => {
             </div>
             <button
               onClick={() => handleNotificationChange("ticketSales")}
-              className={`relative w-12 h-6 rounded-full transition-colors duration-200 ${
-                notifications.ticketSales ? "bg-primary" : "bg-foreground/20"
-              }`}
+              className={`relative w-12 h-6 rounded-full transition-colors duration-200 ${notifications.ticketSales ? "bg-primary" : "bg-foreground/20"
+                }`}
             >
               <span
-                className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform duration-200 ${
-                  notifications.ticketSales ? "translate-x-6" : "translate-x-0"
-                }`}
+                className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform duration-200 ${notifications.ticketSales ? "translate-x-6" : "translate-x-0"
+                  }`}
               />
             </button>
           </div>
@@ -220,14 +283,12 @@ const SettingsSection = () => {
             </div>
             <button
               onClick={() => handleNotificationChange("bookingRequests")}
-              className={`relative w-12 h-6 rounded-full transition-colors duration-200 ${
-                notifications.bookingRequests ? "bg-primary" : "bg-foreground/20"
-              }`}
+              className={`relative w-12 h-6 rounded-full transition-colors duration-200 ${notifications.bookingRequests ? "bg-primary" : "bg-foreground/20"
+                }`}
             >
               <span
-                className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform duration-200 ${
-                  notifications.bookingRequests ? "translate-x-6" : "translate-x-0"
-                }`}
+                className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform duration-200 ${notifications.bookingRequests ? "translate-x-6" : "translate-x-0"
+                  }`}
               />
             </button>
           </div>
@@ -238,14 +299,12 @@ const SettingsSection = () => {
             </div>
             <button
               onClick={() => handleNotificationChange("reviews")}
-              className={`relative w-12 h-6 rounded-full transition-colors duration-200 ${
-                notifications.reviews ? "bg-primary" : "bg-foreground/20"
-              }`}
+              className={`relative w-12 h-6 rounded-full transition-colors duration-200 ${notifications.reviews ? "bg-primary" : "bg-foreground/20"
+                }`}
             >
               <span
-                className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform duration-200 ${
-                  notifications.reviews ? "translate-x-6" : "translate-x-0"
-                }`}
+                className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform duration-200 ${notifications.reviews ? "translate-x-6" : "translate-x-0"
+                  }`}
               />
             </button>
           </div>
@@ -256,14 +315,12 @@ const SettingsSection = () => {
             </div>
             <button
               onClick={() => handleNotificationChange("newMessages")}
-              className={`relative w-12 h-6 rounded-full transition-colors duration-200 ${
-                notifications.newMessages ? "bg-primary" : "bg-foreground/20"
-              }`}
+              className={`relative w-12 h-6 rounded-full transition-colors duration-200 ${notifications.newMessages ? "bg-primary" : "bg-foreground/20"
+                }`}
             >
               <span
-                className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform duration-200 ${
-                  notifications.newMessages ? "translate-x-6" : "translate-x-0"
-                }`}
+                className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform duration-200 ${notifications.newMessages ? "translate-x-6" : "translate-x-0"
+                  }`}
               />
             </button>
           </div>
@@ -274,14 +331,12 @@ const SettingsSection = () => {
             </div>
             <button
               onClick={() => handleNotificationChange("marketing")}
-              className={`relative w-12 h-6 rounded-full transition-colors duration-200 ${
-                notifications.marketing ? "bg-primary" : "bg-foreground/20"
-              }`}
+              className={`relative w-12 h-6 rounded-full transition-colors duration-200 ${notifications.marketing ? "bg-primary" : "bg-foreground/20"
+                }`}
             >
               <span
-                className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform duration-200 ${
-                  notifications.marketing ? "translate-x-6" : "translate-x-0"
-                }`}
+                className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform duration-200 ${notifications.marketing ? "translate-x-6" : "translate-x-0"
+                  }`}
               />
             </button>
           </div>
@@ -341,14 +396,12 @@ const SettingsSection = () => {
             </div>
             <button
               onClick={() => handlePrivacyChange("showEmail", !privacy.showEmail)}
-              className={`relative w-12 h-6 rounded-full transition-colors duration-200 ${
-                privacy.showEmail ? "bg-primary" : "bg-foreground/20"
-              }`}
+              className={`relative w-12 h-6 rounded-full transition-colors duration-200 ${privacy.showEmail ? "bg-primary" : "bg-foreground/20"
+                }`}
             >
               <span
-                className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform duration-200 ${
-                  privacy.showEmail ? "translate-x-6" : "translate-x-0"
-                }`}
+                className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform duration-200 ${privacy.showEmail ? "translate-x-6" : "translate-x-0"
+                  }`}
               />
             </button>
           </div>
@@ -359,14 +412,12 @@ const SettingsSection = () => {
             </div>
             <button
               onClick={() => handlePrivacyChange("showPhone", !privacy.showPhone)}
-              className={`relative w-12 h-6 rounded-full transition-colors duration-200 ${
-                privacy.showPhone ? "bg-primary" : "bg-foreground/20"
-              }`}
+              className={`relative w-12 h-6 rounded-full transition-colors duration-200 ${privacy.showPhone ? "bg-primary" : "bg-foreground/20"
+                }`}
             >
               <span
-                className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform duration-200 ${
-                  privacy.showPhone ? "translate-x-6" : "translate-x-0"
-                }`}
+                className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform duration-200 ${privacy.showPhone ? "translate-x-6" : "translate-x-0"
+                  }`}
               />
             </button>
           </div>
@@ -377,14 +428,12 @@ const SettingsSection = () => {
             </div>
             <button
               onClick={() => handlePrivacyChange("allowMessages", !privacy.allowMessages)}
-              className={`relative w-12 h-6 rounded-full transition-colors duration-200 ${
-                privacy.allowMessages ? "bg-primary" : "bg-foreground/20"
-              }`}
+              className={`relative w-12 h-6 rounded-full transition-colors duration-200 ${privacy.allowMessages ? "bg-primary" : "bg-foreground/20"
+                }`}
             >
               <span
-                className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform duration-200 ${
-                  privacy.allowMessages ? "translate-x-6" : "translate-x-0"
-                }`}
+                className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform duration-200 ${privacy.allowMessages ? "translate-x-6" : "translate-x-0"
+                  }`}
               />
             </button>
           </div>
@@ -413,12 +462,7 @@ const SettingsSection = () => {
               variant="outline"
               size="sm"
               leftIcon={Trash}
-              onClick={() => {
-                if (confirm("Are you sure you want to delete your account? This action cannot be undone.")) {
-                  // Handle account deletion
-                  console.log("Account deletion requested");
-                }
-              }}
+              onClick={handleDeleteAccount}
               className="border-red-500/50 text-red-500 hover:bg-red-500/10"
             >
               Delete
@@ -433,11 +477,7 @@ const SettingsSection = () => {
               variant="outline"
               size="sm"
               leftIcon={Logout}
-              onClick={() => {
-                // Handle logout
-                console.log("Logout requested");
-                window.location.href = "/auth";
-              }}
+              onClick={handleLogout}
             >
               Log Out
             </Button>
@@ -446,16 +486,19 @@ const SettingsSection = () => {
       </div>
 
       {/* Save Button */}
-      <div className="flex justify-end">
-        <Button
-          variant="primary"
-          size="md"
-          leftIcon={TickCircle}
-          onClick={handleSaveSettings}
-        >
-          Save Settings
-        </Button>
-      </div>
+      {hasChanges && (
+        <div className="flex justify-end">
+          <Button
+            variant="primary"
+            size="md"
+            leftIcon={TickCircle}
+            onClick={handleSaveSettings}
+            disabled={saving}
+          >
+            {saving ? "Saving..." : "Save Settings"}
+          </Button>
+        </div>
+      )}
     </div>
   );
 };

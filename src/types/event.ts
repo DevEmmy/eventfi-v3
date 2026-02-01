@@ -89,19 +89,41 @@ export interface Event {
     id: string;
     title: string;
     description: string;
-    shortDescription?: string; // For cards/previews
+    shortDescription?: string;
     category: EventCategory;
     tags?: string[];
 
     status: EventStatus;
     privacy: EventPrivacy;
 
-    location: EventLocation;
-    schedule: EventSchedule;
-    media: EventMedia;
+    // Location (Flattened)
+    locationType: 'PHYSICAL' | 'ONLINE' | 'HYBRID';
+    address?: string;
+    venueName?: string;
+    city?: string;
+    state?: string;
+    country?: string;
+    postalCode?: string;
+    lat?: number;
+    lng?: number;
+    onlineUrl?: string;
+    onlinePassword?: string;
+
+    // Schedule (Flattened)
+    startDate: string;
+    endDate: string;
+    startTime: string;
+    endTime: string;
+    timezone: string;
+
+    // Media (Flattened)
+    coverImage: string;
+    gallery?: string[];
+    videoUrl?: string;
 
     tickets: EventTicket[];
 
+    organizerId: string;
     organizer: EventOrganizer;
 
     // Metadata

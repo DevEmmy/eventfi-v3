@@ -7,6 +7,7 @@ import Button from "@/components/Button";
 import { UserService } from "@/services/user";
 
 const SavedEvents: React.FC = () => {
+ 
   const [savedEvents, setSavedEvents] = useState<EventCardProps[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -17,19 +18,35 @@ const SavedEvents: React.FC = () => {
         const response = await UserService.getFavorites(1, 20);
 
         // Map API data to EventCardProps
-        const mappedEvents = response.data.map((event: any) => ({
-          id: event.id,
-          title: event.title,
-          date: new Date(event.startDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
-          time: `${event.startTime} - ${event.endTime}`,
-          location: event.venueName || event.city || "Online",
-          price: event.tickets && event.tickets.length > 0
-            ? (event.tickets[0].type === 'FREE' ? 'Free' : `₦${event.tickets[0].price.toLocaleString()}`)
-            : "Free",
-          category: event.category,
-          attendees: event.attendeesCount || 0,
-          image: event.coverImage,
-        }));
+        const mappedEvents = response.data.map((event: any) => {
+          // Parse date and time from startDate
+          const eventDate = new Date(event.startDate);
+          const dateStr = eventDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+          const timeStr = eventDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+
+          // Format price from tickets
+          let priceStr = "Free";
+          if (event.tickets && event.tickets.length > 0) {
+            const ticket = event.tickets[0];
+            if (ticket.type !== 'FREE' && ticket.price > 0) {
+              const currency = ticket.currency === 'NGN' ? '₦' : ticket.currency;
+              priceStr = `${currency}${ticket.price.toLocaleString()}`;
+            }
+          }
+
+          return {
+            id: event.id,
+            title: event.title,
+            date: dateStr,
+            time: timeStr,
+            location: event.venueName || event.city || "Online",
+            price: priceStr,
+            category: event.category,
+            attendees: event.attendeesCount || 0,
+            image: event.coverImage,
+            organizer: event.organizer?.displayName,
+          };
+        });
 
         setSavedEvents(mappedEvents);
       } catch (error) {

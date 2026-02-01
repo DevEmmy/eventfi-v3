@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Button from "@/components/Button";
@@ -33,29 +33,26 @@ import {
   DocumentText,
   TickCircle,
 } from "iconsax-react";
+import { ManageEventService } from "@/services/manage";
+import customToast from "@/lib/toast";
+import {
+  ManageDashboardResponse,
+  AnalyticsResponse,
+  EventAttendee,
+  TeamMember,
+  TeamRole,
+  UserSearchResult,
+  TicketSalesBreakdown,
+  EventStats,
+  SalesDataPoint,
+} from "@/types/manage";
 
 interface EventManagePageProps {
   eventId: string;
 }
 
-interface TeamMember {
-  id: string;
-  name: string;
-  email: string;
-  avatar?: string;
-  role: "organizer" | "co-host" | "manager" | "assistant";
-  addedDate: string;
-  status: "active" | "pending"; // pending = invited but not yet registered
-  permissions: {
-    canEdit: boolean;
-    canManageAttendees: boolean;
-    canViewAnalytics: boolean;
-    canManageTeam: boolean;
-  };
-}
-
 // Permission configurations for each role
-const ROLE_PERMISSIONS: Record<"co-host" | "manager" | "assistant", TeamMember["permissions"]> = {
+const ROLE_PERMISSIONS: Record<Exclude<TeamRole, "organizer">, TeamMember["permissions"]> = {
   "co-host": {
     canEdit: true,
     canManageAttendees: true,
@@ -82,10 +79,19 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
   const [showAddMemberModal, setShowAddMemberModal] = useState(false);
   const [showBulkEmailModal, setShowBulkEmailModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedRole, setSelectedRole] = useState<"co-host" | "manager" | "assistant">("co-host");
-  
+  const [selectedRole, setSelectedRole] = useState<Exclude<TeamRole, "organizer">>("co-host");
+
+  // Loading states
+  const [loading, setLoading] = useState(true);
+  const [attendeesLoading, setAttendeesLoading] = useState(false);
+  const [analyticsLoading, setAnalyticsLoading] = useState(false);
+
+  // Dashboard data from API
+  const [dashboardData, setDashboardData] = useState<ManageDashboardResponse | null>(null);
+  const [analyticsData, setAnalyticsData] = useState<AnalyticsResponse | null>(null);
+
   // Bulk email state
-  const [emailRecipients, setEmailRecipients] = useState<"all" | "checked-in" | "not-checked-in" | "custom">("all");
+  const [emailRecipients, setEmailRecipients] = useState<"all" | "checked_in" | "not_checked_in" | "custom">("all");
   const [selectedAttendees, setSelectedAttendees] = useState<string[]>([]);
   const [emailSubject, setEmailSubject] = useState("");
   const [emailBody, setEmailBody] = useState("");
@@ -95,202 +101,124 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
   const [attendeeSearchQuery, setAttendeeSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<"all" | "checked_in" | "not_checked_in">("all");
   const [filterTicketType, setFilterTicketType] = useState<string>("all");
+  const [attendeesPage, setAttendeesPage] = useState(1);
 
-  // Mock event data - Replace with API call
-  const event = {
-    id: eventId,
-    title: "Tech Fest Lagos 2024",
-    date: "March 15, 2024",
-    time: "10:00 AM - 6:00 PM",
-    location: "Lagos Convention Centre",
-    address: "Victoria Island, Lagos, Nigeria",
-    category: "Technology",
-    image: undefined,
-    status: "published" as "draft" | "published" | "cancelled" | "completed",
-    createdAt: "Jan 10, 2024",
+  // Attendees data from API
+  const [attendeesList, setAttendeesList] = useState<EventAttendee[]>([]);
+  const [attendeesTotal, setAttendeesTotal] = useState(0);
+  const [attendeesTotalPages, setAttendesTotalPages] = useState(1);
+
+  // Team members from API
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+
+  // User search results
+  const [searchResults, setSearchResults] = useState<UserSearchResult[]>([]);
+
+  // Derived data from dashboard
+  const event = dashboardData?.event;
+  const stats = dashboardData?.stats || {
+    totalTickets: 0,
+    ticketsSold: 0,
+    ticketsRemaining: 0,
+    totalRevenue: 0,
+    averageTicketPrice: 0,
+    attendanceRate: 0,
+    checkIns: 0,
+    noShows: 0,
+    refunds: 0,
+    revenueChange: 0,
+    salesChange: 0,
   };
+  const ticketTypes = dashboardData?.ticketBreakdown || [];
+  const userRole = dashboardData?.userRole || "assistant";
+  const salesData = analyticsData?.salesOverTime || [];
 
-  // Mock statistics
-  const stats = {
-    totalTickets: 1000,
-    ticketsSold: 750,
-    ticketsRemaining: 250,
-    totalRevenue: 3750000,
-    averageTicketPrice: 5000,
-    attendanceRate: 87,
-    checkIns: 653,
-    noShows: 97,
-    refunds: 12,
-    revenueChange: 15.3,
-    salesChange: 8.7,
-  };
+  // Fetch dashboard data on mount
+  useEffect(() => {
+    const fetchDashboard = async () => {
+      try {
+        setLoading(true);
+        const data = await ManageEventService.getDashboard(eventId);
+        setDashboardData(data);
+      } catch (error: any) {
+        console.error("Failed to fetch dashboard:", error);
+        customToast.error(error.response?.data?.message || "Failed to load event data");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchDashboard();
+  }, [eventId]);
 
-  // Mock ticket types breakdown
-  const ticketTypes = [
-    {
-      name: "General Admission",
-      price: 5000,
-      total: 500,
-      sold: 400,
-      revenue: 2000000,
-    },
-    {
-      name: "VIP",
-      price: 15000,
-      total: 200,
-      sold: 180,
-      revenue: 2700000,
-    },
-    {
-      name: "Early Bird",
-      price: 3000,
-      total: 300,
-      sold: 170,
-      revenue: 510000,
-    },
-  ];
+  // Fetch team members
+  useEffect(() => {
+    const fetchTeam = async () => {
+      try {
+        const data = await ManageEventService.getTeamMembers(eventId);
+        setTeamMembers(data.members);
+      } catch (error) {
+        console.error("Failed to fetch team:", error);
+      }
+    };
+    if (dashboardData) {
+      fetchTeam();
+    }
+  }, [eventId, dashboardData]);
 
-  // Mock sales over time data
-  const salesData = [
-    { date: "Jan 10", sales: 50, revenue: 250000 },
-    { date: "Jan 15", sales: 120, revenue: 600000 },
-    { date: "Jan 20", sales: 200, revenue: 1000000 },
-    { date: "Jan 25", sales: 280, revenue: 1400000 },
-    { date: "Feb 1", sales: 350, revenue: 1750000 },
-    { date: "Feb 5", sales: 450, revenue: 2250000 },
-    { date: "Feb 10", sales: 550, revenue: 2750000 },
-    { date: "Feb 15", sales: 650, revenue: 3250000 },
-    { date: "Mar 1", sales: 720, revenue: 3600000 },
-    { date: "Mar 10", sales: 750, revenue: 3750000 },
-  ];
+  // Fetch attendees when tab changes or filters change
+  const fetchAttendees = useCallback(async () => {
+    try {
+      setAttendeesLoading(true);
+      const data = await ManageEventService.getAttendees(eventId, {
+        page: attendeesPage,
+        limit: 20,
+        search: attendeeSearchQuery || undefined,
+        status: filterStatus === "all" ? undefined : filterStatus,
+        ticketType: filterTicketType === "all" ? undefined : filterTicketType,
+      });
+      setAttendeesList(data.attendees);
+      setAttendeesTotal(data.total);
+      setAttendesTotalPages(data.totalPages);
+    } catch (error) {
+      console.error("Failed to fetch attendees:", error);
+    } finally {
+      setAttendeesLoading(false);
+    }
+  }, [eventId, attendeesPage, attendeeSearchQuery, filterStatus, filterTicketType]);
 
-  // Mock attendees list - In production, this would come from API and be stateful
-  const [attendeesList, setAttendeesList] = useState([
-    {
-      id: "1",
-      name: "John Doe",
-      email: "john@example.com",
-      phone: "+234 800 111 2222",
-      ticketType: "VIP",
-      ticketPrice: 15000,
-      purchaseDate: "Jan 15, 2024",
-      status: "checked_in" as const,
-      checkInTime: "10:15 AM",
-    },
-    {
-      id: "2",
-      name: "Jane Smith",
-      email: "jane@example.com",
-      phone: "+234 800 222 3333",
-      ticketType: "General Admission",
-      ticketPrice: 5000,
-      purchaseDate: "Jan 20, 2024",
-      status: "checked_in" as const,
-      checkInTime: "10:30 AM",
-    },
-    {
-      id: "3",
-      name: "Mike Johnson",
-      email: "mike@example.com",
-      phone: "+234 800 333 4444",
-      ticketType: "Early Bird",
-      ticketPrice: 3000,
-      purchaseDate: "Jan 25, 2024",
-      status: "not_checked_in" as const,
-      checkInTime: null,
-    },
-    {
-      id: "4",
-      name: "Sarah Williams",
-      email: "sarah@example.com",
-      phone: "+234 800 444 5555",
-      ticketType: "General Admission",
-      ticketPrice: 5000,
-      purchaseDate: "Feb 1, 2024",
-      status: "checked_in" as const,
-      checkInTime: "11:00 AM",
-    },
-  ]);
+  useEffect(() => {
+    if (activeTab === "attendees" && dashboardData) {
+      fetchAttendees();
+    }
+  }, [activeTab, dashboardData, fetchAttendees]);
 
-  // Use state for attendees to allow updates
-  const attendees = attendeesList;
+  // Fetch analytics when tab changes
+  useEffect(() => {
+    const fetchAnalytics = async () => {
+      try {
+        setAnalyticsLoading(true);
+        const data = await ManageEventService.getAnalytics(eventId, "30d");
+        setAnalyticsData(data);
+      } catch (error) {
+        console.error("Failed to fetch analytics:", error);
+      } finally {
+        setAnalyticsLoading(false);
+      }
+    };
+    if (activeTab === "analytics" && dashboardData && !analyticsData) {
+      fetchAnalytics();
+    }
+  }, [activeTab, eventId, dashboardData, analyticsData]);
 
   // Get unique ticket types for filter
-  const attendeeTicketTypes = Array.from(new Set(attendees.map(a => a.ticketType)));
+  const attendeeTicketTypes = Array.from(new Set(attendeesList.map(a => a.ticketTypeName)));
 
-  // Filter attendees based on search and filters
-  const filteredAttendees = attendees.filter((attendee) => {
-    const matchesSearch =
-      attendeeSearchQuery === "" ||
-      attendee.name.toLowerCase().includes(attendeeSearchQuery.toLowerCase()) ||
-      attendee.email.toLowerCase().includes(attendeeSearchQuery.toLowerCase()) ||
-      attendee.phone.toLowerCase().includes(attendeeSearchQuery.toLowerCase());
-
-    const matchesStatus =
-      filterStatus === "all" ||
-      attendee.status === filterStatus;
-
-    const matchesTicketType =
-      filterTicketType === "all" ||
-      attendee.ticketType === filterTicketType;
-
-    return matchesSearch && matchesStatus && matchesTicketType;
-  });
-
-  // Mock team members - Replace with API call
-  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([
-    {
-      id: "1",
-      name: "Alex Johnson",
-      email: "alex@example.com",
-      role: "organizer",
-      addedDate: "Jan 10, 2024",
-      status: "active",
-      permissions: {
-        canEdit: true,
-        canManageAttendees: true,
-        canViewAnalytics: true,
-        canManageTeam: true,
-      },
-    },
-    {
-      id: "2",
-      name: "Sarah Williams",
-      email: "sarah@example.com",
-      role: "co-host",
-      addedDate: "Jan 15, 2024",
-      status: "active",
-      permissions: {
-        canEdit: true,
-        canManageAttendees: true,
-        canViewAnalytics: true,
-        canManageTeam: false,
-      },
-    },
-    {
-      id: "3",
-      name: "Mike Chen",
-      email: "mike@example.com",
-      role: "manager",
-      addedDate: "Jan 20, 2024",
-      status: "active",
-      permissions: {
-        canEdit: false,
-        canManageAttendees: true,
-        canViewAnalytics: true,
-        canManageTeam: false,
-      },
-    },
-  ]);
-
-  // Mock users for search - Replace with API call
-  const [searchResults, setSearchResults] = useState<
-    Array<{ id: string; name: string; email: string; avatar?: string }>
-  >([]);
+  // Filter attendees (client-side additional filtering if needed)
+  const filteredAttendees = attendeesList;
 
   const tabs = [
     { id: "overview" as const, label: "Overview", icon: Eye },
-    { id: "attendees" as const, label: "Attendees", icon: People, count: attendees.length },
+    { id: "attendees" as const, label: "Attendees", icon: People, count: attendeesTotal },
     { id: "analytics" as const, label: "Analytics", icon: Chart },
     { id: "team" as const, label: "Team", icon: Profile2User, count: teamMembers.length },
   ];
@@ -299,139 +227,217 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
     router.push(`/events/${eventId}/edit`);
   };
 
-  const handleDuplicate = () => {
-    console.log("Duplicate event");
-    alert("Event duplicated! Redirecting to edit page...");
-    router.push("/events/create");
+  const handleDuplicate = async () => {
+    try {
+      const result = await ManageEventService.duplicateEvent(eventId);
+      customToast.success("Event duplicated successfully!");
+      router.push(`/events/${result.id}/edit`);
+    } catch (error: any) {
+      console.error("Duplicate failed:", error);
+      customToast.error(error.response?.data?.message || "Failed to duplicate event");
+    }
   };
 
-  const handleCancel = () => {
+  const handleCancel = async () => {
+    const reason = window.prompt("Please provide a reason for cancellation:");
+    if (!reason) return;
+
     if (confirm("Are you sure you want to cancel this event? This action cannot be undone.")) {
-      console.log("Cancel event");
-      alert("Event cancelled");
+      try {
+        const result = await ManageEventService.cancelEvent(eventId, {
+          reason,
+          notifyAttendees: true,
+          refundPolicy: "full",
+        });
+        customToast.success(`Event cancelled. ${result.attendeesNotified} attendees notified.`);
+        router.push("/profile?tab=events");
+      } catch (error: any) {
+        console.error("Cancel failed:", error);
+        customToast.error(error.response?.data?.message || "Failed to cancel event");
+      }
     }
   };
 
-  const handleExport = () => {
-    console.log("Export attendees");
-    alert("Exporting attendees list...");
+  const handleExport = async () => {
+    try {
+      customToast.info("Exporting attendees...");
+      await ManageEventService.downloadExport(eventId, "csv", filterStatus === "all" ? undefined : filterStatus);
+      customToast.success("Export downloaded!");
+    } catch (error: any) {
+      console.error("Export failed:", error);
+      customToast.error(error.response?.data?.message || "Failed to export attendees");
+    }
   };
 
-  const handleCheckIn = (attendeeId: string) => {
-    const attendee = attendees.find(a => a.id === attendeeId);
+  const handleCheckIn = async (attendeeId: string) => {
+    const attendee = attendeesList.find(a => a.id === attendeeId);
     if (attendee && attendee.status === "not_checked_in") {
-      const now = new Date();
-      const checkInTime = now.toLocaleTimeString("en-US", { 
-        hour: "2-digit", 
-        minute: "2-digit",
-        hour12: true 
-      });
-      
-      // Update attendee status in state
-      setAttendeesList(attendees.map(a => 
-        a.id === attendeeId 
-          ? { ...a, status: "checked_in" as const, checkInTime }
-          : a
-      ));
-      
-      // In production, make API call to check in attendee
-      // await checkInAttendee(eventId, attendeeId);
-      
-      alert(`${attendee.name} has been checked in at ${checkInTime}`);
+      try {
+        const result = await ManageEventService.checkInAttendee(eventId, attendeeId, {
+          method: "manual",
+        });
+
+        // Update local state
+        setAttendeesList(prev =>
+          prev.map(a =>
+            a.id === attendeeId
+              ? { ...a, status: "checked_in" as const, checkInTime: result.checkInTime }
+              : a
+          )
+        );
+
+        customToast.success(result.message);
+      } catch (error: any) {
+        console.error("Check-in failed:", error);
+        customToast.error(error.response?.data?.message || "Failed to check in attendee");
+      }
     }
   };
 
-  const handleSearchUsers = (query: string) => {
+  const handleSearchUsers = async (query: string) => {
     setSearchQuery(query);
     if (query.length > 2) {
-      // Mock search results - Replace with API call
-      const mockUsers = [
-        { id: "u1", name: "John Doe", email: "john@example.com" },
-        { id: "u2", name: "Jane Smith", email: "jane@example.com" },
-        { id: "u3", name: "Bob Johnson", email: "bob@example.com" },
-        { id: "u4", name: "Alice Brown", email: "alice@example.com" },
-      ].filter(
-        (user) =>
-          !teamMembers.some((member) => member.id === user.id) &&
-          (user.name.toLowerCase().includes(query.toLowerCase()) ||
-            user.email.toLowerCase().includes(query.toLowerCase()))
-      );
-      setSearchResults(mockUsers);
+      try {
+        const results = await ManageEventService.searchUsers({
+          q: query,
+          excludeEventTeam: eventId,
+        });
+        setSearchResults(results);
+      } catch (error) {
+        console.error("Search failed:", error);
+        setSearchResults([]);
+      }
     } else {
       setSearchResults([]);
     }
   };
 
-  const handleAddMember = (userId: string, userName: string, userEmail: string) => {
-    const newMember: TeamMember = {
-      id: userId,
-      name: userName,
-      email: userEmail,
-      role: selectedRole,
-      addedDate: new Date().toLocaleDateString(),
-      status: "active",
-      permissions: ROLE_PERMISSIONS[selectedRole],
-    };
+  const handleAddMember = async (userId: string, userName: string, userEmail: string) => {
+    try {
+      const result = await ManageEventService.addTeamMember(eventId, {
+        userIdOrEmail: userId,
+        role: selectedRole,
+      });
 
-    setTeamMembers([...teamMembers, newMember]);
-    setShowAddMemberModal(false);
-    setSearchQuery("");
-    setSearchResults([]);
-    // In production, make API call to add member
-    alert(`${userName} has been added as ${selectedRole}!`);
+      setTeamMembers(prev => [...prev, result.member]);
+      setShowAddMemberModal(false);
+      setSearchQuery("");
+      setSearchResults([]);
+
+      if (result.invitationSent) {
+        customToast.success(`Invitation sent to ${userEmail}`);
+      } else {
+        customToast.success(`${userName} added as ${selectedRole}`);
+      }
+    } catch (error: any) {
+      console.error("Add member failed:", error);
+      customToast.error(error.response?.data?.message || "Failed to add team member");
+    }
   };
 
-  const handleInviteByEmail = () => {
+  const handleInviteByEmail = async () => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(searchQuery)) {
-      alert("Please enter a valid email address");
+      customToast.error("Please enter a valid email address");
       return;
     }
 
-    // Check if email is already in team
-    if (teamMembers.some((member) => member.email.toLowerCase() === searchQuery.toLowerCase())) {
-      alert("This email is already in the team");
+    if (teamMembers.some(member => member.email.toLowerCase() === searchQuery.toLowerCase())) {
+      customToast.error("This email is already in the team");
       return;
     }
 
-    const newMember: TeamMember = {
-      id: `pending-${Date.now()}`,
-      name: searchQuery.split("@")[0], // Use email prefix as temporary name
-      email: searchQuery,
-      role: selectedRole,
-      addedDate: new Date().toLocaleDateString(),
-      status: "pending",
-      permissions: ROLE_PERMISSIONS[selectedRole],
-    };
+    try {
+      const result = await ManageEventService.addTeamMember(eventId, {
+        userIdOrEmail: searchQuery,
+        role: selectedRole,
+      });
 
-    setTeamMembers([...teamMembers, newMember]);
-    setShowAddMemberModal(false);
-    setSearchQuery("");
-    setSearchResults([]);
-    // In production, make API call to send invitation email
-    alert(`Invitation email sent to ${searchQuery}! They will receive login credentials to join the team.`);
+      setTeamMembers(prev => [...prev, result.member]);
+      setShowAddMemberModal(false);
+      setSearchQuery("");
+      setSearchResults([]);
+      customToast.success(`Invitation sent to ${searchQuery}`);
+    } catch (error: any) {
+      console.error("Invite failed:", error);
+      customToast.error(error.response?.data?.message || "Failed to send invitation");
+    }
   };
 
-  const handleRemoveMember = (memberId: string) => {
+  const handleRemoveMember = async (memberId: string) => {
     if (confirm("Are you sure you want to remove this team member?")) {
-      setTeamMembers(teamMembers.filter((member) => member.id !== memberId));
-      // In production, make API call to remove member
-      alert("Team member removed successfully!");
+      try {
+        await ManageEventService.removeTeamMember(eventId, memberId);
+        setTeamMembers(prev => prev.filter(m => m.id !== memberId));
+        customToast.success("Team member removed");
+      } catch (error: any) {
+        console.error("Remove failed:", error);
+        customToast.error(error.response?.data?.message || "Failed to remove team member");
+      }
     }
   };
 
-  const handleChangeRole = (memberId: string, newRole: "co-host" | "manager" | "assistant") => {
-    setTeamMembers(
-      teamMembers.map((member) => {
-        if (member.id === memberId && member.role !== "organizer") {
-          return { ...member, role: newRole, permissions: ROLE_PERMISSIONS[newRole] };
-        }
-        return member;
-      })
-    );
-    // In production, make API call to update role
-    alert("Role updated successfully!");
+  const handleChangeRole = async (memberId: string, newRole: Exclude<TeamRole, "organizer">) => {
+    try {
+      const updated = await ManageEventService.updateTeamMember(eventId, memberId, {
+        role: newRole,
+      });
+      setTeamMembers(prev =>
+        prev.map(m => (m.id === memberId ? updated : m))
+      );
+      customToast.success("Role updated");
+    } catch (error: any) {
+      console.error("Update role failed:", error);
+      customToast.error(error.response?.data?.message || "Failed to update role");
+    }
   };
+
+  const handleSendBulkEmail = async () => {
+    if (!emailSubject.trim() || !emailBody.trim()) {
+      customToast.error("Please fill in subject and body");
+      return;
+    }
+
+    try {
+      setIsSendingEmail(true);
+      const result = await ManageEventService.sendBulkEmail(eventId, {
+        recipients: emailRecipients,
+        attendeeIds: emailRecipients === "custom" ? selectedAttendees : undefined,
+        subject: emailSubject,
+        body: emailBody,
+      });
+      customToast.success(`${result.emailsSent} emails sent!`);
+      setShowBulkEmailModal(false);
+      setEmailSubject("");
+      setEmailBody("");
+      setSelectedAttendees([]);
+    } catch (error: any) {
+      console.error("Bulk email failed:", error);
+      customToast.error(error.response?.data?.message || "Failed to send emails");
+    } finally {
+      setIsSendingEmail(false);
+    }
+  };
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!event) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen">
+        <p className="text-foreground/60 mb-4">Event not found or you don't have access</p>
+        <Button variant="primary" onClick={() => router.push("/profile")}>
+          Go Back
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -472,10 +478,10 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
         {/* Event Header */}
         <div className="mb-8">
           <div className="flex items-start gap-6 mb-6">
-            {event.image ? (
+            {event.coverImage ? (
               <div className="relative w-32 h-32 rounded-2xl overflow-hidden shrink-0">
                 <Image
-                  src={event.image}
+                  src={event.coverImage}
                   alt={event.title}
                   fill
                   className="object-cover"
@@ -492,35 +498,34 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                   {event.title}
                 </h1>
                 <span
-                  className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                    event.status === "published"
-                      ? "bg-green-500/10 text-green-500"
-                      : event.status === "draft"
+                  className={`px-3 py-1 rounded-full text-xs font-semibold ${event.status === "PUBLISHED"
+                    ? "bg-green-500/10 text-green-500"
+                    : event.status === "DRAFT"
                       ? "bg-yellow-500/10 text-yellow-500"
-                      : event.status === "cancelled"
-                      ? "bg-red-500/10 text-red-500"
-                      : "bg-blue-500/10 text-blue-500"
-                  }`}
+                      : event.status === "CANCELLED"
+                        ? "bg-red-500/10 text-red-500"
+                        : "bg-blue-500/10 text-blue-500"
+                    }`}
                 >
-                  {event.status.charAt(0).toUpperCase() + event.status.slice(1)}
+                  {event.status.charAt(0).toUpperCase() + event.status.slice(1).toLowerCase()}
                 </span>
               </div>
               <div className="flex flex-wrap items-center gap-4 text-sm text-foreground/70 mb-4">
                 <div className="flex items-center gap-2">
                   <Calendar size={16} color="currentColor" variant="Outline" />
-                  <span>{event.date}</span>
+                  <span>{new Date(event.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Clock size={16} color="currentColor" variant="Outline" />
-                  <span>{event.time}</span>
+                  <span>{event.startTime} - {event.endTime}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Location size={16} color="currentColor" variant="Outline" />
-                  <span>{event.location}</span>
+                  <span>{event.venueName || event.address || 'Online Event'}</span>
                 </div>
               </div>
               <p className="text-sm text-foreground/60">
-                Created on {event.createdAt}
+                Created on {new Date(event.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
               </p>
             </div>
           </div>
@@ -563,11 +568,10 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-2 px-4 py-3 font-medium text-sm transition-all duration-200 border-b-2 ${
-                    activeTab === tab.id
-                      ? "border-primary text-primary"
-                      : "border-transparent text-foreground/60 hover:text-foreground hover:border-foreground/20"
-                  }`}
+                  className={`flex items-center gap-2 px-4 py-3 font-medium text-sm transition-all duration-200 border-b-2 ${activeTab === tab.id
+                    ? "border-primary text-primary"
+                    : "border-transparent text-foreground/60 hover:text-foreground hover:border-foreground/20"
+                    }`}
                 >
                   <TabIcon
                     size={18}
@@ -577,11 +581,10 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                   <span>{tab.label}</span>
                   {tab.count !== undefined && (
                     <span
-                      className={`px-2 py-0.5 rounded-full text-xs ${
-                        activeTab === tab.id
-                          ? "bg-primary/10 text-primary"
-                          : "bg-foreground/5 text-foreground/60"
-                      }`}
+                      className={`px-2 py-0.5 rounded-full text-xs ${activeTab === tab.id
+                        ? "bg-primary/10 text-primary"
+                        : "bg-foreground/5 text-foreground/60"
+                        }`}
                     >
                       {tab.count}
                     </span>
@@ -848,11 +851,10 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                         <button
                           key={option.value}
                           onClick={() => setFilterStatus(option.value as typeof filterStatus)}
-                          className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                            filterStatus === option.value
-                              ? "bg-primary text-white"
-                              : "bg-foreground/5 text-foreground/70 hover:bg-primary/10 hover:text-primary"
-                          }`}
+                          className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${filterStatus === option.value
+                            ? "bg-primary text-white"
+                            : "bg-foreground/5 text-foreground/70 hover:bg-primary/10 hover:text-primary"
+                            }`}
                         >
                           {option.label}
                         </button>
@@ -935,76 +937,75 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                         </tr>
                       ) : (
                         filteredAttendees.map((attendee) => (
-                        <tr key={attendee.id} className="hover:bg-foreground/5 transition-colors">
-                          <td className="px-6 py-4">
-                            <div>
-                              <div className="font-semibold text-foreground">{attendee.name}</div>
-                              <div className="text-sm text-foreground/60">{attendee.email}</div>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4">
-                            <div>
-                              <div className="text-sm font-medium text-foreground">
-                                {attendee.ticketType}
+                          <tr key={attendee.id} className="hover:bg-foreground/5 transition-colors">
+                            <td className="px-6 py-4">
+                              <div>
+                                <div className="font-semibold text-foreground">{attendee.name}</div>
+                                <div className="text-sm text-foreground/60">{attendee.email}</div>
                               </div>
-                              <div className="text-xs text-foreground/60">
-                                ₦{attendee.ticketPrice.toLocaleString()}
+                            </td>
+                            <td className="px-6 py-4">
+                              <div>
+                                <div className="text-sm font-medium text-foreground">
+                                  {attendee.ticketTypeName}
+                                </div>
+                                <div className="text-xs text-foreground/60">
+                                  ₦{attendee.ticketPrice.toLocaleString()}
+                                </div>
                               </div>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 text-sm text-foreground/70">
-                            {attendee.purchaseDate}
-                          </td>
-                          <td className="px-6 py-4">
-                            <span
-                              className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                                attendee.status === "checked_in"
+                            </td>
+                            <td className="px-6 py-4 text-sm text-foreground/70">
+                              {new Date(attendee.purchaseDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                            </td>
+                            <td className="px-6 py-4">
+                              <span
+                                className={`px-3 py-1 rounded-full text-xs font-semibold ${attendee.status === "checked_in"
                                   ? "bg-green-500/10 text-green-500"
                                   : "bg-yellow-500/10 text-yellow-500"
-                              }`}
-                            >
-                              {attendee.status === "checked_in" ? "Checked In" : "Not Checked In"}
-                            </span>
-                            {attendee.checkInTime && (
-                              <div className="text-xs text-foreground/60 mt-1">
-                                {attendee.checkInTime}
-                              </div>
-                            )}
-                          </td>
-                          <td className="px-6 py-4">
-                            <div className="flex items-center gap-2">
-                              {attendee.status === "not_checked_in" ? (
-                                <button
-                                  onClick={() => handleCheckIn(attendee.id)}
-                                  className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors font-medium text-sm flex items-center gap-2"
-                                  title="Check In"
-                                >
-                                  <TickCircle size={18} color="currentColor" variant="Bold" />
-                                  Check In
-                                </button>
-                              ) : (
-                                <span className="px-3 py-1.5 bg-green-500/10 text-green-500 rounded-lg text-sm font-medium flex items-center gap-2">
-                                  <TickCircle size={16} color="currentColor" variant="Bold" />
-                                  Checked In
-                                </span>
+                                  }`}
+                              >
+                                {attendee.status === "checked_in" ? "Checked In" : "Not Checked In"}
+                              </span>
+                              {attendee.checkInTime && (
+                                <div className="text-xs text-foreground/60 mt-1">
+                                  {attendee.checkInTime}
+                                </div>
                               )}
-                              <a
-                                href={`mailto:${attendee.email}`}
-                                className="p-2 hover:bg-foreground/10 rounded-lg transition-colors"
-                                title="Send Email"
-                              >
-                                <Sms size={18} color="currentColor" variant="Outline" />
-                              </a>
-                              <a
-                                href={`tel:${attendee.phone}`}
-                                className="p-2 hover:bg-foreground/10 rounded-lg transition-colors"
-                                title="Call"
-                              >
-                                <Call size={18} color="currentColor" variant="Outline" />
-                              </a>
-                            </div>
-                          </td>
-                        </tr>
+                            </td>
+                            <td className="px-6 py-4">
+                              <div className="flex items-center gap-2">
+                                {attendee.status === "not_checked_in" ? (
+                                  <button
+                                    onClick={() => handleCheckIn(attendee.id)}
+                                    className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors font-medium text-sm flex items-center gap-2"
+                                    title="Check In"
+                                  >
+                                    <TickCircle size={18} color="currentColor" variant="Bold" />
+                                    Check In
+                                  </button>
+                                ) : (
+                                  <span className="px-3 py-1.5 bg-green-500/10 text-green-500 rounded-lg text-sm font-medium flex items-center gap-2">
+                                    <TickCircle size={16} color="currentColor" variant="Bold" />
+                                    Checked In
+                                  </span>
+                                )}
+                                <a
+                                  href={`mailto:${attendee.email}`}
+                                  className="p-2 hover:bg-foreground/10 rounded-lg transition-colors"
+                                  title="Send Email"
+                                >
+                                  <Sms size={18} color="currentColor" variant="Outline" />
+                                </a>
+                                <a
+                                  href={`tel:${attendee.phone}`}
+                                  className="p-2 hover:bg-foreground/10 rounded-lg transition-colors"
+                                  title="Call"
+                                >
+                                  <Call size={18} color="currentColor" variant="Outline" />
+                                </a>
+                              </div>
+                            </td>
+                          </tr>
                         ))
                       )}
                     </tbody>
@@ -1149,23 +1150,22 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                             <div className="flex items-center gap-2 mb-1">
                               <h4 className="font-semibold text-foreground">{member.name}</h4>
                               <span
-                                className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
-                                  member.role === "organizer"
-                                    ? "bg-primary/10 text-primary"
-                                    : member.role === "co-host"
+                                className={`px-2 py-0.5 rounded-full text-xs font-semibold ${member.role === "organizer"
+                                  ? "bg-primary/10 text-primary"
+                                  : member.role === "co-host"
                                     ? "bg-blue-500/10 text-blue-500"
                                     : member.role === "manager"
-                                    ? "bg-green-500/10 text-green-500"
-                                    : "bg-yellow-500/10 text-yellow-500"
-                                }`}
+                                      ? "bg-green-500/10 text-green-500"
+                                      : "bg-yellow-500/10 text-yellow-500"
+                                  }`}
                               >
                                 {member.role === "organizer"
                                   ? "Organizer"
                                   : member.role === "co-host"
-                                  ? "Co-Host"
-                                  : member.role === "manager"
-                                  ? "Manager"
-                                  : "Assistant"}
+                                    ? "Co-Host"
+                                    : member.role === "manager"
+                                      ? "Manager"
+                                      : "Assistant"}
                               </span>
                               {member.status === "pending" && (
                                 <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-orange-500/10 text-orange-500">
@@ -1175,7 +1175,7 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                             </div>
                             <p className="text-sm text-foreground/60">{member.email}</p>
                             <p className="text-xs text-foreground/50 mt-1">
-                              {member.status === "pending" 
+                              {member.status === "pending"
                                 ? `Invited on ${member.addedDate} - Awaiting registration`
                                 : `Added on ${member.addedDate}`}
                             </p>
@@ -1314,11 +1314,10 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                     <button
                       key={role}
                       onClick={() => setSelectedRole(role)}
-                      className={`flex-1 px-6 py-4 rounded-xl border-2 transition-all text-center ${
-                        selectedRole === role
-                          ? "border-primary bg-primary/10 text-primary font-semibold"
-                          : "border-foreground/20 text-foreground/70 hover:border-primary/50 hover:text-foreground"
-                      }`}
+                      className={`flex-1 px-6 py-4 rounded-xl border-2 transition-all text-center ${selectedRole === role
+                        ? "border-primary bg-primary/10 text-primary font-semibold"
+                        : "border-foreground/20 text-foreground/70 hover:border-primary/50 hover:text-foreground"
+                        }`}
                     >
                       <div className="text-base capitalize">{role.replace("-", " ")}</div>
                     </button>
@@ -1467,11 +1466,10 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                           setSelectedAttendees([]);
                         }
                       }}
-                      className={`p-4 rounded-xl border-2 transition-all text-left ${
-                        emailRecipients === option.value
-                          ? "border-primary bg-primary/10 text-primary"
-                          : "border-foreground/20 text-foreground/70 hover:border-primary/50 hover:text-foreground"
-                      }`}
+                      className={`p-4 rounded-xl border-2 transition-all text-left ${emailRecipients === option.value
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "border-foreground/20 text-foreground/70 hover:border-primary/50 hover:text-foreground"
+                        }`}
                     >
                       <div className="font-semibold text-base mb-1">{option.label}</div>
                       <div className="text-sm opacity-70">{option.count} recipients</div>
