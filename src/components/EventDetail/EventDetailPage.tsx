@@ -7,6 +7,8 @@ import Image from "next/image";
 import { Calendar, Heart, Share, ArrowLeft2, Chart, Clock, Location, Map, Star1, Ticket, Tag, MessageText1, TickCircle, User, People } from "iconsax-react";
 import Button from "../Button";
 import EventCard from "../Homepage/EventCard";
+import { useUserStore } from "@/store/useUserStore";
+import { useMessengerStore } from "@/store/useMessengerStore";
 
 interface EventDetailPageProps {
   eventId: string;
@@ -23,8 +25,11 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
   const [relatedEvents, setRelatedEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [organizerId, setOrganizerId] = useState<string | null>(null);
 
-  const isOrganizer = true; // Replace with actual auth check
+  const { user } = useUserStore();
+  const { openEventChat } = useMessengerStore();
+  const isOrganizer = user?.id && organizerId ? user.id === organizerId : false;
   const hasAttended = true; // Replace with actual check - user must have attended to review
   const hasReviewed = false; // Replace with actual check
 
@@ -64,6 +69,7 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
         };
 
         setEvent(mappedEvent);
+        setOrganizerId(data.organizerId || data.organizer?.id || null);
 
         // Fetch reviews, stats, and related events in parallel
         const [reviewsData, statsData, relatedData] = await Promise.all([
@@ -176,7 +182,7 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
           {isOrganizer && (
             <button
               onClick={() => router.push(`/events/${eventId}/manage`)}
-              className="px-4 py-2 rounded-full bg-primary text-white text-sm font-semibold hover:bg-primary/90 transition-colors backdrop-blur-sm flex items-center gap-2"
+              className="px-4 py-2 rounded-full bg-primary text-white text-sm font-semibold hover:bg-primary/90 transition-colors backdrop-blur-sm flex items-center gap-2 cursor-pointer"
               aria-label="Manage event"
             >
               <Chart size={16} color="currentColor" variant="Bold" />
@@ -185,7 +191,7 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
           )}
           <button
             onClick={() => setIsFavorite(!isFavorite)}
-            className="w-10 h-10 rounded-full bg-background/90 backdrop-blur-sm flex items-center justify-center hover:bg-background transition-colors"
+            className="w-10 h-10 rounded-full bg-background/90 backdrop-blur-sm flex items-center justify-center hover:bg-background transition-colors cursor-pointer"
             aria-label="Add to favorites"
           >
             <Heart
@@ -197,7 +203,7 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
           </button>
           <button
             onClick={handleShare}
-            className="w-10 h-10 rounded-full bg-background/90 backdrop-blur-sm flex items-center justify-center hover:bg-background transition-colors"
+            className="w-10 h-10 rounded-full bg-background/90 backdrop-blur-sm flex items-center justify-center hover:bg-background transition-colors cursor-pointer"
             aria-label="Share event"
           >
             <Share size={20} color="currentColor" variant="Outline" />
@@ -603,11 +609,7 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
                   variant="outline"
                   size="md"
                   fullWidth
-                  onClick={() => {
-                    // Open floating messenger and navigate to this event's chat
-                    // In a real app, this would trigger the messenger to open with this event's chat
-                    window.location.href = `/messages?event=${eventId}`;
-                  }}
+                  onClick={() => openEventChat(eventId)}
                   className="mt-3"
                 >
                   <MessageText1 size={18} color="currentColor" variant="Outline" />

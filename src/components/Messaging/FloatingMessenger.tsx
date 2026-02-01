@@ -1,37 +1,33 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import {
   MessageText1,
   CloseCircle,
   Send,
   SearchNormal1,
-  More,
   TickCircle,
   Clock,
   ArrowLeft2,
-  Add,
   User,
   Calendar,
   Location,
   People,
-  Shop,
-  Ticket,
+  Refresh,
 } from "iconsax-react";
+import { ChatService } from "@/services/chat";
+import { chatSocket } from "@/services/chatSocket";
+import { useChatStore } from "@/store/useChatStore";
+import { useUserStore } from "@/store/useUserStore";
+import { useMessengerStore } from "@/store/useMessengerStore";
+import axiosInstance from "@/lib/axios";
+import customToast from "@/lib/toast";
+import { ChatMessage, EventChatInfo, ChatRole } from "@/types/chat";
 
-interface Message {
-  id: string;
-  senderId: string;
-  senderName: string;
-  senderAvatar?: string;
-  senderRole?: "organizer" | "vendor" | "attendee";
-  content: string;
-  timestamp: Date;
-  read: boolean;
-}
+const WS_URL = process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:4000";
 
-interface EventChat {
+interface EventChatPreview {
   id: string;
   eventId: string;
   eventName: string;
@@ -43,189 +39,204 @@ interface EventChat {
   unreadCount: number;
   lastMessage: string;
   lastMessageTime: Date;
-  messages: Message[];
-  isOrganizer?: boolean;
-  isVendor?: boolean;
+  userRole?: ChatRole;
 }
 
 const FloatingMessenger: React.FC = () => {
   const router = useRouter();
-  const [isOpen, setIsOpen] = useState(false);
-  const [activeChat, setActiveChat] = useState<string | null>(null);
+  const { user } = useUserStore();
+  const chatStore = useChatStore();
+  const {
+    isOpen,
+    activeEventId: storeActiveEventId,
+    openMessenger,
+    closeMessenger,
+    toggleMessenger,
+    clearActiveEvent,
+  } = useMessengerStore();
+
+  const [localActiveEventId, setLocalActiveEventId] = useState<string | null>(null);
   const [messageInput, setMessageInput] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [eventChats, setEventChats] = useState<EventChatPreview[]>([]);
+  const [loadingChats, setLoadingChats] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
+
+  // Sync store's activeEventId with local state
+  const activeEventId = storeActiveEventId || localActiveEventId;
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-
-  // Mock event chats - Replace with API call
-  const [eventChats, setEventChats] = useState<EventChat[]>([
-    {
-      id: "1",
-      eventId: "1",
-      eventName: "Tech Fest Lagos 2024",
-      eventDate: "March 15, 2024",
-      eventLocation: "Lagos Convention Centre",
-      eventImage: undefined,
-      organizerName: "Tech Events Nigeria",
-      participantCount: 1247,
-      unreadCount: 5,
-      lastMessage: "Sarah: Can't wait for this event! 🔥",
-      lastMessageTime: new Date(Date.now() - 15 * 60 * 1000),
-      isOrganizer: true,
-      messages: [
-        {
-          id: "m1",
-          senderId: "user1",
-          senderName: "Sarah Johnson",
-          senderRole: "attendee",
-          content: "Hey everyone! Is anyone carpooling from Victoria Island?",
-          timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000),
-          read: true,
-        },
-        {
-          id: "m2",
-          senderId: "user2",
-          senderName: "Mike Chen",
-          senderRole: "attendee",
-          content: "I'm coming from VI! We can share a ride.",
-          timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000 + 10 * 60 * 1000),
-          read: true,
-        },
-        {
-          id: "m3",
-          senderId: "organizer",
-          senderName: "Tech Events Nigeria",
-          senderRole: "organizer",
-          content: "Great to see the community connecting! Don't forget to bring your ID for registration.",
-          timestamp: new Date(Date.now() - 1 * 60 * 60 * 1000),
-          read: true,
-        },
-        {
-          id: "m4",
-          senderId: "vendor1",
-          senderName: "Elite Photography",
-          senderRole: "vendor",
-          content: "We'll be covering the event! Say hi if you see us 📸",
-          timestamp: new Date(Date.now() - 45 * 60 * 1000),
-          read: true,
-        },
-        {
-          id: "m5",
-          senderId: "user3",
-          senderName: "Alex Johnson",
-          senderRole: "attendee",
-          content: "Can't wait for this event! 🔥",
-          timestamp: new Date(Date.now() - 15 * 60 * 1000),
-          read: false,
-        },
-        {
-          id: "m6",
-          senderId: "user4",
-          senderName: "David Williams",
-          senderRole: "attendee",
-          content: "What time should we arrive?",
-          timestamp: new Date(Date.now() - 10 * 60 * 1000),
-          read: false,
-        },
-      ],
-    },
-    {
-      id: "2",
-      eventId: "2",
-      eventName: "Design Conference 2025",
-      eventDate: "Feb 10, 2025",
-      eventLocation: "Eko Hotel & Suites",
-      eventImage: undefined,
-      organizerName: "Design Hub Lagos",
-      participantCount: 450,
-      unreadCount: 0,
-      lastMessage: "Organizer: Welcome everyone!",
-      lastMessageTime: new Date(Date.now() - 3 * 60 * 60 * 1000),
-      isVendor: true,
-      messages: [
-        {
-          id: "m7",
-          senderId: "organizer",
-          senderName: "Design Hub Lagos",
-          senderRole: "organizer",
-          content: "Welcome everyone! We're excited to have you all here.",
-          timestamp: new Date(Date.now() - 3 * 60 * 60 * 1000),
-          read: true,
-        },
-      ],
-    },
-    {
-      id: "3",
-      eventId: "3",
-      eventName: "Afro Nation Festival",
-      eventDate: "Mar 15, 2025",
-      eventLocation: "Tafawa Balewa Square",
-      eventImage: undefined,
-      organizerName: "Music Events Co",
-      participantCount: 5000,
-      unreadCount: 12,
-      lastMessage: "Emma: Who's performing first?",
-      lastMessageTime: new Date(Date.now() - 5 * 60 * 1000),
-      messages: [
-        {
-          id: "m8",
-          senderId: "user5",
-          senderName: "Emma Wilson",
-          senderRole: "attendee",
-          content: "Who's performing first?",
-          timestamp: new Date(Date.now() - 5 * 60 * 1000),
-          read: false,
-        },
-      ],
-    },
-  ]);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const totalUnreadCount = eventChats.reduce((sum, chat) => sum + chat.unreadCount, 0);
+  const activeEventChat = eventChats.find((c) => c.eventId === activeEventId);
+
+  // Load user's event chats on mount
+  useEffect(() => {
+    if (user?.id && isOpen) {
+      loadEventChats();
+    }
+  }, [user?.id, isOpen]);
+
+  // Connect to WebSocket when opening a chat
+  useEffect(() => {
+    if (activeEventId) {
+      initializeChat(activeEventId);
+    }
+
+    return () => {
+      if (activeEventId) {
+        chatSocket.leaveRoom();
+      }
+    };
+  }, [activeEventId]);
+
+  // Setup WebSocket event handlers
+  useEffect(() => {
+    chatSocket.on("chat:joined", (data) => {
+      chatStore.setMessages(data.recentMessages);
+      chatStore.setChatInfo(data.chat);
+      chatStore.setConnected(true);
+    });
+
+    chatSocket.on("chat:message", (data) => {
+      chatStore.addMessage(data.message);
+      // Update event chat preview
+      setEventChats((prev) =>
+        prev.map((c) =>
+          c.eventId === activeEventId
+            ? {
+              ...c,
+              lastMessage: `${data.message.sender.name}: ${data.message.content}`,
+              lastMessageTime: new Date(data.message.createdAt),
+            }
+            : c
+        )
+      );
+    });
+
+    chatSocket.on("chat:typing", (data) => {
+      chatStore.setTypingUsers(data.users.filter((u) => u.id !== user?.id));
+    });
+
+    chatSocket.on("chat:error", (data) => {
+      customToast.error(data.message);
+    });
+
+    return () => {
+      chatSocket.off("chat:joined");
+      chatSocket.off("chat:message");
+      chatSocket.off("chat:typing");
+      chatSocket.off("chat:error");
+    };
+  }, [activeEventId, user?.id]);
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
-    if (activeChat && messagesEndRef.current) {
+    if (activeEventId && messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
-  }, [activeChat, eventChats]);
+  }, [chatStore.messages, activeEventId]);
 
   // Focus input when chat opens
   useEffect(() => {
-    if (isOpen && activeChat && inputRef.current) {
+    if (isOpen && activeEventId && inputRef.current) {
       setTimeout(() => inputRef.current?.focus(), 100);
     }
-  }, [isOpen, activeChat]);
+  }, [isOpen, activeEventId]);
 
-  const handleSendMessage = () => {
-    if (!messageInput.trim() || !activeChat) return;
+  const loadEventChats = async () => {
+    try {
+      setLoadingChats(true);
+      const response = await axiosInstance.get<{ status: string; data: EventChatPreview[] }>(
+        "/user/event-chats"
+      );
+      if (response.data.status === "success") {
+        setEventChats(response.data.data);
+      }
+    } catch (error) {
+      console.error("Failed to load event chats:", error);
+    } finally {
+      setLoadingChats(false);
+    }
+  };
 
-    const eventChat = eventChats.find((c) => c.id === activeChat);
-    if (!eventChat) return;
+  const initializeChat = async (eventId: string) => {
+    try {
+      chatStore.setJoining(true);
+      chatStore.setError(null);
 
-    const newMessage: Message = {
-      id: `m${Date.now()}`,
-      senderId: "current",
-      senderName: "You",
-      senderRole: eventChat.isOrganizer ? "organizer" : eventChat.isVendor ? "vendor" : "attendee",
-      content: messageInput.trim(),
-      timestamp: new Date(),
-      read: false,
-    };
+      // Get chat info
+      const joinResult = await ChatService.joinChat(eventId);
 
-    setEventChats((prev) =>
-      prev.map((chat) =>
-        chat.id === activeChat
-          ? {
-              ...chat,
-              lastMessage: `${newMessage.senderName}: ${newMessage.content}`,
-              lastMessageTime: newMessage.timestamp,
-              messages: [...chat.messages, newMessage],
-            }
-          : chat
-      )
-    );
+      if (!joinResult.canJoin) {
+        chatStore.setCanJoin(false, joinResult.reason);
+        customToast.error(
+          joinResult.reason === "NO_TICKET"
+            ? "You need a ticket to join this chat"
+            : joinResult.reason === "CHAT_DISABLED"
+              ? "Chat is disabled for this event"
+              : "Cannot join chat"
+        );
+        return;
+      }
 
+      chatStore.setChatInfo(joinResult.chat);
+      chatStore.setCanJoin(true);
+
+      // Connect to WebSocket and join room
+      chatSocket.connect(WS_URL);
+      chatSocket.joinRoom(eventId);
+
+      // Load pinned messages
+      const pinnedMessages = await ChatService.getPinnedMessages(eventId);
+      chatStore.setPinnedMessages(pinnedMessages);
+    } catch (error: any) {
+      console.error("Failed to initialize chat:", error);
+      chatStore.setError(error.response?.data?.message || "Failed to join chat");
+      customToast.error("Failed to join chat");
+    } finally {
+      chatStore.setJoining(false);
+    }
+  };
+
+  const handleSendMessage = useCallback(() => {
+    if (!messageInput.trim() || !activeEventId) return;
+
+    const content = messageInput.trim();
     setMessageInput("");
+
+    if (chatSocket.isConnected()) {
+      chatSocket.sendMessage({ content, type: "TEXT" });
+    } else {
+      // Fallback to REST
+      ChatService.sendMessage(activeEventId, { content, type: "TEXT" })
+        .then((message) => {
+          chatStore.addMessage(message);
+        })
+        .catch((error) => {
+          customToast.error(error.response?.data?.message || "Failed to send message");
+        });
+    }
+  }, [messageInput, activeEventId]);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setMessageInput(e.target.value);
+
+    // Send typing indicator
+    if (!isTyping) {
+      setIsTyping(true);
+      chatSocket.sendTyping();
+    }
+
+    // Clear typing after delay
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+    typingTimeoutRef.current = setTimeout(() => {
+      setIsTyping(false);
+    }, 2000);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -235,14 +246,50 @@ const FloatingMessenger: React.FC = () => {
     }
   };
 
-  const activeEventChat = eventChats.find((c) => c.id === activeChat);
+  const handleChatSelect = (eventId: string) => {
+    setLocalActiveEventId(eventId);
+    // Mark as read
+    setEventChats((prev) =>
+      prev.map((c) => (c.eventId === eventId ? { ...c, unreadCount: 0 } : c))
+    );
+  };
+
+  const handleBack = () => {
+    chatSocket.leaveRoom();
+    chatStore.reset();
+    setLocalActiveEventId(null);
+    clearActiveEvent();
+  };
+
+  const loadMoreMessages = async () => {
+    if (chatStore.isLoadingMessages || !chatStore.hasMoreMessages || !activeEventId) return;
+
+    const oldestMessage = chatStore.messages[0];
+    if (!oldestMessage) return;
+
+    try {
+      chatStore.setIsLoadingMessages(true);
+      const result = await ChatService.getMessages(activeEventId, {
+        before: oldestMessage.id,
+        limit: 50,
+      });
+      chatStore.prependMessages(result.messages);
+      chatStore.setHasMoreMessages(result.hasMore);
+    } catch (error) {
+      console.error("Failed to load more messages:", error);
+    } finally {
+      chatStore.setIsLoadingMessages(false);
+    }
+  };
+
   const filteredChats = eventChats.filter((chat) =>
     chat.eventName.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const formatTime = (date: Date) => {
+  const formatTime = (date: Date | string) => {
+    const d = typeof date === "string" ? new Date(date) : date;
     const now = new Date();
-    const diff = now.getTime() - date.getTime();
+    const diff = now.getTime() - d.getTime();
     const minutes = Math.floor(diff / 60000);
     const hours = Math.floor(diff / 3600000);
     const days = Math.floor(diff / 86400000);
@@ -251,17 +298,29 @@ const FloatingMessenger: React.FC = () => {
     if (minutes < 60) return `${minutes}m ago`;
     if (hours < 24) return `${hours}h ago`;
     if (days < 7) return `${days}d ago`;
-    return date.toLocaleDateString();
+    return d.toLocaleDateString();
   };
+
+  const getRoleBadgeStyle = (role?: ChatRole) => {
+    switch (role) {
+      case "ORGANIZER":
+        return "bg-primary/20 text-primary border-primary/30";
+      case "MODERATOR":
+        return "bg-secondary/20 text-secondary border-secondary/30";
+      default:
+        return "bg-foreground/5 text-foreground border-foreground/10";
+    }
+  };
+
+  if (!user) return null;
 
   return (
     <>
       {/* Floating Button */}
       <button
-        onClick={() => setIsOpen(!isOpen)}
-        className={`fixed bottom-6 right-6 z-50 w-14 h-14 bg-primary text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center group ${
-          isOpen ? "scale-90" : "scale-100 hover:scale-110"
-        }`}
+        onClick={toggleMessenger}
+        className={`fixed bottom-6 right-6 z-50 w-14 h-14 bg-primary text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center group cursor-pointer ${isOpen ? "scale-90" : "scale-100 hover:scale-110"
+          }`}
         aria-label="Open messages"
       >
         {isOpen ? (
@@ -281,18 +340,17 @@ const FloatingMessenger: React.FC = () => {
       {/* Messages Panel */}
       {isOpen && (
         <div
-          className={`fixed z-50 bg-background border border-foreground/10 rounded-2xl shadow-2xl flex flex-col ${
-            // Mobile: full screen
-            "bottom-0 left-0 right-0 top-0 rounded-none md:rounded-2xl md:bottom-20 md:right-6 md:left-auto md:top-auto md:w-[420px] md:h-[600px]"
-          }`}
+          className={`fixed z-50 bg-background border border-foreground/10 rounded-2xl shadow-2xl flex flex-col ${"bottom-0 left-0 right-0 top-0 rounded-none md:rounded-2xl md:bottom-20 md:right-6 md:left-auto md:top-auto md:w-[420px] md:h-[600px]"
+            }`}
         >
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b border-foreground/10 bg-background">
-            {activeChat ? (
+            {activeEventId ? (
               <>
                 <button
-                  onClick={() => setActiveChat(null)}
-                  className="md:hidden p-2 hover:bg-foreground/10 rounded-lg transition-colors"
+                  onClick={handleBack}
+                  className="p-2 hover:bg-foreground/10 rounded-lg transition-colors cursor-pointer"
+                  aria-label="Back to chat list"
                 >
                   <ArrowLeft2 size={20} color="currentColor" variant="Outline" />
                 </button>
@@ -314,21 +372,28 @@ const FloatingMessenger: React.FC = () => {
                     </h3>
                     <div className="flex items-center gap-2 text-xs text-foreground/60">
                       <People size={12} color="currentColor" variant="Outline" />
-                      <span>{activeEventChat?.participantCount.toLocaleString()} participants</span>
+                      <span>
+                        {chatStore.chatInfo?.onlineCount || 0} online
+                        {chatStore.typingUsers.length > 0 && (
+                          <span className="text-primary ml-2">
+                            {chatStore.typingUsers.map((u) => u.name).join(", ")} typing...
+                          </span>
+                        )}
+                      </span>
                     </div>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                   <button
-                    onClick={() => router.push(`/events/${activeEventChat?.eventId}`)}
-                    className="p-2 hover:bg-foreground/10 rounded-lg transition-colors"
+                    onClick={() => router.push(`/events/${activeEventId}`)}
+                    className="p-2 hover:bg-foreground/10 rounded-lg transition-colors cursor-pointer"
                     title="View Event"
                   >
                     <Calendar size={18} color="currentColor" variant="Outline" />
                   </button>
                   <button
-                    className="p-2 hover:bg-foreground/10 rounded-lg transition-colors"
-                    onClick={() => setIsOpen(false)}
+                    className="p-2 hover:bg-foreground/10 rounded-lg transition-colors cursor-pointer"
+                    onClick={closeMessenger}
                   >
                     <CloseCircle size={20} color="currentColor" variant="Outline" />
                   </button>
@@ -339,8 +404,20 @@ const FloatingMessenger: React.FC = () => {
                 <h3 className="text-lg font-bold text-foreground">Event Chats</h3>
                 <div className="flex items-center gap-2">
                   <button
-                    className="p-2 hover:bg-foreground/10 rounded-lg transition-colors"
-                    onClick={() => setIsOpen(false)}
+                    className="p-2 hover:bg-foreground/10 rounded-lg transition-colors cursor-pointer"
+                    onClick={loadEventChats}
+                    disabled={loadingChats}
+                  >
+                    <Refresh
+                      size={20}
+                      color="currentColor"
+                      variant="Outline"
+                      className={loadingChats ? "animate-spin" : ""}
+                    />
+                  </button>
+                  <button
+                    className="p-2 hover:bg-foreground/10 rounded-lg transition-colors cursor-pointer"
+                    onClick={closeMessenger}
                   >
                     <CloseCircle size={20} color="currentColor" variant="Outline" />
                   </button>
@@ -351,7 +428,7 @@ const FloatingMessenger: React.FC = () => {
 
           {/* Content */}
           <div className="flex-1 overflow-hidden flex flex-col">
-            {activeChat ? (
+            {activeEventId ? (
               // Chat View
               <>
                 {/* Event Info Banner */}
@@ -367,107 +444,152 @@ const FloatingMessenger: React.FC = () => {
                   </div>
                 )}
 
-                {/* Messages */}
-                <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                  {activeEventChat?.messages.map((message) => {
-                    const isOwnMessage = message.senderId === "current";
-                    const roleColors = {
-                      organizer: "bg-primary/20 text-primary border-primary/30",
-                      vendor: "bg-secondary/20 text-secondary border-secondary/30",
-                      attendee: "bg-foreground/5 text-foreground border-foreground/10",
-                    };
-                    const roleColor = message.senderRole ? roleColors[message.senderRole] : roleColors.attendee;
+                {/* Loading / Joining State */}
+                {chatStore.isJoining && (
+                  <div className="flex-1 flex items-center justify-center">
+                    <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                  </div>
+                )}
 
-                    return (
-                      <div
-                        key={message.id}
-                        className={`flex gap-3 ${
-                          isOwnMessage ? "flex-row-reverse" : "flex-row"
-                        }`}
-                      >
-                        {!isOwnMessage && (
-                          <div className="w-8 h-8 rounded-full bg-foreground/5 flex items-center justify-center shrink-0">
-                            {message.senderAvatar ? (
-                              <img
-                                src={message.senderAvatar}
-                                alt={message.senderName}
-                                className="w-full h-full rounded-full"
-                              />
-                            ) : (
-                              <User size={16} color="currentColor" variant="Bold" className="text-foreground/60" />
-                            )}
-                          </div>
-                        )}
-                        <div
-                          className={`max-w-[75%] ${
-                            isOwnMessage ? "items-end" : "items-start"
-                          } flex flex-col gap-1`}
-                        >
-                          {!isOwnMessage && (
-                            <div className="flex items-center gap-2 px-1">
-                              <span className="text-xs font-semibold text-foreground">
-                                {message.senderName}
-                              </span>
-                              {message.senderRole && (
-                                <span
-                                  className={`text-xs px-2 py-0.5 rounded-full border ${roleColor}`}
-                                >
-                                  {message.senderRole}
-                                </span>
-                              )}
-                            </div>
-                          )}
-                          <div
-                            className={`px-4 py-2 rounded-2xl ${
-                              isOwnMessage
-                                ? "bg-primary text-white rounded-br-sm"
-                                : "bg-foreground/5 text-foreground rounded-bl-sm"
-                            }`}
-                          >
-                            <p className="text-sm whitespace-pre-wrap break-words">
-                              {message.content}
-                            </p>
-                          </div>
-                          <div className="flex items-center gap-1 text-xs text-foreground/50 px-1">
-                            <span>{formatTime(message.timestamp)}</span>
-                            {isOwnMessage && (
-                              <>
-                                {message.read ? (
-                                  <TickCircle size={12} color="currentColor" variant="Bold" />
-                                ) : (
-                                  <Clock size={12} color="currentColor" variant="Outline" />
-                                )}
-                              </>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                  <div ref={messagesEndRef} />
-                </div>
-
-                {/* Input */}
-                <div className="p-4 border-t border-foreground/10 bg-background">
-                  <div className="flex items-end gap-2">
-                    <input
-                      ref={inputRef}
-                      type="text"
-                      value={messageInput}
-                      onChange={(e) => setMessageInput(e.target.value)}
-                      onKeyPress={handleKeyPress}
-                      placeholder="Type a message..."
-                      className="flex-1 px-4 py-3 bg-foreground/5 border border-foreground/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-foreground placeholder:text-foreground/40"
-                    />
+                {/* Error State */}
+                {chatStore.error && !chatStore.isJoining && (
+                  <div className="flex-1 flex flex-col items-center justify-center p-4">
+                    <p className="text-foreground/60 text-center">{chatStore.error}</p>
                     <button
-                      onClick={handleSendMessage}
-                      disabled={!messageInput.trim()}
-                      className="w-11 h-11 bg-primary text-white rounded-xl hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                      onClick={() => activeEventId && initializeChat(activeEventId)}
+                      className="mt-4 px-4 py-2 bg-primary text-white rounded-lg"
                     >
-                      <Send size={20} color="currentColor" variant="Bold" />
+                      Retry
                     </button>
                   </div>
-                </div>
+                )}
+
+                {/* Messages */}
+                {!chatStore.isJoining && !chatStore.error && (
+                  <>
+                    <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                      {/* Load more button */}
+                      {chatStore.hasMoreMessages && (
+                        <button
+                          onClick={loadMoreMessages}
+                          disabled={chatStore.isLoadingMessages}
+                          className="w-full py-2 text-sm text-primary hover:underline disabled:opacity-50"
+                        >
+                          {chatStore.isLoadingMessages ? "Loading..." : "Load older messages"}
+                        </button>
+                      )}
+
+                      {chatStore.messages.map((message) => {
+                        const isOwnMessage = message.sender.id === user?.id;
+
+                        return (
+                          <div
+                            key={message.id}
+                            className={`flex gap-3 ${isOwnMessage ? "flex-row-reverse" : "flex-row"}`}
+                          >
+                            {!isOwnMessage && (
+                              <div className="w-8 h-8 rounded-full bg-foreground/5 flex items-center justify-center shrink-0">
+                                {message.sender.avatar ? (
+                                  <img
+                                    src={message.sender.avatar}
+                                    alt={message.sender.name}
+                                    className="w-full h-full rounded-full"
+                                  />
+                                ) : (
+                                  <User
+                                    size={16}
+                                    color="currentColor"
+                                    variant="Bold"
+                                    className="text-foreground/60"
+                                  />
+                                )}
+                              </div>
+                            )}
+                            <div
+                              className={`max-w-[75%] ${isOwnMessage ? "items-end" : "items-start"
+                                } flex flex-col gap-1`}
+                            >
+                              {!isOwnMessage && (
+                                <div className="flex items-center gap-2 px-1">
+                                  <span className="text-xs font-semibold text-foreground">
+                                    {message.sender.name}
+                                  </span>
+                                  {message.sender.role && message.sender.role !== "MEMBER" && (
+                                    <span
+                                      className={`text-xs px-2 py-0.5 rounded-full border ${getRoleBadgeStyle(
+                                        message.sender.role
+                                      )}`}
+                                    >
+                                      {message.sender.role.toLowerCase()}
+                                    </span>
+                                  )}
+                                </div>
+                              )}
+
+                              {/* Reply preview */}
+                              {message.replyTo && (
+                                <div className="px-3 py-1 bg-foreground/5 rounded-lg text-xs text-foreground/60 border-l-2 border-primary">
+                                  <span className="font-medium">{message.replyTo.senderName}</span>
+                                  <p className="truncate">{message.replyTo.content}</p>
+                                </div>
+                              )}
+
+                              <div
+                                className={`px-4 py-2 rounded-2xl ${message.type === "ANNOUNCEMENT"
+                                  ? "bg-primary/10 text-primary border border-primary/20"
+                                  : message.type === "SYSTEM"
+                                    ? "bg-foreground/5 text-foreground/60 text-center w-full"
+                                    : isOwnMessage
+                                      ? "bg-primary text-white rounded-br-sm"
+                                      : "bg-foreground/5 text-foreground rounded-bl-sm"
+                                  }`}
+                              >
+                                <p className="text-sm whitespace-pre-wrap break-words">
+                                  {message.content}
+                                </p>
+                              </div>
+                              <div className="flex items-center gap-1 text-xs text-foreground/50 px-1">
+                                <span>{formatTime(message.createdAt)}</span>
+                                {message.isPinned && (
+                                  <span className="text-primary">📌</span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                      <div ref={messagesEndRef} />
+                    </div>
+
+                    {/* Input */}
+                    <div className="p-4 border-t border-foreground/10 bg-background">
+                      {chatStore.isMuted ? (
+                        <div className="text-center text-sm text-foreground/60 py-3">
+                          You are muted in this chat
+                        </div>
+                      ) : (
+                        <div className="flex items-end gap-2">
+                          <input
+                            ref={inputRef}
+                            type="text"
+                            value={messageInput}
+                            onChange={handleInputChange}
+                            onKeyPress={handleKeyPress}
+                            placeholder="Type a message..."
+                            className="flex-1 px-4 py-3 bg-foreground/5 border border-foreground/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-foreground placeholder:text-foreground/40"
+                          />
+                          <button
+                            onClick={handleSendMessage}
+                            disabled={!messageInput.trim()}
+                            className="w-11 h-11 bg-primary text-white rounded-xl hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center cursor-pointer"
+                          >
+                            <Send size={20} color="currentColor" variant="Bold" />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </>
+                )}
               </>
             ) : (
               // Event Chats List
@@ -493,7 +615,11 @@ const FloatingMessenger: React.FC = () => {
 
                 {/* Event Chats */}
                 <div className="flex-1 overflow-y-auto">
-                  {filteredChats.length === 0 ? (
+                  {loadingChats ? (
+                    <div className="flex items-center justify-center py-12">
+                      <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                    </div>
+                  ) : filteredChats.length === 0 ? (
                     <div className="p-8 text-center">
                       <Calendar
                         size={48}
@@ -513,18 +639,8 @@ const FloatingMessenger: React.FC = () => {
                       {filteredChats.map((chat) => (
                         <button
                           key={chat.id}
-                          onClick={() => {
-                            setActiveChat(chat.id);
-                            // Mark as read
-                            setEventChats((prev) =>
-                              prev.map((c) =>
-                                c.id === chat.id
-                                  ? { ...c, unreadCount: 0, messages: c.messages.map((m) => ({ ...m, read: true })) }
-                                  : c
-                              )
-                            );
-                          }}
-                          className="w-full p-4 hover:bg-foreground/5 transition-colors text-left"
+                          onClick={() => handleChatSelect(chat.eventId)}
+                          className="w-full p-4 hover:bg-foreground/5 transition-colors text-left cursor-pointer"
                         >
                           <div className="flex items-start gap-3">
                             {chat.eventImage ? (
@@ -535,7 +651,12 @@ const FloatingMessenger: React.FC = () => {
                               />
                             ) : (
                               <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                                <Calendar size={24} color="currentColor" variant="Bold" className="text-primary" />
+                                <Calendar
+                                  size={24}
+                                  color="currentColor"
+                                  variant="Bold"
+                                  className="text-primary"
+                                />
                               </div>
                             )}
                             <div className="flex-1 min-w-0">
@@ -550,16 +671,16 @@ const FloatingMessenger: React.FC = () => {
                               <div className="flex items-center gap-2 mb-1 text-xs text-foreground/60">
                                 <People size={12} color="currentColor" variant="Outline" />
                                 <span>{chat.participantCount.toLocaleString()}</span>
-                                {chat.isOrganizer && (
+                                {chat.userRole === "ORGANIZER" && (
                                   <>
                                     <span>•</span>
                                     <span className="text-primary font-medium">Organizer</span>
                                   </>
                                 )}
-                                {chat.isVendor && (
+                                {chat.userRole === "MODERATOR" && (
                                   <>
                                     <span>•</span>
-                                    <span className="text-secondary font-medium">Vendor</span>
+                                    <span className="text-secondary font-medium">Moderator</span>
                                   </>
                                 )}
                               </div>
@@ -590,7 +711,7 @@ const FloatingMessenger: React.FC = () => {
       {isOpen && (
         <div
           className="fixed inset-0 bg-foreground/50 backdrop-blur-sm z-40 md:hidden"
-          onClick={() => setIsOpen(false)}
+          onClick={closeMessenger}
         />
       )}
     </>
@@ -598,4 +719,3 @@ const FloatingMessenger: React.FC = () => {
 };
 
 export default FloatingMessenger;
-

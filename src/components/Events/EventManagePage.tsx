@@ -796,7 +796,7 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                     Attendees List
                   </h3>
                   <p className="text-sm text-foreground/60 mt-1">
-                    {filteredAttendees.length} of {attendees.length} attendees
+                    {filteredAttendees.length} of {attendeesTotal} attendees
                   </p>
                 </div>
                 <div className="flex items-center gap-3">
@@ -1453,9 +1453,9 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                 </label>
                 <div className="grid grid-cols-2 gap-4">
                   {[
-                    { value: "all", label: "All Attendees", count: attendees.length },
-                    { value: "checked-in", label: "Checked In", count: attendees.filter(a => a.status === "checked_in").length },
-                    { value: "not-checked-in", label: "Not Checked In", count: attendees.filter(a => a.status === "not_checked_in").length },
+                    { value: "all", label: "All Attendees", count: attendeesTotal },
+                    { value: "checked_in", label: "Checked In", count: stats.checkIns },
+                    { value: "not_checked_in", label: "Not Checked In", count: attendeesTotal - stats.checkIns },
                     { value: "custom", label: "Custom Selection", count: selectedAttendees.length },
                   ].map((option) => (
                     <button
