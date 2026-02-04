@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
 import SessionInit from "@/components/Providers/SessionInit";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 
 const clashDisplay = localFont({
   src: [
@@ -113,10 +114,12 @@ export default function RootLayout({
       <body
         className={`${clashDisplay.variable} ${satoshi.variable} antialiased`}
       >
-        <SessionInit>
-          <Toaster position="top-center" toastOptions={{ className: '', style: { background: 'transparent', boxShadow: 'none' } }} />
-          {children}
-        </SessionInit>
+        <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!}>
+          <SessionInit>
+            <Toaster position="top-center" toastOptions={{ className: '', style: { background: 'transparent', boxShadow: 'none' } }} />
+            {children}
+          </SessionInit>
+        </GoogleOAuthProvider>
       </body>
     </html>
   );

@@ -30,6 +30,7 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
   const { user } = useUserStore();
   const { openEventChat } = useMessengerStore();
   const isOrganizer = user?.id && organizerId ? user.id === organizerId : false;
+  const [hasTicket, setHasTicket] = useState(false);
   const hasAttended = true; // Replace with actual check - user must have attended to review
   const hasReviewed = false; // Replace with actual check
 
@@ -54,6 +55,8 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
           attendees: data.attendeesCount || 0,
           image: data.coverImage,
           organizer: {
+            id: data.organizer?.id || data.organizerId || "",
+            username: data.organizer?.username || null,
             name: data.organizer?.displayName || "Organizer",
             verified: data.organizer?.isVerified || false,
             avatar: data.organizer?.avatar || ""
@@ -70,6 +73,7 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
 
         setEvent(mappedEvent);
         setOrganizerId(data.organizerId || data.organizer?.id || null);
+        setHasTicket(data.hasTicket || data.userHasTicket || false);
 
         // Fetch reviews, stats, and related events in parallel
         const [reviewsData, statsData, relatedData] = await Promise.all([
@@ -263,21 +267,28 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
             </div>
 
             {/* Organizer Info */}
-            <div className="p-6 bg-foreground/5 rounded-2xl border border-foreground/10">
+            <div
+              onClick={() => {
+                const profilePath = event.organizer.username
+                  ? `/profile/${event.organizer.username}`
+                  : `/profile/${event.organizer.id}`;
+                router.push(profilePath);
+              }}
+              className="p-6 bg-foreground/5 rounded-2xl border border-foreground/10 cursor-pointer hover:bg-foreground/10 transition-colors"
+            >
               <div className="flex items-center gap-4">
-                <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center">
-                  {/* <User size={32} color="currentColor" variant="Bold" className="text-primary" /> */}
+                <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center overflow-hidden">
                   <Image
                     src={event.organizer.avatar || "/placeholder.jpg"}
                     alt={event.organizer.name}
                     width={64}
                     height={64}
-                    className="rounded-full"
+                    className="rounded-full object-cover"
                   />
                 </div>
-                <div>
+                <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
-                    <h3 className="font-semibold text-foreground">
+                    <h3 className="font-semibold text-foreground hover:text-primary transition-colors">
                       {event.organizer.name}
                     </h3>
                     {event.organizer.verified && (
@@ -604,17 +615,19 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
                   Get Tickets
                 </Button>
 
-                {/* Join Event Chat Button */}
-                <Button
-                  variant="outline"
-                  size="md"
-                  fullWidth
-                  onClick={() => openEventChat(eventId)}
-                  className="mt-3"
-                >
-                  <MessageText1 size={18} color="currentColor" variant="Outline" />
-                  Join Event Chat
-                </Button>
+                {/* Join Event Chat Button - Only show if user has ticket or is organizer */}
+                { (
+                  <Button
+                    variant="outline"
+                    size="md"
+                    fullWidth
+                    onClick={() => openEventChat(eventId)}
+                    className="mt-3"
+                  >
+                    <MessageText1 size={18} color="currentColor" variant="Outline" />
+                    Join Event Chat
+                  </Button>
+                )}
 
                 {/* Additional Info */}
                 <div className="mt-6 pt-6 border-t border-foreground/10 space-y-3 text-sm text-foreground/60">

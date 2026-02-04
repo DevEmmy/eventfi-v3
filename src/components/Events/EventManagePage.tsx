@@ -1554,9 +1554,9 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                     <div>
                       <div className="text-xs text-foreground/50 mb-1">To:</div>
                       <div className="text-sm text-foreground/70">
-                        {emailRecipients === "all" && `${attendees.length} attendees`}
-                        {emailRecipients === "checked-in" && `${attendees.filter(a => a.status === "checked_in").length} checked-in attendees`}
-                        {emailRecipients === "not-checked-in" && `${attendees.filter(a => a.status === "not_checked_in").length} not checked-in attendees`}
+                        {emailRecipients === "all" && `${attendeesTotal} attendees`}
+                        {emailRecipients === "checked-in" && `${dashboardData?.stats.checkIns || 0} checked-in attendees`}
+                        {emailRecipients === "not-checked-in" && `${attendeesTotal - (dashboardData?.stats.checkIns || 0)} not checked-in attendees`}
                         {emailRecipients === "custom" && `${selectedAttendees.length} selected attendees`}
                       </div>
                     </div>
@@ -1605,32 +1605,32 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                       return;
                     }
 
-                    let recipientList: typeof attendees = [];
-                    if (emailRecipients === "all") {
-                      recipientList = attendees;
-                    } else if (emailRecipients === "checked-in") {
-                      recipientList = attendees.filter(a => a.status === "checked_in");
-                    } else if (emailRecipients === "not-checked-in") {
-                      recipientList = attendees.filter(a => a.status === "not_checked_in");
-                    } else if (emailRecipients === "custom") {
-                      if (selectedAttendees.length === 0) {
-                        alert("Please select at least one attendee");
-                        return;
-                      }
-                      recipientList = attendees.filter(a => selectedAttendees.includes(a.id));
-                    }
-
                     setIsSendingEmail(true);
-                    // Simulate API call
-                    setTimeout(() => {
-                      setIsSendingEmail(false);
-                      alert(`Email sent successfully to ${recipientList.length} ${recipientList.length === 1 ? "attendee" : "attendees"}!`);
+                    try {
+                      const response = await ManageEventService.sendBulkEmail(eventId, {
+                        recipients: emailRecipients,
+                        attendeeIds: emailRecipients === "custom" ? selectedAttendees : undefined,
+                        subject: emailSubject,
+                        body: emailBody,
+                      });
+
+                      customToast.success(
+                        response.message || `Email sent successfully to ${response.emailsSent} attendees!`
+                      );
+
                       setShowBulkEmailModal(false);
                       setEmailSubject("");
                       setEmailBody("");
                       setEmailRecipients("all");
                       setSelectedAttendees([]);
-                    }, 2000);
+                    } catch (error: any) {
+                      console.error("Failed to send bulk email:", error);
+                      customToast.error(
+                        error.response?.data?.message || "Failed to send bulk email"
+                      );
+                    } finally {
+                      setIsSendingEmail(false);
+                    }
                   }}
                   disabled={isSendingEmail}
                 >
