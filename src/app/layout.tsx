@@ -102,6 +102,18 @@ const satoshi = localFont({
 export const metadata: Metadata = {
   title: "EventFi",
   description: "The all-in-one platform for seamless events, trusted vendors, and live engagement.",
+  openGraph: {
+    title: "EventFi",
+    description: "The all-in-one platform for seamless events, trusted vendors, and live engagement.",
+    images: ["/ogp.png"],
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "EventFi",
+    description: "The all-in-one platform for seamless events, trusted vendors, and live engagement.",
+    images: ["/ogp.png"],
+  },
 };
 
 export default function RootLayout({
