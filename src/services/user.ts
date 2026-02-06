@@ -137,8 +137,21 @@ export const UserService = {
      * Remove event from favorites
      * @param eventId Event ID to unsave
      */
-    removeFavorite: async (eventId: string): Promise<void> => {
-        await axiosInstance.delete(`/users/events/${eventId}/save`);
+    /**
+     * Request a password reset link
+     * @param email User's email
+     */
+    forgotPassword: async (email: string): Promise<void> => {
+        await axiosInstance.post("/auth/forgot-password", { email });
+    },
+
+    /**
+     * Reset password using token
+     * @param token Reset token
+     * @param password New password
+     */
+    resetPassword: async (token: string, password: string): Promise<void> => {
+        await axiosInstance.post("/auth/reset-password", { token, password });
     },
 };
 
