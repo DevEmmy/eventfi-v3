@@ -50,7 +50,7 @@ export default function ForgotPasswordPage() {
                         <form onSubmit={handleSubmit} className="space-y-6">
                             <div className="relative">
                                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-foreground/40">
-                                    <Sms size={20} variant="Outline" />
+                                    <Sms size={20} color={"#3D5AFE"} variant="Outline" />
                                 </div>
                                 <input
                                     type="email"
@@ -78,7 +78,7 @@ export default function ForgotPasswordPage() {
                                     href="/auth/login"
                                     className="inline-flex items-center gap-2 text-sm text-foreground/70 hover:text-primary transition-colors"
                                 >
-                                    <ArrowLeft2 size={16} />
+                                    <ArrowLeft2 color={"#3D5AFE"} size={16} />
                                     Back to Login
                                 </Link>
                             </div>
@@ -86,7 +86,7 @@ export default function ForgotPasswordPage() {
                     ) : (
                         <div className="text-center space-y-6">
                             <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto text-primary">
-                                <Sms size={32} variant="Bold" />
+                                <Sms size={32} color={"#3D5AFE"} variant="Bold" />
                             </div>
                             <div className="space-y-2">
                                 <h3 className="text-xl font-semibold text-foreground">Check your email</h3>
@@ -107,7 +107,7 @@ export default function ForgotPasswordPage() {
                                     href="/auth/login"
                                     className="inline-flex items-center gap-2 text-sm text-foreground/70 hover:text-primary transition-colors"
                                 >
-                                    <ArrowLeft2 size={16} />
+                                    <ArrowLeft2 color={"#3D5AFE"} size={16} />
                                     Back to Login
                                 </Link>
                             </div>

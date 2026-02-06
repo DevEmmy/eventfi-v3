@@ -17,7 +17,7 @@ const IdentityStep = () => {
 
   const handleSkip = () => {
     // Use email prefix as username, default avatar
-    window.location.href = "/onboarding/role";
+    window.location.href = "/";
   };
 
   const handleContinue = async () => {
@@ -31,7 +31,7 @@ const IdentityStep = () => {
         });
 
         toast.success("Profile updated successfully");
-        window.location.href = "/onboarding/role";
+        window.location.href = "/";
       } catch (error: any) {
         console.error(error);
         toast.error(error.response?.data?.message || "Failed to update profile");

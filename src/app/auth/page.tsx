@@ -1,7 +1,7 @@
 "use client";
-import { LoginForm } from "@/components/Auth/AuthPage";
+import { LoginForm, SignupForm } from "@/components/Auth/AuthPage";
 
 export default function AuthRootPage() {
-  return <LoginForm />;
+  return <SignupForm />;
 }
 
