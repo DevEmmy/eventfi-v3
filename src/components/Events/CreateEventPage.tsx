@@ -204,7 +204,7 @@ const CreateEventPage = () => {
       } as any); // Type assertion if strict key check fails, but ideally should match.
 
       customToast.success("Event published successfully!");
-      router.push('/explore'); // Redirect to explore or dashboard
+      router.push('/explore-events'); // Redirect to explore or dashboard
     } catch (error) {
       console.error("Failed to publish event:", error);
       customToast.error("Failed to create event. Please try again.");
