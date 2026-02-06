@@ -113,7 +113,7 @@ const ExploreFilters: React.FC<ExploreFiltersProps> = ({
                   }}
                   className="w-full px-4 py-2.5 rounded-xl bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-colors text-sm font-medium flex items-center justify-center gap-2"
                 >
-                  <Location size={18} color="#3D5AFE" variant="Bold" />
+                  <Location size={18} color="currentColor" variant="Bold" />
                   Use My Location
                 </button>
 

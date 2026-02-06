@@ -35,7 +35,7 @@ export default function ToastItem({ t, title, message, type = "custom" }: ToastI
             case "info":
                 return <InfoCircle size={24} variant="Bold" color="#3b82f6" />;
             default:
-                return <InfoCircle size={24} variant="Bold" color="#3D5AFE" />;
+                return <InfoCircle size={24} variant="Bold" color="currentColor" className="text-primary" />;
         }
     };
 
@@ -79,7 +79,7 @@ export default function ToastItem({ t, title, message, type = "custom" }: ToastI
                     onClick={() => hotToast.dismiss(t.id)}
                     className="w-full border border-transparent rounded-none rounded-r-lg p-4 flex items-center justify-center text-sm font-medium text-foreground/50 hover:text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                 >
-                    <CloseSquare size={20} color="#17171780" variant="Outline" />
+                    <CloseSquare size={20} variant="Outline" />
                 </button>
             </div>
         </div>

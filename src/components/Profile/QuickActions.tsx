@@ -80,15 +80,6 @@ const QuickActions: React.FC<QuickActionsProps> = ({
             const IconComponent = action.icon;
             const colors = colorClasses[action.color as keyof typeof colorClasses];
 
-            const getHexColor = () => {
-              switch (action.color) {
-                case "primary": return "#3D5AFE";
-                case "secondary": return "#FF6B6B";
-                case "accent": return "#FFD93D";
-                default: return "#3D5AFE";
-              }
-            };
-
             return (
               <button
                 key={action.id}
@@ -102,8 +93,9 @@ const QuickActions: React.FC<QuickActionsProps> = ({
                   <div className={`w-10 h-10 rounded-lg ${colors.bg} flex items-center justify-center`}>
                     <IconComponent
                       size={24}
-                      color={getHexColor()}
+                      color="currentColor"
                       variant="Bold"
+                      className={colors.icon}
                     />
                   </div>
                 </div>
@@ -113,8 +105,9 @@ const QuickActions: React.FC<QuickActionsProps> = ({
                   <span className={colors.icon}>Get started</span>
                   <ArrowRight2
                     size={16}
-                    color={getHexColor()}
+                    color="currentColor"
                     variant="Outline"
+                    className={colors.icon}
                   />
                 </div>
               </button>

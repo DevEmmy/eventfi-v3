@@ -228,24 +228,24 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({
   const getNotificationIcon = (type: NotificationItem["type"]) => {
     switch (type) {
       case "ticket_sale":
-        return <Ticket size={20} color="#3D5AFE" variant="Bold" />;
+        return <Ticket size={20} color="currentColor" variant="Bold" className="text-primary" />;
       case "event_reminder":
       case "event_nearby":
-        return <Calendar size={20} color="#3D5AFE" variant="Bold" />;
+        return <Calendar size={20} color="currentColor" variant="Bold" className="text-primary" />;
       case "booking_request":
       case "booking_accepted":
       case "booking_declined":
-        return <Shop size={20} color="#FF6B6B" variant="Bold" />;
+        return <Shop size={20} color="currentColor" variant="Bold" className="text-secondary" />;
       case "review_received":
-        return <Star1 size={20} color="#FFD93D" variant="Bold" />;
+        return <Star1 size={20} color="currentColor" variant="Bold" className="text-accent" />;
       case "vendor_booked":
-        return <TickCircle size={20} color="#22c55e" variant="Bold" />;
+        return <TickCircle size={20} color="currentColor" variant="Bold" className="text-green-500" />;
       case "payment_received":
-        return <MoneyRecive size={20} color="#22c55e" variant="Bold" />;
+        return <MoneyRecive size={20} color="currentColor" variant="Bold" className="text-green-500" />;
       case "message":
-        return <MessageText1 size={20} color="#3D5AFE" variant="Bold" />;
+        return <MessageText1 size={20} color="currentColor" variant="Bold" className="text-primary" />;
       default:
-        return <Notification size={20} color="#17171799" variant="Bold" />;
+        return <Notification size={20} color="currentColor" variant="Bold" className="text-foreground/60" />;
     }
   };
 
@@ -273,7 +273,7 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({
       >
         <Notification
           size={24}
-          color={isOpen ? "#3D5AFE" : "#171717B3"}
+          color="currentColor"
           variant={isOpen ? "Bold" : "Outline"}
         />
         {unreadCount > 0 && (
@@ -303,7 +303,7 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({
                 className="p-1 hover:bg-foreground/10 rounded-lg transition-colors"
                 aria-label="Close notifications"
               >
-                <CloseCircle size={20} color="#171717" variant="Outline" />
+                <CloseCircle size={20} color="currentColor" variant="Outline" />
               </button>
             </div>
           </div>
@@ -314,9 +314,9 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({
               <div className="p-8 text-center">
                 <Notification
                   size={48}
-                  color="#1717174D"
+                  color="currentColor"
                   variant="Outline"
-                  className="mx-auto mb-3"
+                  className="text-foreground/30 mx-auto mb-3"
                 />
                 <p className="text-foreground/60">No notifications</p>
               </div>
@@ -346,7 +346,7 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({
                           {notification.message}
                         </p>
                         <div className="flex items-center gap-2 text-xs text-foreground/50">
-                          <Clock size={14} color="#17171780" variant="Outline" />
+                          <Clock size={14} color="currentColor" variant="Outline" />
                           <span>{formatTimestamp(notification.timestamp)}</span>
                         </div>
                       </div>
@@ -355,7 +355,7 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({
                         className="opacity-0 group-hover:opacity-100 p-1 hover:bg-foreground/10 rounded transition-all shrink-0"
                         aria-label="Delete notification"
                       >
-                        <Trash size={16} color="#171717B3" variant="Outline" />
+                        <Trash size={16} color="currentColor" variant="Outline" />
                       </button>
                     </div>
                   </div>

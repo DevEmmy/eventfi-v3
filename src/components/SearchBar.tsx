@@ -35,9 +35,9 @@ const SearchBar: React.FC<SearchBarProps> = ({
       <div className="relative flex items-center">
         <SearchNormal1
           size={20}
-          color="#17171766"
+          color="currentColor"
           variant="Outline"
-          className="absolute left-4 pointer-events-none"
+          className="absolute left-4 text-foreground/40 pointer-events-none"
         />
         <input
           type="text"

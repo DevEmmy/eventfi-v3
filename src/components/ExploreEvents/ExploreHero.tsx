@@ -46,15 +46,15 @@ const ExploreHero: React.FC<ExploreHeroProps> = ({
                   : "border-foreground/20 text-foreground/70 hover:border-primary hover:text-primary"
                 }`}
             >
-              <Filter size={18} color={showFilters ? "#3D5AFE" : "#171717B3"} variant="Outline" />
+              <Filter size={18} color="currentColor" variant="Outline" />
               <span>Filters</span>
             </button>
             <button className="flex items-center gap-2 px-4 py-2 rounded-full border-2 border-foreground/20 text-foreground/70 hover:border-primary hover:text-primary transition-all duration-200 font-medium">
-              <LocationIcon size={18} color="#171717B3" variant="Outline" />
+              <LocationIcon size={18} color="currentColor" variant="Outline" />
               <span>Near Me</span>
             </button>
             <button className="flex items-center gap-2 px-4 py-2 rounded-full border-2 border-foreground/20 text-foreground/70 hover:border-primary hover:text-primary transition-all duration-200 font-medium">
-              <Calendar size={18} color="#171717B3" variant="Outline" />
+              <Calendar size={18} color="currentColor" variant="Outline" />
               <span>This Week</span>
             </button>
           </div>

@@ -47,7 +47,7 @@ const Footer = () => {
                 className="w-10 h-10 rounded-full border border-foreground/20 flex items-center justify-center hover:border-primary hover:text-primary transition-all duration-200"
                 aria-label="Twitter"
               >
-                <Share size={20} color="#171717" variant="Outline" />
+                <Share size={20} color="currentColor" variant="Outline" />
               </a>
               <a
                 href="https://instagram.com/eventfi"
@@ -56,7 +56,7 @@ const Footer = () => {
                 className="w-10 h-10 rounded-full border border-foreground/20 flex items-center justify-center hover:border-primary hover:text-primary transition-all duration-200"
                 aria-label="Instagram"
               >
-                <Instagram size={20} color="#171717" variant="Outline" />
+                <Instagram size={20} color="currentColor" variant="Outline" />
               </a>
               <a
                 href="https://linkedin.com/company/eventfi"
@@ -65,7 +65,7 @@ const Footer = () => {
                 className="w-10 h-10 rounded-full border border-foreground/20 flex items-center justify-center hover:border-primary hover:text-primary transition-all duration-200"
                 aria-label="LinkedIn"
               >
-                <Link size={20} color="#171717" variant="Outline" />
+                <Link size={20} color="currentColor" variant="Outline" />
               </a>
               <a
                 href="https://discord.gg/eventfi"
@@ -74,7 +74,7 @@ const Footer = () => {
                 className="w-10 h-10 rounded-full border border-foreground/20 flex items-center justify-center hover:border-primary hover:text-primary transition-all duration-200"
                 aria-label="Discord"
               >
-                <MessageText1 size={20} color="#171717" variant="Outline" />
+                <MessageText1 size={20} color="currentColor" variant="Outline" />
               </a>
             </div>
           </div>
