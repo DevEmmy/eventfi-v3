@@ -83,9 +83,8 @@ const EventCard: React.FC<EventCardProps> = ({
           <div className="w-full h-full flex items-center justify-center">
             <Calendar
               size={64}
-              color="currentColor"
+              color="#3D5AFE4D"
               variant="Bold"
-              className="text-primary/30"
             />
           </div>
         )}
@@ -105,9 +104,8 @@ const EventCard: React.FC<EventCardProps> = ({
         >
           <Heart
             size={20}
-            color="currentColor"
+            color={isFavorite ? "#3D5AFE" : "#171717"}
             variant={isFavorite ? "Bold" : "Outline"}
-            className={isFavorite ? "text-primary" : "text-foreground"}
           />
         </button>
 
@@ -126,19 +124,19 @@ const EventCard: React.FC<EventCardProps> = ({
         <div className="space-y-2 mb-4 flex-1">
           {/* Date */}
           <div className="flex items-center gap-2 text-sm text-foreground/70">
-            <Calendar size={16} color="currentColor" variant="Outline" />
+            <Calendar size={16} color="#171717B3" variant="Outline" />
             <span>{date}</span>
           </div>
 
           {/* Time */}
           <div className="flex items-center gap-2 text-sm text-foreground/70">
-            <Clock size={16} color="currentColor" variant="Outline" />
+            <Clock size={16} color="#171717B3" variant="Outline" />
             <span>{time}</span>
           </div>
 
           {/* Location */}
           <div className="flex items-center gap-2 text-sm text-foreground/70">
-            <Location size={16} color="currentColor" variant="Outline" />
+            <Location size={16} color="#171717B3" variant="Outline" />
             <span className="line-clamp-1">{location}</span>
           </div>
         </div>
@@ -147,7 +145,7 @@ const EventCard: React.FC<EventCardProps> = ({
         <div className="flex items-center justify-between pt-4 border-t border-foreground/10">
           {/* Price */}
           <div className="flex items-center gap-2">
-            <Ticket size={18} color="currentColor" variant="Bold" className="text-primary" />
+            <Ticket size={18} color="#3D5AFE" variant="Bold" />
             <span className="font-bold text-foreground">{price}</span>
           </div>
 

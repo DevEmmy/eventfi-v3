@@ -14,9 +14,9 @@ const EmptyState: React.FC<EmptyStateProps> = ({ onClearFilters }) => {
       <div className="max-w-md mx-auto">
         <Calendar
           size={64}
-          color="currentColor"
+          color="#1717174D"
           variant="Outline"
-          className="text-foreground/30 mx-auto mb-4"
+          className="mx-auto mb-4"
         />
         <h3 className="text-xl font-bold text-foreground mb-2">
           No events found

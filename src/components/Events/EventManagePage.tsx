@@ -1042,7 +1042,7 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                         <div
                           className="w-full bg-primary rounded-t"
                           style={{
-                            height: `${(data.sales / 800) * 200}px`,
+                            height: `${(data.ticketsSold / 800) * 200}px`,
                           }}
                         />
                         <div
@@ -1485,7 +1485,7 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                     Select Attendees ({selectedAttendees.length} selected)
                   </label>
                   <div className="space-y-2 max-h-64 overflow-y-auto">
-                    {attendees.map((attendee) => (
+                    {attendeesList.map((attendee) => (
                       <label
                         key={attendee.id}
                         className="flex items-center gap-3 p-3 bg-background rounded-lg hover:bg-foreground/5 transition-colors cursor-pointer border border-foreground/10"
@@ -1555,8 +1555,8 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                       <div className="text-xs text-foreground/50 mb-1">To:</div>
                       <div className="text-sm text-foreground/70">
                         {emailRecipients === "all" && `${attendeesTotal} attendees`}
-                        {emailRecipients === "checked-in" && `${dashboardData?.stats.checkIns || 0} checked-in attendees`}
-                        {emailRecipients === "not-checked-in" && `${attendeesTotal - (dashboardData?.stats.checkIns || 0)} not checked-in attendees`}
+                        {emailRecipients === "checked_in" && `${dashboardData?.stats.checkIns || 0} checked-in attendees`}
+                        {emailRecipients === "not_checked_in" && `${attendeesTotal - (dashboardData?.stats.checkIns || 0)} not checked-in attendees`}
                         {emailRecipients === "custom" && `${selectedAttendees.length} selected attendees`}
                       </div>
                     </div>

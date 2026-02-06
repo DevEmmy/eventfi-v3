@@ -137,6 +137,9 @@ export const UserService = {
      * Remove event from favorites
      * @param eventId Event ID to unsave
      */
+    removeFavorite: async (eventId: string): Promise<void> => {
+        await axiosInstance.delete(`/users/events/${eventId}/save`);
+    },
     /**
      * Request a password reset link
      * @param email User's email

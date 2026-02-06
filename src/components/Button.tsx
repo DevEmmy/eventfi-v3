@@ -79,9 +79,9 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       },
     };
 
+    const isDisabled = disabled || isLoading;
     const currentSize = sizeConfig[size];
     const currentVariant = variantConfig[variant];
-    const isDisabled = disabled || isLoading;
 
     const baseClasses = `
       inline-flex items-center cursor-pointer justify-center gap-2
@@ -95,6 +95,15 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       ${fullWidth ? "w-full" : ""}
       ${className}
     `.trim().replace(/\s+/g, " ");
+
+    const getIconColor = () => {
+      if (isDisabled) {
+        if (variant === "primary" || variant === "secondary") return "#ffffffB3";
+        return "#1717174D";
+      }
+      if (variant === "primary" || variant === "secondary") return "#ffffff";
+      return "#171717";
+    };
 
     return (
       <button
@@ -134,7 +143,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
             {LeftIcon && (
               <LeftIcon
                 size={currentSize.icon}
-                color="currentColor"
+                color={getIconColor()}
                 variant={iconVariant}
               />
             )}
@@ -142,7 +151,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
             {RightIcon && (
               <RightIcon
                 size={currentSize.icon}
-                color="currentColor"
+                color={getIconColor()}
                 variant={iconVariant}
               />
             )}

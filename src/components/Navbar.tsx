@@ -97,7 +97,7 @@ export default function Navbar() {
                   className="flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-full font-medium hover:bg-primary/90 transition-all duration-200 "
                   aria-label="Create Event"
                 >
-                  <CalendarAdd size={20} color="currentColor" variant="Bold" />
+                  <CalendarAdd size={20} color="#ffffff" variant="Bold" />
                   <span>Create Event</span>
                 </button>
               </Link>
@@ -119,7 +119,7 @@ export default function Navbar() {
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center bg-primary/10 text-primary">
-                            <User size={20} variant="Bold" />
+                            <User size={20} color="#3D5AFE" variant="Bold" />
                           </div>
                         )}
                       </div>
@@ -144,7 +144,7 @@ export default function Navbar() {
                     className="flex items-center gap-2 px-5 py-2.5 border-2 border-foreground/20 text-foreground rounded-full font-medium hover:border-primary hover:text-primary transition-all duration-200"
                     aria-label="Sign In"
                   >
-                    <Login size={20} color="currentColor" variant="Outline" />
+                    <Login size={20} color="#171717" variant="Outline" />
                     <span>Sign In</span>
                   </button>
                 </Link>
@@ -158,7 +158,7 @@ export default function Navbar() {
               aria-label="Open mobile menu"
               aria-expanded={isMobileMenuOpen}
             >
-              <HambergerMenu size={28} color="currentColor" variant="Outline" />
+              <HambergerMenu size={28} color="#171717" variant="Outline" />
             </button>
           </div>
         </nav>
@@ -198,7 +198,7 @@ export default function Navbar() {
                 className="p-2 text-foreground hover:text-primary transition-colors"
                 aria-label="Close mobile menu"
               >
-                <CloseCircle size={28} color="currentColor" variant="Outline" />
+                <CloseCircle size={28} color="#171717" variant="Outline" />
               </button>
             </div>
 
@@ -222,14 +222,14 @@ export default function Navbar() {
             {/* Mobile Actions */}
             <div className="p-6 border-t border-foreground/10 space-y-4">
               <Link href="/events/create">
-              <button
-                className="w-full flex items-center cursor-pointer justify-center gap-2 px-6 py-3.5 bg-primary text-white rounded-full font-medium hover:bg-primary/90 transition-all duration-200 "
-                onClick={() => setIsMobileMenuOpen(false)}
-                aria-label="Create Event"
-              >
-                <CalendarAdd size={20} color="currentColor" variant="Bold" />
-                <span>Create Event</span>
-              </button>
+                <button
+                  className="w-full flex items-center cursor-pointer justify-center gap-2 px-6 py-3.5 bg-primary text-white rounded-full font-medium hover:bg-primary/90 transition-all duration-200 "
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  aria-label="Create Event"
+                >
+                  <CalendarAdd size={20} color="#ffffff" variant="Bold" />
+                  <span>Create Event</span>
+                </button>
               </Link>
 
               {isAuthenticated ? (
@@ -239,7 +239,7 @@ export default function Navbar() {
                       className="w-full flex items-center justify-center gap-2 px-6 py-3.5 border-2 border-foreground/20 text-foreground rounded-full font-medium hover:border-primary hover:text-primary transition-all duration-200"
                       aria-label="My Profile"
                     >
-                      <User size={20} color="currentColor" variant="Outline" />
+                      <User size={20} color="#171717" variant="Outline" />
                       <span>My Profile</span>
                     </button>
                   </Link>
@@ -248,7 +248,7 @@ export default function Navbar() {
                     onClick={handleLogout}
                     aria-label="Logout"
                   >
-                    <LogoutCurve size={20} color="currentColor" variant="Outline" />
+                    <LogoutCurve size={20} color="#ef4444" variant="Outline" />
                     <span>Logout</span>
                   </button>
                 </>
@@ -258,7 +258,7 @@ export default function Navbar() {
                     className="w-full flex items-center justify-center gap-2 px-6 py-3.5 border-2 border-foreground/20 text-foreground rounded-full font-medium hover:border-primary hover:text-primary transition-all duration-200"
                     aria-label="Sign In"
                   >
-                    <Login size={20} color="currentColor" variant="Outline" />
+                    <Login size={20} color="#171717" variant="Outline" />
                     <span>Sign In</span>
                   </button>
                 </Link>

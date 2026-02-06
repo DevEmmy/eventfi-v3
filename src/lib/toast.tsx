@@ -41,6 +41,19 @@ const customToast = {
             { ...options, duration: Infinity }
         );
     },
+    info: (message: string, options?: ToastOptions) => {
+        return toast.custom(
+            (t) => (
+                <ToastItem
+                    t={t}
+                    type="info"
+                    title="Info"
+                    message={message}
+                />
+            ),
+            { ...options, duration: 4000 }
+        );
+    },
     custom: (title: string, message: string, options?: ToastOptions) => {
         return toast.custom(
             (t) => (

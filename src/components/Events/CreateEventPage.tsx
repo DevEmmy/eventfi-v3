@@ -342,7 +342,7 @@ const CreateEventPage = () => {
                     onClick={() => setFormData((prev) => ({ ...prev, image: null }))}
                     className="absolute top-4 right-4 p-2 bg-background/90 backdrop-blur-sm rounded-full text-foreground/60 hover:text-primary transition-colors"
                   >
-                    <Trash size={20} color="currentColor" variant="Outline" />
+                    <Trash size={20} color="#17171799" variant="Outline" />
                   </button>
                 </div>
               ) : (
@@ -350,9 +350,9 @@ const CreateEventPage = () => {
                   <div className="w-full h-64 border-2 border-dashed border-foreground/20 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-primary transition-all duration-200">
                     <Camera
                       size={48}
-                      color="currentColor"
+                      color="#17171766"
                       variant="Outline"
-                      className="text-foreground/40 mb-3"
+                      className="mb-3"
                     />
                     <span className="text-foreground/60 font-medium">
                       Click to upload or drag and drop
@@ -476,7 +476,7 @@ const CreateEventPage = () => {
                           onClick={() => removeTicketType(ticket.id)}
                           className="p-2 text-foreground/60 hover:text-primary transition-colors"
                         >
-                          <Trash size={20} color="currentColor" variant="Outline" />
+                          <Trash size={20} color="#17171799" variant="Outline" />
                         </button>
                       )}
                     </div>
@@ -554,7 +554,7 @@ const CreateEventPage = () => {
                   onClick={addTicketType}
                   className="w-full py-3 border-2 border-dashed border-foreground/20 rounded-xl text-foreground/60 hover:text-primary hover:border-primary transition-all duration-200 flex items-center justify-center gap-2"
                 >
-                  <Add size={20} color="currentColor" variant="Outline" />
+                  <Add size={20} color="#17171799" variant="Outline" />
                   <span className="font-medium">Add Another Ticket Type</span>
                 </button>
               </div>
@@ -622,7 +622,7 @@ const CreateEventPage = () => {
               onClick={() => window.history.back()}
               className="flex items-center gap-2 text-foreground/60 hover:text-foreground mb-4 transition-colors"
             >
-              <ArrowLeft2 size={20} color="currentColor" variant="Outline" />
+              <ArrowLeft2 size={20} color="#17171799" variant="Outline" />
               <span>Back</span>
             </button>
             <h1 className="text-sm lg:text-[16px] xl:text-[20px] font-bold font-[family-name:var(--font-clash-display)] text-foreground mb-2">

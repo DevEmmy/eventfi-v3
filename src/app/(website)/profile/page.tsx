@@ -1,11 +1,18 @@
 "use client";
 
 import MyProfile from "@/components/Profile/MyProfile";
+import { Suspense } from "react";
 
 const ProfilePage = () => {
-  // This would typically fetch user data from auth context
-  // For now, we'll pass undefined and let the component use mock data
-  return <MyProfile />;
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    }>
+      <MyProfile />
+    </Suspense>
+  );
 };
 
 export default ProfilePage;

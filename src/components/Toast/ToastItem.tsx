@@ -8,7 +8,7 @@ interface ToastItemProps {
     t: Toast;
     title?: string;
     message: string;
-    type?: "success" | "error" | "loading" | "custom";
+    type?: "success" | "error" | "loading" | "info" | "custom";
 }
 
 export default function ToastItem({ t, title, message, type = "custom" }: ToastItemProps) {
@@ -32,8 +32,10 @@ export default function ToastItem({ t, title, message, type = "custom" }: ToastI
                 return (
                     <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
                 );
+            case "info":
+                return <InfoCircle size={24} variant="Bold" color="#3b82f6" />;
             default:
-                return <InfoCircle size={24} variant="Bold" color="currentColor" className="text-primary" />;
+                return <InfoCircle size={24} variant="Bold" color="#3D5AFE" />;
         }
     };
 
@@ -43,6 +45,8 @@ export default function ToastItem({ t, title, message, type = "custom" }: ToastI
                 return "border-green-500/20";
             case "error":
                 return "border-red-500/20";
+            case "info":
+                return "border-blue-500/20";
             default:
                 return "border-primary/20";
         }
@@ -75,7 +79,7 @@ export default function ToastItem({ t, title, message, type = "custom" }: ToastI
                     onClick={() => hotToast.dismiss(t.id)}
                     className="w-full border border-transparent rounded-none rounded-r-lg p-4 flex items-center justify-center text-sm font-medium text-foreground/50 hover:text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                 >
-                    <CloseSquare size={20} variant="Outline" />
+                    <CloseSquare size={20} color="#17171780" variant="Outline" />
                 </button>
             </div>
         </div>

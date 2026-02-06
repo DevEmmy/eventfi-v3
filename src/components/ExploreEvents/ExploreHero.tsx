@@ -41,21 +41,20 @@ const ExploreHero: React.FC<ExploreHeroProps> = ({
           <div className="flex flex-wrap items-center justify-center gap-3">
             <button
               onClick={onToggleFilters}
-              className={`flex items-center gap-2 px-4 py-2 rounded-full border-2 font-medium transition-all duration-200 ${
-                showFilters
+              className={`flex items-center gap-2 px-4 py-2 rounded-full border-2 font-medium transition-all duration-200 ${showFilters
                   ? "border-primary text-primary bg-primary/10"
                   : "border-foreground/20 text-foreground/70 hover:border-primary hover:text-primary"
-              }`}
+                }`}
             >
-              <Filter size={18} color="currentColor" variant="Outline" />
+              <Filter size={18} color={showFilters ? "#3D5AFE" : "#171717B3"} variant="Outline" />
               <span>Filters</span>
             </button>
             <button className="flex items-center gap-2 px-4 py-2 rounded-full border-2 border-foreground/20 text-foreground/70 hover:border-primary hover:text-primary transition-all duration-200 font-medium">
-              <LocationIcon size={18} color="currentColor" variant="Outline" />
+              <LocationIcon size={18} color="#171717B3" variant="Outline" />
               <span>Near Me</span>
             </button>
             <button className="flex items-center gap-2 px-4 py-2 rounded-full border-2 border-foreground/20 text-foreground/70 hover:border-primary hover:text-primary transition-all duration-200 font-medium">
-              <Calendar size={18} color="currentColor" variant="Outline" />
+              <Calendar size={18} color="#171717B3" variant="Outline" />
               <span>This Week</span>
             </button>
           </div>
