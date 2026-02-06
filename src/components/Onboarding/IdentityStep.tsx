@@ -112,7 +112,8 @@ const IdentityStep = () => {
                   <Image
                     src={profilePhoto}
                     alt="Profile"
-                    fill
+                    width={400}
+                            height={400}
                     className="object-cover rounded-full"
                   />
                 ) : (

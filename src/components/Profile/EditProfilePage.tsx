@@ -209,7 +209,8 @@ const EditProfilePage = () => {
                       <Image
                         src={formData.avatar}
                         alt="Profile"
-                        fill
+                        width={400}
+                            height={400}
                         className="object-cover"
                       />
                     ) : (

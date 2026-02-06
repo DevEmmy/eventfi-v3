@@ -114,7 +114,8 @@ export default function Navbar() {
                           <Image
                             src={user?.avatar || ""}
                             alt="Profile"
-                            fill
+                            width={400}
+                            height={400}
                             className="object-cover"
                           />
                         ) : (
