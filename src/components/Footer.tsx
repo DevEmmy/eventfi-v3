@@ -41,7 +41,7 @@ const Footer = () => {
             {/* Social Media Icons */}
             <div className="flex items-center gap-4">
               <a
-                href="https://twitter.com/eventfi"
+                href="https://x.com/theEventfi"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-10 h-10 rounded-full border border-foreground/20 flex items-center justify-center hover:border-primary hover:text-primary transition-all duration-200"
@@ -49,7 +49,7 @@ const Footer = () => {
               >
                 <Share size={20} color="currentColor" variant="Outline" />
               </a>
-              <a
+              {/* <a
                 href="https://instagram.com/eventfi"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -57,8 +57,8 @@ const Footer = () => {
                 aria-label="Instagram"
               >
                 <Instagram size={20} color="currentColor" variant="Outline" />
-              </a>
-              <a
+              </a> */}
+              {/* <a
                 href="https://linkedin.com/company/eventfi"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -66,8 +66,8 @@ const Footer = () => {
                 aria-label="LinkedIn"
               >
                 <Link size={20} color="currentColor" variant="Outline" />
-              </a>
-              <a
+              </a> */}
+              {/* <a
                 href="https://discord.gg/eventfi"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -75,7 +75,7 @@ const Footer = () => {
                 aria-label="Discord"
               >
                 <MessageText1 size={20} color="currentColor" variant="Outline" />
-              </a>
+              </a> */}
             </div>
           </div>
 
@@ -87,44 +87,44 @@ const Footer = () => {
             <ul className="space-y-3">
               <li>
                 <a
-                  href="#create-event"
+                  href="/events/create"
                   className="text-foreground/70 hover:text-primary transition-colors duration-200"
                 >
                   Create an Event
                 </a>
               </li>
-              <li>
+              {/* <li>
                 <a
                   href="#marketplace"
                   className="text-foreground/70 hover:text-primary transition-colors duration-200"
                 >
                   Vendor Marketplace
                 </a>
-              </li>
+              </li> */}
               <li>
                 <a
-                  href="#ticketing"
+                  href="/explore-events"
                   className="text-foreground/70 hover:text-primary transition-colors duration-200"
                 >
                   Ticketing Features
                 </a>
               </li>
-              <li>
+              {/* <li>
                 <a
                   href="#engagement"
                   className="text-foreground/70 hover:text-primary transition-colors duration-200"
                 >
                   Engagement Tools
                 </a>
-              </li>
-              <li>
+              </li> */}
+              {/* <li>
                 <a
                   href="#pricing"
                   className="text-foreground/70 hover:text-primary transition-colors duration-200"
                 >
                   Pricing / Fees
                 </a>
-              </li>
+              </li> */}
             </ul>
           </div>
 
@@ -136,7 +136,7 @@ const Footer = () => {
             <ul className="space-y-3">
               <li>
                 <a
-                  href="#explore-events"
+                  href="/explore-events"
                   className="text-foreground/70 hover:text-primary transition-colors duration-200"
                 >
                   Explore Events
@@ -144,20 +144,20 @@ const Footer = () => {
               </li>
               <li>
                 <a
-                  href="#my-tickets"
+                  href="/profile/#my-tickets"
                   className="text-foreground/70 hover:text-primary transition-colors duration-200"
                 >
                   Access My Tickets
                 </a>
               </li>
-              <li>
+              {/* <li>
                 <a
                   href="#support"
                   className="text-foreground/70 hover:text-primary transition-colors duration-200"
                 >
                   Help Center / Support
                 </a>
-              </li>
+              </li> */}
               <li>
                 <a
                   href="#download-app"
@@ -180,7 +180,7 @@ const Footer = () => {
             <ul className="space-y-3">
               <li>
                 <a
-                  href="#about"
+                  href="/about"
                   className="text-foreground/70 hover:text-primary transition-colors duration-200"
                 >
                   About Us
@@ -191,20 +191,20 @@ const Footer = () => {
                   href="#blog"
                   className="text-foreground/70 hover:text-primary transition-colors duration-200"
                 >
-                  Blog / News
+                  Blog / News (coming soon)
                 </a>
               </li>
-              <li>
+              {/* <li>
                 <a
                   href="mailto:careers@eventfi.com"
                   className="text-foreground/70 hover:text-primary transition-colors duration-200"
                 >
                   Careers
                 </a>
-              </li>
+              </li> */}
               <li>
                 <a
-                  href="#contact"
+                  href="mailto:ev3ntfi@gmail.com"
                   className="text-foreground/70 hover:text-primary transition-colors duration-200"
                 >
                   Contact Us
@@ -250,9 +250,9 @@ const Footer = () => {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <p className="text-sm text-foreground/60">
-              © 2025 EventFi. All rights reserved.
+              © {new Date().getFullYear()} EventFi. All rights reserved.
             </p>
-            <div className="flex flex-wrap items-center gap-6 text-sm">
+            {/* <div className="flex flex-wrap items-center gap-6 text-sm">
               <a
                 href="#privacy"
                 className="text-foreground/60 hover:text-primary transition-colors duration-200"
@@ -271,7 +271,7 @@ const Footer = () => {
               >
                 Cookie Policy
               </a>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>

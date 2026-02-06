@@ -45,8 +45,8 @@ export default function Navbar() {
 
   const navLinks = [
     { label: "Explore Events", href: "/explore-events" },
-    { label: "Marketplace", href: "/marketplace" },
-    { label: "Community", href: "/community" },
+    // { label: "Marketplace", href: "/marketplace" },
+    // { label: "Community", href: "/community" },
     { label: "About", href: "/about" },
   ];
 
@@ -136,7 +136,7 @@ export default function Navbar() {
                     aria-label="Logout"
                     title="Logout"
                   >
-                    <LogoutCurve size={20} variant="Outline" />
+                    <LogoutCurve color="#f41717ff" size={20} variant="Outline" />
                   </button>
                 </div>
               ) : (
