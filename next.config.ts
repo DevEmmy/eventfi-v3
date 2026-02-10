@@ -14,6 +14,14 @@ const nextConfig: NextConfig = {
       {
         protocol: 'http',
         hostname: 'test.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'api.dicebear.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'lh3.googleusercontent.com',
       }
     ],
   },

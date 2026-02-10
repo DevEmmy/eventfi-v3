@@ -1,9 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Button from "@/components/Button";
 import { User, ArrowRight2 } from "iconsax-react";
-import Image from "next/image";
 import axios from "axios";
 import axiosInstance from "@/lib/axios";
 import toast from "@/lib/toast";
@@ -12,13 +11,16 @@ const IdentityStep = () => {
   const [displayName, setDisplayName] = useState("");
   const [username, setUsername] = useState("");
   const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
+  const [hasCustomPhoto, setHasCustomPhoto] = useState(false);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
 
-  const handleSkip = () => {
-    // Use email prefix as username, default avatar
-    window.location.href = "/";
-  };
+  // Generate a DiceBear default avatar on mount
+  useEffect(() => {
+    const seed = Math.random().toString(36).substring(2, 10);
+    const dicebearUrl = `https://api.dicebear.com/9.x/adventurer/svg?seed=${seed}`;
+    setProfilePhoto(dicebearUrl);
+  }, []);
 
   const handleContinue = async () => {
     if (displayName && username) {
@@ -48,6 +50,7 @@ const IdentityStep = () => {
       const reader = new FileReader();
       reader.onloadend = () => {
         setProfilePhoto(reader.result as string);
+        setHasCustomPhoto(true);
       };
       reader.readAsDataURL(file);
 
@@ -64,6 +67,7 @@ const IdentityStep = () => {
         });
 
         setProfilePhoto(res.data.url);
+        setHasCustomPhoto(true);
         toast.success("Image uploaded successfully");
       } catch (error) {
         console.error("Upload failed", error);
@@ -79,15 +83,7 @@ const IdentityStep = () => {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full">
-        {/* Skip Button */}
-        <div className="text-right mb-8">
-          <button
-            onClick={handleSkip}
-            className="text-sm text-foreground/50 hover:text-foreground/70 transition-colors"
-          >
-            Skip for now &gt;
-          </button>
-        </div>
+
 
         {/* Card */}
         <div className="bg-background border-2 border-foreground/10 rounded-2xl p-8 shadow-xl">
@@ -109,12 +105,10 @@ const IdentityStep = () => {
             <div className="flex justify-center">
               <label className={`relative w-32 h-32 rounded-full bg-foreground/5 border-2 border-dashed border-foreground/20 flex items-center justify-center cursor-pointer hover:border-primary transition-colors group ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`}>
                 {profilePhoto ? (
-                  <Image
+                  <img
                     src={profilePhoto}
                     alt="Profile"
-                    width={400}
-                            height={400}
-                    className="object-cover rounded-full"
+                    className="w-full h-full object-cover rounded-full"
                   />
                 ) : (
                   <User
