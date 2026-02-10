@@ -75,7 +75,8 @@ const ExploreEventsPage = () => {
           price: formatPrice(event.tickets),
           category: event.category,
           image: event.coverImage,
-          attendees: event.attendeesCount
+          attendees: event.attendeesCount,
+          locationType: event.locationType
         }));
 
         setEvents(mappedEvents);

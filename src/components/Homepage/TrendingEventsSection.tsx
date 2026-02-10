@@ -28,6 +28,7 @@ const TrendingEventsSection = () => {
           category: event.category,
           attendees: event.attendeesCount || 0,
           image: event.coverImage,
+          locationType: event.locationType
         }));
 
         setTrendingEvents(mappedEvents);

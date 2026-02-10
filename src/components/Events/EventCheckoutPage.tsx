@@ -14,6 +14,7 @@ import {
   Mobile,
   Lock,
   TickCircle,
+  Link1,
 } from "iconsax-react";
 import Image from "next/image";
 import { BookingService } from "@/services/booking";
@@ -258,10 +259,20 @@ const EventCheckoutPage: React.FC<EventCheckoutPageProps> = ({ eventId }) => {
                         <Clock size={16} color="currentColor" variant="Outline" />
                         <span>{event.startTime}</span>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Location size={16} color="currentColor" variant="Outline" />
-                        <span className="truncate">{event.venueName || event.address}</span>
-                      </div>
+                      
+                      {
+                        event.locationType === "PHYSICAL" ? (
+                          <div className="flex items-center gap-2">
+                            <Location size={16} color="currentColor" variant="Outline" />
+                            <span className="truncate">{event.venueName || event.address}</span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2">
+                            <Link1 size={16} color="currentColor" variant="Outline" />
+                            <span className="line-clamp-1">Virtual (Online)</span>
+                          </div>
+                        )
+                      }
                     </div>
                   </div>
                 </div>

@@ -95,6 +95,7 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
             : "Free",
           category: e.category,
           attendees: e.attendeesCount || 0,
+          locationType: e.locationType
         })));
 
       } catch (err) {
@@ -263,6 +264,102 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
                     #{tag}
                   </span>
                 ))}
+              </div>
+            </div>
+
+            {/* Ticket Purchase - Mobile Only (shown right after event details) */}
+            <div className="lg:hidden">
+              <div className="bg-background border-2 border-foreground/10 rounded-2xl p-6 shadow-lg">
+                <div className="mb-6">
+                  <div className="flex items-baseline gap-2 mb-2">
+                    <span className="text-3xl font-bold text-foreground">
+                      {event.price}
+                    </span>
+                    {event.price !== "Free" && (
+                      <span className="text-sm text-foreground/60">per ticket</span>
+                    )}
+                  </div>
+                  <p className="text-sm text-foreground/60">
+                    {event.attendees.toLocaleString()} people going
+                  </p>
+                </div>
+
+                {/* Ticket Quantity */}
+                <div className="mb-6">
+                  <label className="block text-sm font-semibold text-foreground mb-3">
+                    Number of Tickets
+                  </label>
+                  <div className="flex items-center gap-4">
+                    <button
+                      onClick={() =>
+                        setTicketQuantity(Math.max(1, ticketQuantity - 1))
+                      }
+                      className="w-10 h-10 rounded-full border-2 border-foreground/20 flex items-center justify-center hover:border-primary hover:text-primary transition-colors"
+                    >
+                      -
+                    </button>
+                    <span className="text-xl font-bold text-foreground min-w-[3rem] text-center">
+                      {ticketQuantity}
+                    </span>
+                    <button
+                      onClick={() => setTicketQuantity(ticketQuantity + 1)}
+                      className="w-10 h-10 rounded-full border-2 border-foreground/20 flex items-center justify-center hover:border-primary hover:text-primary transition-colors"
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+
+                {/* Total Price */}
+                {event.price !== "Free" && (
+                  <div className="mb-6 p-4 bg-primary/10 rounded-xl">
+                    <div className="flex justify-between items-center">
+                      <span className="text-foreground/70">Total</span>
+                      <span className="text-xl font-bold text-primary">
+                        ₦{parseInt(event.price.replace(/[₦,]/g, "")) * ticketQuantity}
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {/* CTA Button */}
+                <Button
+                  variant="primary"
+                  size="lg"
+                  fullWidth
+                  onClick={() => {
+                    window.location.href = `/events/${eventId}/checkout?qty=${ticketQuantity}`;
+                  }}
+                >
+                  <Ticket size={20} color="currentColor" variant="Bold" />
+                  Get Tickets
+                </Button>
+
+                {/* Join Event Chat Button */}
+                {(
+                  <Button
+                    variant="outline"
+                    size="md"
+                    fullWidth
+                    onClick={() => openEventChat(eventId)}
+                    className="mt-3"
+                  >
+                    <MessageText1 size={18} color="currentColor" variant="Outline" />
+                    Join Event Chat
+                  </Button>
+                )}
+
+                {/* Additional Info */}
+                <div className="mt-6 pt-6 border-t border-foreground/10 space-y-3 text-sm text-foreground/60">
+                  <div className="flex items-start gap-2">
+                    <Tag size={16} color="currentColor" variant="Outline" />
+                    <span>Free cancellation up to 24 hours before event</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <Ticket size={16} color="currentColor" variant="Outline" />
+                    <span>Mobile tickets accepted</span>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -545,8 +642,8 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
             )}
           </div>
 
-          {/* Right Column - Ticket Purchase */}
-          <div className="lg:col-span-1">
+          {/* Right Column - Ticket Purchase (Desktop Only) */}
+          <div className="hidden lg:block lg:col-span-1">
             <div className="sticky top-24">
               <div className="bg-background border-2 border-foreground/10 rounded-2xl p-6 lg:p-8 shadow-lg">
                 <div className="mb-6">
@@ -616,7 +713,7 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
                 </Button>
 
                 {/* Join Event Chat Button - Only show if user has ticket or is organizer */}
-                { (
+                {(
                   <Button
                     variant="outline"
                     size="md"

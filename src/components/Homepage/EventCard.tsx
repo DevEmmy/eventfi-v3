@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
-import { Calendar, Location, Clock, Ticket, Heart } from "iconsax-react";
+import { Calendar, Location, Clock, Ticket, Heart, Link1, Share } from "iconsax-react";
 import { UserService } from "@/services/user";
 import customToast from "@/lib/toast";
 
@@ -18,6 +18,7 @@ export interface EventCardProps {
   attendees?: number;
   isSaved?: boolean;
   onClick?: () => void;
+  locationType?: "ONLINE" | "PHYSICAL";
 }
 
 const EventCard: React.FC<EventCardProps> = ({
@@ -30,6 +31,7 @@ const EventCard: React.FC<EventCardProps> = ({
   category,
   image,
   attendees,
+  locationType,
   isSaved = false,
   onClick,
 }) => {
@@ -65,6 +67,32 @@ const EventCard: React.FC<EventCardProps> = ({
     }
   };
 
+  const handleShare = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+
+    const shareUrl = `${window.location.origin}/events/${id}`;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: title,
+          text: `Check out ${title} on EventFi!`,
+          url: shareUrl,
+        });
+      } catch (error) {
+        console.error("Error sharing:", error);
+      }
+    } else {
+      try {
+        await navigator.clipboard.writeText(shareUrl);
+        customToast.success("Link copied to clipboard!");
+      } catch (error) {
+        customToast.error("Failed to copy link");
+      }
+    }
+  };
+
   return (
     <div
       className="group relative bg-background rounded-2xl overflow-hidden border border-foreground/10 hover:border-primary/30 transition-all duration-300 hover:shadow-xl cursor-pointer flex flex-col h-full"
@@ -97,19 +125,33 @@ const EventCard: React.FC<EventCardProps> = ({
           </span>
         </div>
 
-        {/* Favorite Button */}
-        <button
-          onClick={handleFavoriteClick}
-          className="absolute top-3 right-3 p-2 bg-background/90 backdrop-blur-sm rounded-full hover:bg-background transition-colors z-10"
-          aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
-        >
-          <Heart
-            size={20}
-            color="currentColor"
-            variant={isFavorite ? "Bold" : "Outline"}
-            className={isFavorite ? "text-primary" : "text-foreground"}
-          />
-        </button>
+        {/* Action Buttons */}
+        <div className="absolute top-3 right-3 flex gap-2 z-10">
+          <button
+            onClick={handleShare}
+            className="p-2 bg-background/90 backdrop-blur-sm rounded-full hover:bg-background transition-colors"
+            aria-label="Share event"
+          >
+            <Share
+              size={20}
+              color="currentColor"
+              variant="Outline"
+              className="text-foreground"
+            />
+          </button>
+          <button
+            onClick={handleFavoriteClick}
+            className="p-2 bg-background/90 backdrop-blur-sm rounded-full hover:bg-background transition-colors"
+            aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
+          >
+            <Heart
+              size={20}
+              color="currentColor"
+              variant={isFavorite ? "Bold" : "Outline"}
+              className={isFavorite ? "text-primary" : "text-foreground"}
+            />
+          </button>
+        </div>
 
         {/* Gradient Overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-background/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
@@ -137,10 +179,22 @@ const EventCard: React.FC<EventCardProps> = ({
           </div>
 
           {/* Location */}
-          <div className="flex items-center gap-2 text-sm text-foreground/70">
-            <Location size={16} color="currentColor" variant="Outline" />
-            <span className="line-clamp-1">{location}</span>
-          </div>
+          {
+            locationType === "PHYSICAL" ? (
+              <div className="flex items-center gap-2 text-sm text-foreground/70">
+                <Location size={16} color="currentColor" variant="Outline" />
+                <span className="line-clamp-1">{location}</span>
+              </div>
+            )
+              :
+
+              (
+                <div className="flex items-center gap-2 text-sm text-foreground/70">
+                  <Link1 size={16} color="currentColor" variant="Outline" />
+                  <span className="line-clamp-1">Virtual (Online)</span>
+                </div>
+              )
+          }
         </div>
 
         {/* Footer */}

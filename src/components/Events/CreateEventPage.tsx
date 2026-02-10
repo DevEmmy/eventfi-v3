@@ -130,9 +130,101 @@ const CreateEventPage = () => {
 
 
 
+  const validateForm = () => {
+    // 1. Basic Details Validation
+    if (!formData.title.trim()) {
+      customToast.error("Event title is required");
+      setActiveSection(0);
+      return false;
+    }
+    if (!formData.category) {
+      customToast.error("Please select a category");
+      setActiveSection(0);
+      return false;
+    }
+    if (!formData.description.trim()) {
+      customToast.error("Description is required");
+      setActiveSection(0);
+      return false;
+    }
+
+    // 2. Date & Time Validation
+    if (!formData.startDate) {
+      customToast.error("Start date is required");
+      setActiveSection(0);
+      return false;
+    }
+    if (!formData.startTime) {
+      customToast.error("Start time is required");
+      setActiveSection(0);
+      return false;
+    }
+
+    const startDateTime = new Date(`${formData.startDate}T${formData.startTime}`);
+
+    // Optional: Prevent past dates (if desired, but commenting out for flexibility unless requested)
+    // if (startDateTime < new Date()) {
+    //   customToast.error("Start date cannot be in the past");
+    //   setActiveSection(0);
+    //   return false;
+    // }
+
+    if (formData.endDate) {
+      const endDateTime = new Date(`${formData.endDate}T${formData.endTime || '23:59'}`);
+      if (endDateTime <= startDateTime) {
+        customToast.error("End time must be after start time");
+        setActiveSection(0);
+        return false;
+      }
+    }
+
+    // 3. Location Validation
+    if (formData.isOnline) {
+      if (!formData.onlineLink.trim()) {
+        customToast.error("Online event link is required");
+        setActiveSection(1);
+        return false;
+      }
+    } else {
+      if (!formData.venue.trim()) {
+        customToast.error("Venue name is required");
+        setActiveSection(1);
+        return false;
+      }
+      if (!formData.location.trim()) {
+        customToast.error("Address is required");
+        setActiveSection(1);
+        return false;
+      }
+    }
+
+    // 4. Ticket Validation
+    if (ticketTypes.length === 0) {
+      customToast.error("At least one ticket type is required");
+      setActiveSection(1);
+      return false;
+    }
+
+    for (const ticket of ticketTypes) {
+      if (!ticket.name.trim()) {
+        customToast.error("All ticket types must have a name");
+        setActiveSection(1);
+        return false;
+      }
+      if (ticket.price === "" || isNaN(parseFloat(ticket.price)) || parseFloat(ticket.price) < 0) {
+        customToast.error("Please enter a valid price for all tickets (0 for free)");
+        setActiveSection(1);
+        return false;
+      }
+    }
+
+    return true;
+  };
+
   const handlePublish = async () => {
-    if (!formData.title || !formData.startDate || (!formData.isOnline && !formData.location)) {
-      customToast.error("Please fill in all required fields (Title, Start Date, Location/Link)");
+    if (isLoading) return;
+
+    if (!validateForm()) {
       return;
     }
 
@@ -147,7 +239,7 @@ const CreateEventPage = () => {
         if (uploadedUrl) {
           coverImageUrl = uploadedUrl;
         } else {
-          customToast.error("Failed to upload image. Proceeding without it."); // Or stop and ask user
+          customToast.error("Failed to upload image. Proceeding without it.");
         }
       }
 
@@ -164,11 +256,11 @@ const CreateEventPage = () => {
 
         location: {
           type: formData.isOnline ? 'ONLINE' : 'PHYSICAL',
-          city: formData.location.split(',')[0].trim() || 'Unknown', // Basic extraction
-          country: 'Nigeria', // web app default context
+          city: formData.location.split(',')[0].trim() || 'Unknown',
+          country: 'Nigeria',
           address: formData.location,
           venueName: formData.venue,
-          coordinates: { lat: 0, lng: 0 } // Placeholder
+          coordinates: { lat: 0, lng: 0 }
         },
         schedule: {
           startDate: startDateTime.toISOString(),
@@ -194,17 +286,12 @@ const CreateEventPage = () => {
         tags: [formData.category]
       };
 
-      // Note: 'displayType' needs to be handled if it's not in CreateEventPayload or handles differently. 
-      // Checking CreateEventPayload in types/event.ts might be needed. 
-      // Assuming 'type' field in payload or similar. 
-      // Actually CreateEventPayload has: type: 'PHYSICAL' | 'ONLINE' | 'HYBRID';
-
       await EventService.createEvent({
         ...payload
-      } as any); // Type assertion if strict key check fails, but ideally should match.
+      } as any);
 
       customToast.success("Event published successfully!");
-      router.push('/explore-events'); // Redirect to explore or dashboard
+      router.push('/explore-events');
     } catch (error) {
       console.error("Failed to publish event:", error);
       customToast.error("Failed to create event. Please try again.");
@@ -699,6 +786,7 @@ const CreateEventPage = () => {
                   size="md"
                   rightIcon={CalendarAdd}
                   onClick={handlePublish}
+                  isLoading={isLoading}
                 >
                   Publish Event
                 </Button>
