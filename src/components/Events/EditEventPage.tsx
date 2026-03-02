@@ -2,7 +2,16 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { EventService } from "@/services/events";
+import {
+  EventCategory,
+  EventPrivacy,
+  TicketType as ApiTicketType,
+  CreateEventPayload,
+} from "@/types/event";
+import { getApiCategory } from "@/utils/event-utils";
 import Button from "@/components/Button";
+import customToast from "@/lib/toast";
 import {
   CalendarAdd,
   DocumentText,
@@ -27,6 +36,26 @@ interface EditEventPageProps {
   eventId: string;
 }
 
+const categories = Object.values(EventCategory);
+
+// Reverse map from API category enum to display label
+const getCategoryLabel = (apiCategory: string): string => {
+  const reverseMap: Record<string, string> = {
+    TECH: "TECH",
+    MUSIC: "MUSIC",
+    ARTS: "ARTS",
+    BUSINESS: "BUSINESS",
+    COMMUNITY: "COMMUNITY",
+    EDUCATION: "EDUCATION",
+    ENTERTAINMENT: "ENTERTAINMENT",
+    SPORTS: "SPORTS",
+    WELLNESS: "WELLNESS",
+    FOOD_DRINK: "FOOD_DRINK",
+    OTHER: "OTHER",
+  };
+  return reverseMap[apiCategory] || apiCategory;
+};
+
 const EditEventPage: React.FC<EditEventPageProps> = ({ eventId }) => {
   const router = useRouter();
   const [formData, setFormData] = useState({
@@ -47,11 +76,14 @@ const EditEventPage: React.FC<EditEventPageProps> = ({ eventId }) => {
   });
 
   const [ticketTypes, setTicketTypes] = useState<TicketType[]>([
-    { id: "1", name: "General Admission", price: "", quantity: 0, description: "" },
+    { id: "1", name: "", price: "", quantity: 0, description: "" },
   ]);
 
   const [activeSection, setActiveSection] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [fetchError, setFetchError] = useState<string | null>(null);
 
   const sections = [
     { id: "details", label: "Event Details", icon: DocumentText },
@@ -59,83 +91,56 @@ const EditEventPage: React.FC<EditEventPageProps> = ({ eventId }) => {
     { id: "settings", label: "Settings", icon: Setting2 },
   ];
 
-  const categories = [
-    "Tech",
-    "Music",
-    "Design",
-    "Business",
-    "Networking",
-    "Workshop",
-    "Conference",
-    "Party",
-    "Sports",
-    "Other",
-  ];
-
-  // Load existing event data
+  // Load existing event data from API
   useEffect(() => {
-    // Mock event data - Replace with API call
-    const existingEvent = {
-      id: eventId,
-      title: "Tech Fest Lagos 2024",
-      description: "Join us for the biggest tech festival in Lagos! Tech Fest Lagos 2024 brings together innovators, developers, entrepreneurs, and tech enthusiasts for a day of networking, learning, and inspiration.",
-      category: "Technology",
-      startDate: "2024-03-15",
-      startTime: "10:00",
-      endDate: "2024-03-15",
-      endTime: "18:00",
-      location: "Victoria Island, Lagos, Nigeria",
-      venue: "Lagos Convention Centre",
-      capacity: "1000",
-      isOnline: false,
-      onlineLink: "",
-      image: null,
-      visibility: "public" as const,
-      ticketTypes: [
-        {
-          id: "1",
-          name: "General Admission",
-          price: "₦5,000",
-          quantity: 500,
-          description: "Access to all sessions and networking",
-        },
-        {
-          id: "2",
-          name: "VIP",
-          price: "₦15,000",
-          quantity: 200,
-          description: "VIP access with premium seating and refreshments",
-        },
-        {
-          id: "3",
-          name: "Early Bird",
-          price: "₦3,000",
-          quantity: 300,
-          description: "Limited early bird pricing",
-        },
-      ],
+    const fetchEvent = async () => {
+      try {
+        setIsLoading(true);
+        setFetchError(null);
+        const event = await EventService.getEventById(eventId);
+
+        // Extract date portions from ISO strings
+        const startDate = event.startDate ? event.startDate.split("T")[0] : "";
+        const endDate = event.endDate ? event.endDate.split("T")[0] : "";
+
+        setFormData({
+          title: event.title || "",
+          description: event.description || "",
+          category: getCategoryLabel(event.category),
+          startDate,
+          startTime: event.startTime || "",
+          endDate,
+          endTime: event.endTime || "",
+          location: event.address || "",
+          venue: event.venueName || "",
+          capacity: "",
+          isOnline: event.locationType === "ONLINE",
+          onlineLink: event.onlineUrl || "",
+          image: event.coverImage || null,
+          visibility: event.privacy === "PRIVATE" ? "private" : "public",
+        });
+
+        if (event.tickets && event.tickets.length > 0) {
+          setTicketTypes(
+            event.tickets.map((t, i) => ({
+              id: t.id || String(i + 1),
+              name: t.name || "",
+              price: String(t.price || 0),
+              quantity: t.quantity || 0,
+              description: t.description || "",
+            }))
+          );
+        }
+      } catch (error) {
+        console.error("Failed to fetch event:", error);
+        setFetchError("Failed to load event data. Please try again.");
+        customToast.error("Failed to load event data.");
+      } finally {
+        setIsLoading(false);
+      }
     };
 
-    // Pre-fill form with existing data
-    setFormData({
-      title: existingEvent.title,
-      description: existingEvent.description,
-      category: existingEvent.category,
-      startDate: existingEvent.startDate,
-      startTime: existingEvent.startTime,
-      endDate: existingEvent.endDate,
-      endTime: existingEvent.endTime,
-      location: existingEvent.location,
-      venue: existingEvent.venue,
-      capacity: existingEvent.capacity,
-      isOnline: existingEvent.isOnline,
-      onlineLink: existingEvent.onlineLink,
-      image: existingEvent.image,
-      visibility: existingEvent.visibility,
-    });
-
-    setTicketTypes(existingEvent.ticketTypes);
-    setIsLoading(false);
+    fetchEvent();
   }, [eventId]);
 
   const handleInputChange = (
@@ -151,11 +156,34 @@ const EditEventPage: React.FC<EditEventPageProps> = ({ eventId }) => {
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      setImageFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
         setFormData((prev) => ({ ...prev, image: reader.result as string }));
       };
       reader.readAsDataURL(file);
+    }
+  };
+
+  const uploadImage = async (file: File): Promise<string | null> => {
+    try {
+      const data = new FormData();
+      data.append("file", file);
+
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        body: data,
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to upload image");
+      }
+
+      const result = await response.json();
+      return result.url;
+    } catch (error) {
+      console.error("Image upload failed:", error);
+      return null;
     }
   };
 
@@ -184,22 +212,151 @@ const EditEventPage: React.FC<EditEventPageProps> = ({ eventId }) => {
     }
   };
 
-  const handleSaveDraft = () => {
-    // Save as draft logic
-    console.log("Saving draft:", { formData, ticketTypes });
-    alert("Event changes saved as draft!");
+  const validateForm = (): boolean => {
+    if (!formData.title.trim()) {
+      customToast.error("Event title is required");
+      setActiveSection(0);
+      return false;
+    }
+    if (!formData.category) {
+      customToast.error("Please select a category");
+      setActiveSection(0);
+      return false;
+    }
+    if (!formData.description.trim()) {
+      customToast.error("Description is required");
+      setActiveSection(0);
+      return false;
+    }
+    if (!formData.startDate) {
+      customToast.error("Start date is required");
+      setActiveSection(0);
+      return false;
+    }
+    if (!formData.startTime) {
+      customToast.error("Start time is required");
+      setActiveSection(0);
+      return false;
+    }
+
+    if (formData.endDate) {
+      const startDateTime = new Date(`${formData.startDate}T${formData.startTime}`);
+      const endDateTime = new Date(`${formData.endDate}T${formData.endTime || "23:59"}`);
+      if (endDateTime <= startDateTime) {
+        customToast.error("End time must be after start time");
+        setActiveSection(0);
+        return false;
+      }
+    }
+
+    if (formData.isOnline) {
+      if (!formData.onlineLink.trim()) {
+        customToast.error("Online event link is required");
+        setActiveSection(1);
+        return false;
+      }
+    } else {
+      if (!formData.venue.trim()) {
+        customToast.error("Venue name is required");
+        setActiveSection(1);
+        return false;
+      }
+      if (!formData.location.trim()) {
+        customToast.error("Address is required");
+        setActiveSection(1);
+        return false;
+      }
+    }
+
+    for (const ticket of ticketTypes) {
+      if (!ticket.name.trim()) {
+        customToast.error("All ticket types must have a name");
+        setActiveSection(1);
+        return false;
+      }
+      if (ticket.price === "" || isNaN(parseFloat(ticket.price)) || parseFloat(ticket.price) < 0) {
+        customToast.error("Please enter a valid price for all tickets (0 for free)");
+        setActiveSection(1);
+        return false;
+      }
+    }
+
+    return true;
   };
 
-  const handleUpdate = () => {
-    // Validate and update logic
-    if (!formData.title || !formData.startDate || !formData.location) {
-      alert("Please fill in all required fields");
-      return;
+  const handleSaveDraft = () => {
+    customToast.success("Draft saved locally! (Implementation pending)");
+  };
+
+  const handleUpdate = async () => {
+    if (isUpdating) return;
+    if (!validateForm()) return;
+
+    setIsUpdating(true);
+
+    try {
+      let coverImageUrl = formData.image;
+
+      // Upload new image if selected
+      if (imageFile) {
+        const uploadedUrl = await uploadImage(imageFile);
+        if (uploadedUrl) {
+          coverImageUrl = uploadedUrl;
+        } else {
+          customToast.error("Failed to upload image. Proceeding without it.");
+        }
+      }
+
+      const startDateTime = new Date(`${formData.startDate}T${formData.startTime || "00:00"}`);
+      const endDateTime = formData.endDate
+        ? new Date(`${formData.endDate}T${formData.endTime || "23:59"}`)
+        : new Date(startDateTime.getTime() + 3600000);
+
+      const payload: Partial<CreateEventPayload> = {
+        title: formData.title,
+        description: formData.description,
+        category: getApiCategory(formData.category),
+        location: {
+          type: formData.isOnline ? "ONLINE" : "PHYSICAL",
+          city: formData.location.split(",")[0].trim() || "Unknown",
+          country: "Nigeria",
+          address: formData.location,
+          venueName: formData.venue,
+          coordinates: { lat: 0, lng: 0 },
+        },
+        schedule: {
+          startDate: startDateTime.toISOString(),
+          endDate: endDateTime.toISOString(),
+          startTime: formData.startTime || "00:00",
+          endTime: formData.endTime || "23:59",
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        },
+        tickets: ticketTypes.map((t) => ({
+          name: t.name,
+          type: parseFloat(t.price) > 0 ? ApiTicketType.PAID : ApiTicketType.FREE,
+          price: parseFloat(t.price) || 0,
+          currency: "NGN",
+          quantity: t.quantity > 0 ? t.quantity : 1000,
+          description: t.description,
+        })),
+        media: {
+          coverImage: coverImageUrl || "",
+          gallery: [],
+        },
+        privacy: formData.visibility === "public" ? EventPrivacy.PUBLIC : EventPrivacy.PRIVATE,
+        tags: [formData.category],
+      };
+
+      await EventService.updateEvent(eventId, payload);
+
+      customToast.success("Event updated successfully!");
+      router.push(`/events/${eventId}/manage`);
+    } catch (error) {
+      console.error("Failed to update event:", error);
+      customToast.error("Failed to update event. Please try again.");
+    } finally {
+      setIsUpdating(false);
     }
-    console.log("Updating event:", { formData, ticketTypes });
-    alert("Event updated successfully!");
-    // Redirect to event management page
-    router.push(`/events/${eventId}/manage`);
   };
 
   const renderSection = () => {
@@ -611,6 +768,19 @@ const EditEventPage: React.FC<EditEventPageProps> = ({ eventId }) => {
     );
   }
 
+  if (fetchError) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-red-500 mb-4">{fetchError}</div>
+          <Button variant="primary" size="md" onClick={() => router.back()}>
+            Go Back
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
@@ -700,6 +870,7 @@ const EditEventPage: React.FC<EditEventPageProps> = ({ eventId }) => {
                   size="md"
                   rightIcon={CalendarAdd}
                   onClick={handleUpdate}
+                  isLoading={isUpdating}
                 >
                   Update Event
                 </Button>
