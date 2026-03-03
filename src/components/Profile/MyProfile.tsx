@@ -90,11 +90,13 @@ const MyProfile: React.FC<MyProfileProps> = ({ userData }) => {
     role.toLowerCase().includes("organizer") || role.toLowerCase().includes("host")
   );
 
-  // State for events and tickets
+  // State for events, tickets, and dashboard
   const [myEvents, setMyEvents] = useState<EventCardProps[]>([]);
   const [myTickets, setMyTickets] = useState<any[]>([]);
   const [eventsLoading, setEventsLoading] = useState(true);
   const [ticketsLoading, setTicketsLoading] = useState(true);
+  const [dashboardData, setDashboardData] = useState<import("@/services/events").OrganizerDashboardData | null>(null);
+  const [dashboardLoading, setDashboardLoading] = useState(false);
 
   // Fetch user's events
   useEffect(() => {
@@ -166,6 +168,27 @@ const MyProfile: React.FC<MyProfileProps> = ({ userData }) => {
       fetchUserTickets();
     }
   }, [user, userData]);
+
+  // Fetch organizer dashboard data when dashboard tab is active
+  useEffect(() => {
+    if (activeTab !== "dashboard") return;
+    if (dashboardData) return;
+
+    const fetchDashboard = async () => {
+      try {
+        setDashboardLoading(true);
+        const { EventService } = await import("@/services/events");
+        const data = await EventService.getOrganizerDashboard();
+        setDashboardData(data);
+      } catch (error) {
+        console.error("Failed to fetch dashboard:", error);
+      } finally {
+        setDashboardLoading(false);
+      }
+    };
+
+    fetchDashboard();
+  }, [activeTab, dashboardData]);
 
   const tabs: {
     id: string;
@@ -396,7 +419,21 @@ const MyProfile: React.FC<MyProfileProps> = ({ userData }) => {
         );
 
       case "dashboard":
-        return <DashboardContent events={myEvents} />;
+        if (dashboardLoading) {
+          return (
+            <div className="flex items-center justify-center py-16">
+              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary" />
+            </div>
+          );
+        }
+        if (dashboardData) {
+          return <DashboardContent data={dashboardData} />;
+        }
+        return (
+          <div className="text-center py-16 text-foreground/60">
+            Failed to load dashboard data.
+          </div>
+        );
 
       case "vendor-dashboard":
         return <VendorDashboardContent />;

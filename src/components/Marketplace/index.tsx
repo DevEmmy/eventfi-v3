@@ -1,11 +1,53 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import MarketplaceHero from "./MarketplaceHero";
 import MarketplaceFilters from "./MarketplaceFilters";
 import VendorsList from "./VendorsList";
 import EmptyState from "./EmptyState";
 import { VendorCardProps } from "./VendorCard";
+import { VendorService, VendorProfile } from "@/services/vendor";
+
+// Map backend category enums to display names
+const categoryDisplayMap: Record<string, string> = {
+  PHOTOGRAPHY: "Photography",
+  VIDEOGRAPHY: "Videography",
+  DJ_MUSIC: "DJ & Music",
+  CATERING: "Catering",
+  VENUES: "Venues",
+  DECORATIONS: "Decorations",
+  SECURITY: "Security",
+  LIGHTING: "Lighting",
+  SOUND_SYSTEM: "Sound System",
+  OTHER: "Other",
+};
+
+// Map display names back to enum values for API calls
+const categoryApiMap: Record<string, string> = Object.fromEntries(
+  Object.entries(categoryDisplayMap).map(([k, v]) => [v, k])
+);
+
+const mapVendorToCard = (vendor: VendorProfile): VendorCardProps => {
+  const priceRange =
+    vendor.priceMin && vendor.priceMax
+      ? `₦${vendor.priceMin.toLocaleString()} - ₦${vendor.priceMax.toLocaleString()}`
+      : vendor.priceMin
+        ? `From ₦${vendor.priceMin.toLocaleString()}`
+        : "Contact for pricing";
+
+  return {
+    id: vendor.id,
+    name: vendor.name,
+    category: categoryDisplayMap[vendor.category] || vendor.category,
+    location: vendor.location,
+    rating: vendor.averageRating,
+    reviewCount: vendor.reviewCount,
+    priceRange,
+    verified: vendor.isVerified,
+    image: vendor.coverImage || vendor.logo || undefined,
+    specialties: vendor.specialties,
+  };
+};
 
 const MarketplacePage = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -15,128 +57,51 @@ const MarketplacePage = () => {
   const [selectedLocation, setSelectedLocation] = useState<string>("all");
   const [selectedRating, setSelectedRating] = useState<string>("all");
 
-  // Sample vendor data - Replace with actual API data
-  const vendors: VendorCardProps[] = [
-    {
-      id: "1",
-      name: "Elite Photography Studio",
-      category: "Photography",
-      location: "Lagos, Nigeria",
-      rating: 4.8,
-      reviewCount: 245,
-      priceRange: "₦50,000 - ₦200,000",
-      verified: true,
-      specialties: ["Wedding", "Corporate", "Events"],
-    },
-    {
-      id: "2",
-      name: "SoundWave DJ Services",
-      category: "DJ & Music",
-      location: "Lagos, Nigeria",
-      rating: 4.9,
-      reviewCount: 189,
-      priceRange: "₦30,000 - ₦150,000",
-      verified: true,
-      specialties: ["Parties", "Corporate", "Weddings"],
-    },
-    {
-      id: "3",
-      name: "Gourmet Catering Co.",
-      category: "Catering",
-      location: "Abuja, Nigeria",
-      rating: 4.7,
-      reviewCount: 312,
-      priceRange: "₦80,000 - ₦500,000",
-      verified: true,
-      specialties: ["Corporate", "Weddings", "Private Events"],
-    },
-    {
-      id: "4",
-      name: "Grand Ballroom Venue",
-      category: "Venues",
-      location: "Lagos, Nigeria",
-      rating: 4.6,
-      reviewCount: 156,
-      priceRange: "₦200,000 - ₦1,000,000",
-      verified: true,
-      specialties: ["Conferences", "Weddings", "Corporate"],
-    },
-    {
-      id: "5",
-      name: "Creative Decor Solutions",
-      category: "Decorations",
-      location: "Port Harcourt, Nigeria",
-      rating: 4.5,
-      reviewCount: 98,
-      priceRange: "₦40,000 - ₦300,000",
-      verified: false,
-      specialties: ["Weddings", "Parties", "Corporate"],
-    },
-    {
-      id: "6",
-      name: "Pro Video Productions",
-      category: "Videography",
-      location: "Lagos, Nigeria",
-      rating: 4.9,
-      reviewCount: 201,
-      priceRange: "₦100,000 - ₦400,000",
-      verified: true,
-      specialties: ["Corporate", "Events", "Documentaries"],
-    },
-    {
-      id: "7",
-      name: "SecureGuard Services",
-      category: "Security",
-      location: "Lagos, Nigeria",
-      rating: 4.7,
-      reviewCount: 134,
-      priceRange: "₦25,000 - ₦100,000",
-      verified: true,
-      specialties: ["Events", "Corporate", "Private"],
-    },
-    {
-      id: "8",
-      name: "Light & Sound Masters",
-      category: "Lighting",
-      location: "Abuja, Nigeria",
-      rating: 4.8,
-      reviewCount: 167,
-      priceRange: "₦60,000 - ₦250,000",
-      verified: true,
-      specialties: ["Concerts", "Corporate", "Events"],
-    },
-  ];
+  const [vendors, setVendors] = useState<VendorCardProps[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [totalPages, setTotalPages] = useState(1);
+  const [page, setPage] = useState(1);
 
-  // Filter vendors based on search and filters
-  const filteredVendors = vendors.filter((vendor) => {
-    const matchesSearch =
-      searchQuery === "" ||
-      vendor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      vendor.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      vendor.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      vendor.specialties?.some((s) =>
-        s.toLowerCase().includes(searchQuery.toLowerCase())
-      );
+  const fetchVendors = useCallback(async () => {
+    try {
+      setLoading(true);
+      const params: any = { page, limit: 12 };
 
-    const matchesCategory =
-      selectedCategory === "all" || vendor.category === selectedCategory;
+      if (searchQuery) params.search = searchQuery;
+      if (selectedCategory !== "all") {
+        params.category = categoryApiMap[selectedCategory] || selectedCategory;
+      }
+      if (selectedLocation !== "all") params.location = selectedLocation;
+      if (selectedRating !== "all") {
+        params.minRating = parseFloat(selectedRating.replace("+", ""));
+      }
 
-    const matchesLocation =
-      selectedLocation === "all" ||
-      vendor.location.toLowerCase().includes(selectedLocation.toLowerCase());
+      const result = await VendorService.list(params);
+      setVendors(result.data.map(mapVendorToCard));
+      setTotalPages(result.meta.totalPages);
+    } catch {
+      // Silently fail - show empty state
+      setVendors([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [page, searchQuery, selectedCategory, selectedLocation, selectedRating]);
 
-    const matchesRating =
-      selectedRating === "all" ||
-      vendor.rating >= parseFloat(selectedRating.replace("+", ""));
+  useEffect(() => {
+    fetchVendors();
+  }, [fetchVendors]);
 
-    return matchesSearch && matchesCategory && matchesLocation && matchesRating;
-  });
+  // Reset page when filters change
+  useEffect(() => {
+    setPage(1);
+  }, [searchQuery, selectedCategory, selectedLocation, selectedRating]);
 
   const handleClearFilters = () => {
     setSearchQuery("");
     setSelectedCategory("all");
     setSelectedLocation("all");
     setSelectedRating("all");
+    setPage(1);
   };
 
   return (
@@ -159,9 +124,22 @@ const MarketplacePage = () => {
         />
       )}
 
-      {filteredVendors.length > 0 ? (
+      {loading ? (
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+              <div key={i} className="bg-background border border-foreground/10 rounded-2xl p-4 animate-pulse">
+                <div className="h-40 bg-foreground/10 rounded-xl mb-4" />
+                <div className="h-5 w-3/4 bg-foreground/10 rounded mb-2" />
+                <div className="h-4 w-1/2 bg-foreground/5 rounded mb-4" />
+                <div className="h-4 w-full bg-foreground/5 rounded" />
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : vendors.length > 0 ? (
         <VendorsList
-          vendors={filteredVendors}
+          vendors={vendors}
           viewMode={viewMode}
           searchQuery={searchQuery}
           onViewModeChange={setViewMode}
@@ -174,4 +152,3 @@ const MarketplacePage = () => {
 };
 
 export default MarketplacePage;
-

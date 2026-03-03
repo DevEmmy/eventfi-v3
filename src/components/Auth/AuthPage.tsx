@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import Button from "@/components/Button";
 import { Share, Wallet3 } from "iconsax-react";
 import Link from "next/link";
+import { useSearchParams, useRouter } from "next/navigation";
 import axiosInstance from "@/lib/axios";
 import { useUserStore } from "@/store/useUserStore";
 import toast from "@/lib/toast";
@@ -16,10 +17,20 @@ const AuthForm = ({ mode }: { mode: "login" | "signup" }) => {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const setUser = useUserStore((state) => state.setUser);
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const redirectTo = searchParams.get("redirect");
+
+  const getRedirectUrl = (user: { username?: string | null; isNewUser?: boolean }) => {
+    // New users or users without username go to onboarding
+    if (!user.username) return "/onboarding/identity";
+    // Otherwise use the redirect param or default to home
+    return redirectTo || "/";
+  };
 
   const handleSocialAuth = (provider: string) => {
     console.log(`Authenticating with ${provider}`);
-    window.location.href = "/onboarding/identity";
+    router.push("/onboarding/identity");
   };
 
   const handleEmailAuth = async (e: React.FormEvent) => {
@@ -35,8 +46,7 @@ const AuthForm = ({ mode }: { mode: "login" | "signup" }) => {
       setUser(user, token);
       toast.success(mode === "login" ? "Welcome back!" : "Account created successfully!");
 
-      // Redirect to onboarding
-      window.location.href = "/onboarding/identity";
+      router.push(getRedirectUrl(user));
     } catch (error: any) {
       const message = error.response?.data?.message || "Something went wrong. Please try again.";
       toast.error(message);
@@ -80,13 +90,7 @@ const AuthForm = ({ mode }: { mode: "login" | "signup" }) => {
                       setUser(user, token);
                       toast.success("Welcome back!");
 
-                      // Check isNewUser flag if needed, but for now redirect to onboarding as per flow
-                      // Instructions say: Check isNewUser: If true -> /onboarding, False -> /dashboard
-                      if (user.isNewUser) {
-                        window.location.href = "/onboarding/identity";
-                      } else {
-                        window.location.href = "/";
-                      }
+                      router.push(getRedirectUrl(user));
                     } catch (error: any) {
                       console.error("Backend verification failed:", error);
                       toast.error(error.message || "Google login failed");

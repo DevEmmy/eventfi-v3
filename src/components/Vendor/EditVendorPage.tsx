@@ -16,61 +16,83 @@ import {
   Sms,
   TickCircle,
 } from "iconsax-react";
+import { VendorService } from "@/services/vendor";
+import customToast from "@/lib/toast";
+
+const categoryDisplayMap: Record<string, string> = {
+  PHOTOGRAPHY: "Photography",
+  VIDEOGRAPHY: "Videography",
+  DJ_MUSIC: "DJ & Music",
+  CATERING: "Catering",
+  VENUES: "Venues",
+  DECORATIONS: "Decorations",
+  SECURITY: "Security",
+  LIGHTING: "Lighting",
+  SOUND_SYSTEM: "Sound System",
+  OTHER: "Other",
+};
+
+const categoryApiMap: Record<string, string> = Object.fromEntries(
+  Object.entries(categoryDisplayMap).map(([k, v]) => [v, k])
+);
 
 const EditVendorPage = () => {
   const router = useRouter();
-  
-  // Mock vendor data - Replace with API call to fetch existing vendor data
-  const existingVendorData = {
-    name: "Alex Photography",
-    category: "Photography",
-    description: "Professional event photography services with 5+ years of experience. We specialize in capturing life's most precious moments at weddings, corporate events, and special occasions. Our team of skilled photographers uses state-of-the-art equipment to deliver stunning, high-quality images that tell your story beautifully.",
-    location: "Lagos, Nigeria",
-    address: "123 Victoria Island, Lagos",
-    phone: "+234 800 123 4567",
-    email: "contact@alexphotography.com",
-    website: "https://www.alexphotography.com",
-    priceRange: "₦50,000 - ₦200,000",
-    specialties: ["Wedding Photography", "Corporate Events", "Portrait Sessions", "Event Coverage"],
-    yearsOfExperience: "5",
-    availability: "available" as "available" | "limited" | "unavailable",
-    logo: null as string | null,
-    coverImage: null as string | null,
-    portfolio: [] as string[],
-  };
-
-  // Parse price range
-  const parsePriceRange = (priceRange: string) => {
-    const match = priceRange.match(/₦?([\d,]+)\s*-\s*₦?([\d,]+)/);
-    if (match) {
-      return {
-        min: match[1].replace(/,/g, ""),
-        max: match[2].replace(/,/g, ""),
-      };
-    }
-    return { min: "", max: "" };
-  };
-
-  const initialPriceRange = parsePriceRange(existingVendorData.priceRange);
+  const [vendorId, setVendorId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   const [formData, setFormData] = useState({
-    name: existingVendorData.name,
-    category: existingVendorData.category,
-    description: existingVendorData.description,
-    location: existingVendorData.location,
-    address: existingVendorData.address,
-    phone: existingVendorData.phone,
-    email: existingVendorData.email,
-    priceRangeMin: initialPriceRange.min,
-    priceRangeMax: initialPriceRange.max,
-    logo: existingVendorData.logo,
-    coverImage: existingVendorData.coverImage,
-    specialties: [...existingVendorData.specialties],
-    portfolio: [...existingVendorData.portfolio],
-    website: existingVendorData.website,
-    yearsOfExperience: existingVendorData.yearsOfExperience,
-    availability: existingVendorData.availability,
+    name: "",
+    category: "",
+    description: "",
+    location: "",
+    address: "",
+    phone: "",
+    email: "",
+    priceRangeMin: "",
+    priceRangeMax: "",
+    logo: null as string | null,
+    coverImage: null as string | null,
+    specialties: [] as string[],
+    portfolio: [] as string[],
+    website: "",
+    yearsOfExperience: "",
+    availability: "available" as "available" | "limited" | "unavailable",
   });
+
+  // Fetch existing vendor profile
+  useEffect(() => {
+    const fetchVendor = async () => {
+      try {
+        const vendor = await VendorService.getMyProfile();
+        setVendorId(vendor.id);
+        setFormData({
+          name: vendor.name,
+          category: categoryDisplayMap[vendor.category] || vendor.category,
+          description: vendor.description,
+          location: vendor.location,
+          address: vendor.address || "",
+          phone: vendor.phone || "",
+          email: vendor.email || "",
+          priceRangeMin: vendor.priceMin ? String(vendor.priceMin) : "",
+          priceRangeMax: vendor.priceMax ? String(vendor.priceMax) : "",
+          logo: vendor.logo,
+          coverImage: vendor.coverImage,
+          specialties: [...vendor.specialties],
+          portfolio: [...vendor.portfolio],
+          website: vendor.website || "",
+          yearsOfExperience: String(vendor.yearsOfExperience),
+          availability: vendor.availability.toLowerCase() as "available" | "limited" | "unavailable",
+        });
+      } catch {
+        customToast.error("No vendor profile found. Create one first.");
+        router.push("/vendor/create");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchVendor();
+  }, [router]);
 
   const [currentSpecialty, setCurrentSpecialty] = useState("");
   const [activeSection, setActiveSection] = useState(0);
@@ -160,12 +182,15 @@ const EditVendorPage = () => {
   };
 
   const handleSaveDraft = () => {
-    console.log("Saving draft:", formData);
-    alert("Vendor profile saved as draft!");
+    try {
+      localStorage.setItem("vendor-edit-draft", JSON.stringify(formData));
+      customToast.success("Draft saved locally!");
+    } catch {
+      customToast.error("Failed to save draft");
+    }
   };
 
   const handleSaveChanges = async () => {
-    // Validate required fields
     if (
       !formData.name ||
       !formData.category ||
@@ -174,20 +199,42 @@ const EditVendorPage = () => {
       !formData.phone ||
       !formData.email
     ) {
-      alert("Please fill in all required fields");
+      customToast.error("Please fill in all required fields");
+      return;
+    }
+
+    if (!vendorId) {
+      customToast.error("Vendor profile not found");
       return;
     }
 
     setIsSaving(true);
-    
-    // Simulate API call
-    setTimeout(() => {
-      setIsSaving(false);
-      console.log("Updating vendor profile:", formData);
-      alert("Vendor profile updated successfully!");
-      // Redirect back to profile
+    try {
+      await VendorService.update(vendorId, {
+        name: formData.name,
+        category: categoryApiMap[formData.category] || "OTHER",
+        description: formData.description,
+        location: formData.location,
+        address: formData.address || undefined,
+        phone: formData.phone,
+        email: formData.email,
+        website: formData.website || undefined,
+        priceMin: formData.priceRangeMin ? parseFloat(formData.priceRangeMin) : undefined,
+        priceMax: formData.priceRangeMax ? parseFloat(formData.priceRangeMax) : undefined,
+        specialties: formData.specialties,
+        yearsOfExperience: formData.yearsOfExperience ? parseInt(formData.yearsOfExperience) : undefined,
+        availability: formData.availability.toUpperCase(),
+        logo: formData.logo || undefined,
+        coverImage: formData.coverImage || undefined,
+        portfolio: formData.portfolio,
+      });
+      customToast.success("Vendor profile updated successfully!");
       router.push("/profile");
-    }, 1500);
+    } catch (err: any) {
+      customToast.error(err.response?.data?.message || "Failed to update vendor profile");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const renderSection = () => {
@@ -657,6 +704,14 @@ const EditVendorPage = () => {
         return null;
     }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">

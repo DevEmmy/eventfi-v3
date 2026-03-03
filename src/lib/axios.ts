@@ -30,10 +30,13 @@ axiosInstance.interceptors.response.use(
         // Global error handling
         if (error.response) {
             if (error.response.status === 401) {
-                // Handle unauthorized (e.g., clear token, redirect to login)
                 if (typeof window !== 'undefined') {
                     localStorage.removeItem('token');
-                    // window.location.href = '/auth/login';
+                    document.cookie = 'auth-token=; path=/; max-age=0';
+                    // Don't redirect if already on auth pages
+                    if (!window.location.pathname.startsWith('/auth')) {
+                        window.location.href = `/auth/login?redirect=${encodeURIComponent(window.location.pathname)}`;
+                    }
                 }
             }
         }

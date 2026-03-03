@@ -10,6 +10,7 @@ import {
     UpdateChatSettingsPayload,
     MessagesQueryParams,
     MembersQueryParams,
+    EventChatPreview,
 } from "@/types/chat";
 
 interface ApiResponse<T> {
@@ -117,5 +118,15 @@ export const ChatService = {
         payload: UpdateChatSettingsPayload
     ): Promise<void> => {
         await axiosInstance.patch(`/events/${eventId}/chat/settings`, payload);
+    },
+
+    /**
+     * Get all event chats for the current user
+     */
+    getUserEventChats: async (): Promise<EventChatPreview[]> => {
+        const response = await axiosInstance.get<ApiResponse<EventChatPreview[]>>(
+            `/user/event-chats`
+        );
+        return response.data.data;
     },
 };

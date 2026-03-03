@@ -1,71 +1,30 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import { useRouter } from "next/navigation";
 import Button from "@/components/Button";
-import EventCard, { EventCardProps } from "@/components/Homepage/EventCard";
+import { OrganizerDashboardData } from "@/services/events";
 import {
   CalendarAdd,
   Calendar,
   Ticket,
   MoneyRecive,
   People,
-  TrendUp,
   ArrowUp2,
   Eye,
   Chart,
   Shop,
-  Game,
+  Clock,
+  Notification,
 } from "iconsax-react";
 
 interface DashboardContentProps {
-  events: EventCardProps[];
+  data: OrganizerDashboardData;
 }
 
-const DashboardContent: React.FC<DashboardContentProps> = ({ events }) => {
+const DashboardContent: React.FC<DashboardContentProps> = ({ data }) => {
   const router = useRouter();
-  const [timeRange, setTimeRange] = useState<"7d" | "30d" | "90d" | "all">("30d");
-
-  // Mock dashboard stats
-  const stats = {
-    totalEvents: 24,
-    upcomingEvents: 5,
-    totalAttendees: 3420,
-    totalRevenue: 2450000,
-    eventsThisMonth: 3,
-    revenueChange: 12.5,
-    attendeesChange: 8.3,
-  };
-
-  // Mock recent activity
-  const recentActivity = [
-    {
-      id: 1,
-      type: "ticket_sale",
-      message: "New ticket sale for Design Conference 2025",
-      time: "2 hours ago",
-      amount: "₦15,000",
-    },
-    {
-      id: 2,
-      type: "event_created",
-      message: "You created a new event: Startup Networking Night",
-      time: "1 day ago",
-    },
-    {
-      id: 3,
-      type: "vendor_booked",
-      message: "Vendor booking confirmed: Elite Photography Studio",
-      time: "2 days ago",
-    },
-    {
-      id: 4,
-      type: "ticket_sale",
-      message: "5 tickets sold for Tech Meetup Lagos",
-      time: "3 days ago",
-      amount: "Free",
-    },
-  ];
+  const { stats, recentActivity, upcomingEventsList } = data;
 
   const quickActions = [
     {
@@ -83,55 +42,46 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ events }) => {
       onClick: () => router.push("/marketplace"),
     },
     {
-      label: "View Analytics",
-      icon: Chart,
+      label: "My Events",
+      icon: Calendar,
       bgColor: "bg-accent/10",
       iconColor: "text-accent",
-      onClick: () => console.log("View analytics"),
+      onClick: () => router.push("/profile?tab=events"),
     },
     {
-      label: "Create Game",
-      icon: Game,
+      label: "Notifications",
+      icon: Notification,
       bgColor: "bg-primary/10",
       iconColor: "text-primary",
-      onClick: () => console.log("Create game"),
+      onClick: () => router.push("/notifications"),
     },
   ];
 
+  const formatTimestamp = (dateStr: string) => {
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diff = now.getTime() - date.getTime();
+    const minutes = Math.floor(diff / 60000);
+    const hours = Math.floor(diff / 3600000);
+    const days = Math.floor(diff / 86400000);
+
+    if (minutes < 1) return "Just now";
+    if (minutes < 60) return `${minutes}m ago`;
+    if (hours < 24) return `${hours}h ago`;
+    if (days < 7) return `${days}d ago`;
+    return date.toLocaleDateString();
+  };
+
+  const formatEventDate = (dateStr: string) => {
+    return new Date(dateStr).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+  };
+
   return (
     <div className="space-y-8">
-      {/* Time Range Selector */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold font-[family-name:var(--font-clash-display)] text-foreground mb-1">
-            Dashboard
-          </h2>
-          <p className="text-foreground/60">Track your event performance and manage activities</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-foreground/60">Time Range:</span>
-          {(["7d", "30d", "90d", "all"] as const).map((range) => (
-            <button
-              key={range}
-              onClick={() => setTimeRange(range)}
-              className={`px-3 py-1 rounded-lg text-sm font-medium transition-all duration-200 ${
-                timeRange === range
-                  ? "bg-primary text-white"
-                  : "bg-foreground/5 text-foreground/70 hover:bg-foreground/10"
-              }`}
-            >
-              {range === "7d"
-                ? "7 Days"
-                : range === "30d"
-                ? "30 Days"
-                : range === "90d"
-                ? "90 Days"
-                : "All Time"}
-            </button>
-          ))}
-        </div>
-      </div>
-
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {/* Total Events */}
@@ -140,10 +90,12 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ events }) => {
             <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
               <Calendar size={24} color="currentColor" variant="Bold" className="text-primary" />
             </div>
-            <div className="flex items-center gap-1 text-green-500 text-sm">
-              <ArrowUp2 size={16} color="currentColor" variant="Bold" />
-              <span>{stats.eventsThisMonth} this month</span>
-            </div>
+            {stats.eventsThisMonth > 0 && (
+              <div className="flex items-center gap-1 text-green-500 text-sm">
+                <ArrowUp2 size={16} color="currentColor" variant="Bold" />
+                <span>{stats.eventsThisMonth} this month</span>
+              </div>
+            )}
           </div>
           <div className="text-3xl font-bold text-foreground mb-1">
             {stats.totalEvents}
@@ -160,10 +112,6 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ events }) => {
             <div className="w-12 h-12 rounded-xl bg-secondary/10 flex items-center justify-center">
               <People size={24} color="currentColor" variant="Bold" className="text-secondary" />
             </div>
-            <div className="flex items-center gap-1 text-green-500 text-sm">
-              <ArrowUp2 size={16} color="currentColor" variant="Bold" />
-              <span>+{stats.attendeesChange}%</span>
-            </div>
           </div>
           <div className="text-3xl font-bold text-foreground mb-1">
             {stats.totalAttendees.toLocaleString()}
@@ -178,20 +126,13 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ events }) => {
         <div className="bg-background border border-foreground/10 rounded-2xl p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center">
-              <MoneyRecive
-                size={24}
-                color="currentColor"
-                variant="Bold"
-                className="text-accent"
-              />
-            </div>
-            <div className="flex items-center gap-1 text-green-500 text-sm">
-              <ArrowUp2 size={16} color="currentColor" variant="Bold" />
-              <span>+{stats.revenueChange}%</span>
+              <MoneyRecive size={24} color="currentColor" variant="Bold" className="text-accent" />
             </div>
           </div>
           <div className="text-3xl font-bold text-foreground mb-1">
-            ₦{stats.totalRevenue.toLocaleString()}
+            {stats.totalRevenue > 1000000
+              ? `₦${(stats.totalRevenue / 1000000).toFixed(1)}M`
+              : `₦${stats.totalRevenue.toLocaleString()}`}
           </div>
           <div className="text-sm text-foreground/60">Total Revenue</div>
           <div className="mt-2 text-xs text-foreground/50">
@@ -205,12 +146,9 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ events }) => {
             <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
               <Ticket size={24} color="currentColor" variant="Bold" className="text-primary" />
             </div>
-            <div className="flex items-center gap-1 text-foreground/40 text-sm">
-              <TrendUp size={16} color="currentColor" variant="Outline" />
-            </div>
           </div>
           <div className="text-3xl font-bold text-foreground mb-1">
-            {stats.totalAttendees.toLocaleString()}
+            {stats.totalTicketsSold.toLocaleString()}
           </div>
           <div className="text-sm text-foreground/60">Tickets Sold</div>
           <div className="mt-2 text-xs text-foreground/50">
@@ -268,52 +206,67 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ events }) => {
                 View All
               </button>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              {events.slice(0, 4).map((event) => (
-                <div
-                  key={event.id}
-                  className="bg-background border border-foreground/10 rounded-2xl p-4 hover:border-primary transition-all duration-200 cursor-pointer group"
-                  onClick={() => router.push(`/events/${event.id}`)}
-                >
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex-1">
-                      <h4 className="font-bold text-foreground mb-1 group-hover:text-primary transition-colors">
-                        {event.title}
-                      </h4>
-                      <p className="text-sm text-foreground/60">{event.date}</p>
+            {upcomingEventsList.length === 0 ? (
+              <div className="bg-background border border-foreground/10 rounded-2xl p-8 text-center">
+                <Calendar size={48} color="currentColor" variant="Outline" className="text-foreground/20 mx-auto mb-3" />
+                <p className="text-foreground/60 mb-4">No upcoming events</p>
+                <Button variant="primary" size="sm" onClick={() => router.push("/events/create")}>
+                  Create Your First Event
+                </Button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                {upcomingEventsList.map((event) => (
+                  <div
+                    key={event.id}
+                    className="bg-background border border-foreground/10 rounded-2xl p-4 hover:border-primary transition-all duration-200 cursor-pointer group"
+                    onClick={() => router.push(`/events/${event.id}`)}
+                  >
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex-1">
+                        <h4 className="font-bold text-foreground mb-1 group-hover:text-primary transition-colors">
+                          {event.title}
+                        </h4>
+                        <p className="text-sm text-foreground/60">{formatEventDate(event.startDate)}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-4 text-sm text-foreground/70 mb-3">
+                      <span>{event.ticketsSold} tickets sold</span>
+                      {event.revenue > 0 && (
+                        <span>₦{event.revenue.toLocaleString()}</span>
+                      )}
+                    </div>
+                    {event.venueName && (
+                      <p className="text-xs text-foreground/50 mb-3">{event.venueName}{event.city ? `, ${event.city}` : ""}</p>
+                    )}
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        leftIcon={Eye}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          router.push(`/events/${event.id}`);
+                        }}
+                      >
+                        View
+                      </Button>
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        leftIcon={Chart}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          router.push(`/events/${event.id}/manage`);
+                        }}
+                      >
+                        Manage
+                      </Button>
                     </div>
                   </div>
-                  <div className="flex items-center gap-4 text-sm text-foreground/70 mb-3">
-                    <span>{event.attendees} attendees</span>
-                    <span>{event.price}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      leftIcon={Eye}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        router.push(`/events/${event.id}`);
-                      }}
-                    >
-                      View
-                    </Button>
-                    <Button
-                      variant="primary"
-                      size="sm"
-                      leftIcon={Chart}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        router.push(`/events/${event.id}/manage`);
-                      }}
-                    >
-                      Manage
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
@@ -325,53 +278,71 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ events }) => {
               Recent Activity
             </h3>
             <div className="bg-background border border-foreground/10 rounded-2xl p-6 space-y-4">
-              {recentActivity.map((activity) => (
-                <div
-                  key={activity.id}
-                  className="flex items-start gap-3 pb-4 border-b border-foreground/10 last:border-0 last:pb-0"
-                >
-                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                    {activity.type === "ticket_sale" ? (
-                      <Ticket size={16} color="currentColor" variant="Bold" className="text-primary" />
-                    ) : activity.type === "event_created" ? (
-                      <CalendarAdd size={16} color="currentColor" variant="Bold" className="text-primary" />
-                    ) : (
-                      <Shop size={16} color="currentColor" variant="Bold" className="text-primary" />
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm text-foreground/80 mb-1">
-                      {activity.message}
-                    </p>
-                    {activity.amount && (
-                      <p className="text-xs font-semibold text-primary mb-1">
-                        {activity.amount}
+              {recentActivity.length === 0 ? (
+                <p className="text-sm text-foreground/50 text-center py-4">No recent activity</p>
+              ) : (
+                recentActivity.map((activity) => (
+                  <div
+                    key={activity.id}
+                    className="flex items-start gap-3 pb-4 border-b border-foreground/10 last:border-0 last:pb-0"
+                  >
+                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                      {activity.type === "ticket_sale" ? (
+                        <Ticket size={16} color="currentColor" variant="Bold" className="text-primary" />
+                      ) : activity.type === "event_reminder" || activity.type === "event_updated" ? (
+                        <Calendar size={16} color="currentColor" variant="Bold" className="text-primary" />
+                      ) : activity.type === "booking_request" || activity.type === "booking_accepted" ? (
+                        <Shop size={16} color="currentColor" variant="Bold" className="text-primary" />
+                      ) : activity.type === "payment_received" ? (
+                        <MoneyRecive size={16} color="currentColor" variant="Bold" className="text-green-500" />
+                      ) : (
+                        <Notification size={16} color="currentColor" variant="Bold" className="text-primary" />
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-foreground/80 mb-1 line-clamp-2">
+                        {activity.message}
                       </p>
-                    )}
-                    <p className="text-xs text-foreground/50">{activity.time}</p>
+                      <div className="flex items-center gap-1 text-xs text-foreground/50">
+                        <Clock size={12} color="currentColor" variant="Outline" />
+                        <span>{formatTimestamp(activity.time)}</span>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
 
-          {/* Performance Summary */}
+          {/* Summary Stats */}
           <div>
             <h3 className="text-xl font-bold font-[family-name:var(--font-clash-display)] mb-4 text-foreground">
-              Performance Summary
+              Summary
             </h3>
             <div className="bg-background border border-foreground/10 rounded-2xl p-6 space-y-4">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-foreground/70">Avg. Attendance Rate</span>
-                <span className="font-bold text-foreground">87%</span>
+                <span className="text-sm text-foreground/70">Total Events</span>
+                <span className="font-bold text-foreground">{stats.totalEvents}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-foreground/70">Avg. Ticket Price</span>
-                <span className="font-bold text-foreground">₦8,500</span>
+                <span className="text-sm text-foreground/70">Upcoming</span>
+                <span className="font-bold text-foreground">{stats.upcomingEvents}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-foreground/70">Repeat Attendees</span>
-                <span className="font-bold text-foreground">34%</span>
+                <span className="text-sm text-foreground/70">Avg. Revenue / Event</span>
+                <span className="font-bold text-foreground">
+                  {stats.totalEvents > 0
+                    ? `₦${Math.round(stats.totalRevenue / stats.totalEvents).toLocaleString()}`
+                    : "—"}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-foreground/70">Avg. Attendees / Event</span>
+                <span className="font-bold text-foreground">
+                  {stats.totalEvents > 0
+                    ? Math.round(stats.totalAttendees / stats.totalEvents)
+                    : "—"}
+                </span>
               </div>
               <div className="pt-4 border-t border-foreground/10">
                 <Button
@@ -379,9 +350,9 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ events }) => {
                   size="sm"
                   fullWidth
                   leftIcon={Chart}
-                  onClick={() => console.log("View detailed analytics")}
+                  onClick={() => router.push("/profile?tab=events")}
                 >
-                  View Analytics
+                  View All Events
                 </Button>
               </div>
             </div>
@@ -393,4 +364,3 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ events }) => {
 };
 
 export default DashboardContent;
-

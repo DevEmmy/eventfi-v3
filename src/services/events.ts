@@ -134,4 +134,52 @@ export const EventService = {
         });
         return response.data.data;
     },
+
+    /**
+     * Get current user's hosted events
+     */
+    getMyEvents: async (params?: { status?: string; page?: number; limit?: number }): Promise<PaginatedResponse<Event>> => {
+        const response = await axiosInstance.get<ApiResponse<PaginatedResponse<Event>>>("/users/me/events", {
+            params,
+        });
+        return response.data.data;
+    },
+
+    /**
+     * Get organizer dashboard aggregate data
+     */
+    getOrganizerDashboard: async (): Promise<OrganizerDashboardData> => {
+        const response = await axiosInstance.get<ApiResponse<OrganizerDashboardData>>("/users/me/dashboard");
+        return response.data.data;
+    },
 };
+
+export interface OrganizerDashboardData {
+    stats: {
+        totalEvents: number;
+        upcomingEvents: number;
+        totalAttendees: number;
+        totalRevenue: number;
+        totalTicketsSold: number;
+        eventsThisMonth: number;
+    };
+    recentActivity: {
+        id: string;
+        type: string;
+        message: string;
+        time: string;
+    }[];
+    upcomingEventsList: {
+        id: string;
+        title: string;
+        startDate: string;
+        endDate: string;
+        coverImage: string | null;
+        venueName: string | null;
+        city: string | null;
+        status: string;
+        attendeesCount: number;
+        ticketsSold: number;
+        revenue: number;
+    }[];
+}

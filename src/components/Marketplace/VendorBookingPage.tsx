@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
-import { useRouter, useParams } from "next/navigation";
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Button from "@/components/Button";
 import {
   ArrowLeft2,
@@ -17,6 +17,21 @@ import {
   Lock,
 } from "iconsax-react";
 import Image from "next/image";
+import { VendorService, VendorProfile } from "@/services/vendor";
+import customToast from "@/lib/toast";
+
+const categoryDisplayMap: Record<string, string> = {
+  PHOTOGRAPHY: "Photography",
+  VIDEOGRAPHY: "Videography",
+  DJ_MUSIC: "DJ & Music",
+  CATERING: "Catering",
+  VENUES: "Venues",
+  DECORATIONS: "Decorations",
+  SECURITY: "Security",
+  LIGHTING: "Lighting",
+  SOUND_SYSTEM: "Sound System",
+  OTHER: "Other",
+};
 
 interface VendorBookingPageProps {
   vendorId: string;
@@ -24,20 +39,23 @@ interface VendorBookingPageProps {
 
 const VendorBookingPage: React.FC<VendorBookingPageProps> = ({ vendorId }) => {
   const router = useRouter();
+  const [vendor, setVendor] = useState<VendorProfile | null>(null);
+  const [vendorLoading, setVendorLoading] = useState(true);
 
-  // Mock vendor data - Replace with API call
-  const vendor = {
-    id: vendorId,
-    name: "Elite Photography Studio",
-    category: "Photography",
-    location: "Lagos, Nigeria",
-    rating: 4.8,
-    reviewCount: 245,
-    priceRange: "₦50,000 - ₦200,000",
-    verified: true,
-    image: undefined,
-    specialties: ["Wedding Photography", "Corporate Events", "Portrait Sessions"],
-  };
+  useEffect(() => {
+    const fetchVendor = async () => {
+      try {
+        const data = await VendorService.getById(vendorId);
+        setVendor(data);
+      } catch {
+        customToast.error("Vendor not found");
+        router.push("/marketplace");
+      } finally {
+        setVendorLoading(false);
+      }
+    };
+    fetchVendor();
+  }, [vendorId, router]);
 
   const [formData, setFormData] = useState({
     eventName: "",
@@ -136,13 +154,28 @@ const VendorBookingPage: React.FC<VendorBookingPageProps> = ({ vendorId }) => {
 
     setIsSubmitting(true);
 
-    // Simulate API call
-    setTimeout(() => {
-      setIsSubmitting(false);
-      console.log("Booking request submitted:", formData);
-      alert("Booking request sent successfully! The vendor will contact you within 24 hours.");
+    try {
+      await VendorService.createBooking(vendorId, {
+        eventName: formData.eventName,
+        eventDate: formData.eventDate,
+        eventTime: formData.eventTime,
+        eventLocation: formData.eventLocation,
+        eventType: formData.eventType,
+        guestCount: formData.guestCount ? parseInt(formData.guestCount) : undefined,
+        duration: formData.duration || undefined,
+        contactName: formData.contactName,
+        contactEmail: formData.contactEmail,
+        contactPhone: formData.contactPhone,
+        specialRequests: formData.specialRequests || undefined,
+        estimatedPrice: estimatedPrice || undefined,
+      });
+      customToast.success("Booking request sent! The vendor will respond within 24 hours.");
       router.push(`/marketplace/${vendorId}`);
-    }, 2000);
+    } catch (err: any) {
+      customToast.error(err.response?.data?.message || "Failed to send booking request");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // Calculate estimated price (mock calculation)
@@ -154,6 +187,25 @@ const VendorBookingPage: React.FC<VendorBookingPageProps> = ({ vendorId }) => {
   };
 
   const estimatedPrice = formData.eventDate && formData.duration ? calculateEstimatedPrice() : null;
+
+  if (vendorLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary" />
+      </div>
+    );
+  }
+
+  if (!vendor) return null;
+
+  const priceRange =
+    vendor.priceMin && vendor.priceMax
+      ? `₦${vendor.priceMin.toLocaleString()} - ₦${vendor.priceMax.toLocaleString()}`
+      : vendor.priceMin
+        ? `From ₦${vendor.priceMin.toLocaleString()}`
+        : "Contact for pricing";
+
+  const categoryDisplay = categoryDisplayMap[vendor.category] || vendor.category;
 
   return (
     <div className="min-h-screen bg-background">
@@ -190,10 +242,10 @@ const VendorBookingPage: React.FC<VendorBookingPageProps> = ({ vendorId }) => {
                   {/* Vendor Summary */}
                   <div className="pb-6 border-b border-foreground/10">
                     <div className="flex items-center gap-4">
-                      {vendor.image ? (
+                      {vendor.logo || vendor.coverImage ? (
                         <div className="relative w-16 h-16 rounded-xl overflow-hidden shrink-0">
                           <Image
-                            src={vendor.image}
+                            src={vendor.logo || vendor.coverImage || ""}
                             alt={vendor.name}
                             fill
                             className="object-cover"
@@ -208,10 +260,10 @@ const VendorBookingPage: React.FC<VendorBookingPageProps> = ({ vendorId }) => {
                         <h3 className="font-bold text-lg text-foreground mb-1 truncate">
                           {vendor.name}
                         </h3>
-                        <p className="text-sm text-foreground/60">{vendor.category}</p>
+                        <p className="text-sm text-foreground/60">{categoryDisplay}</p>
                         <div className="flex items-center gap-2 mt-1">
                           <span className="text-sm font-semibold text-foreground">
-                            ⭐ {vendor.rating}
+                            ⭐ {vendor.averageRating.toFixed(1)}
                           </span>
                           <span className="text-xs text-foreground/60">
                             ({vendor.reviewCount} reviews)
@@ -548,7 +600,7 @@ const VendorBookingPage: React.FC<VendorBookingPageProps> = ({ vendorId }) => {
                   {/* Price Range */}
                   <div className="mb-6">
                     <div className="text-sm text-foreground/60 mb-2">Price Range</div>
-                    <div className="font-semibold text-foreground">{vendor.priceRange}</div>
+                    <div className="font-semibold text-foreground">{priceRange}</div>
                   </div>
 
                   {/* Vendor Info */}

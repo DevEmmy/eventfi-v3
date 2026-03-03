@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import {
   Notification,
@@ -11,171 +11,63 @@ import {
   MoneyRecive,
   Shop,
   Star1,
-  Location,
   MessageText1,
-  User,
   Clock,
   Trash,
-  Check,
 } from "iconsax-react";
+import { NotificationService, NotificationItem } from "@/services/notifications";
+import { useUserStore } from "@/store/useUserStore";
 
-export interface NotificationItem {
-  id: string;
-  type:
-  | "ticket_sale"
-  | "event_reminder"
-  | "event_nearby"
-  | "booking_request"
-  | "booking_accepted"
-  | "booking_declined"
-  | "review_received"
-  | "vendor_booked"
-  | "event_updated"
-  | "event_cancelled"
-  | "payment_received"
-  | "message"
-  | "system";
-  title: string;
-  message: string;
-  timestamp: Date;
-  read: boolean;
-  actionUrl?: string;
-  metadata?: {
-    eventId?: string;
-    vendorId?: string;
-    bookingId?: string;
-    amount?: number;
-    rating?: number;
-  };
-}
+// Re-export for backwards compatibility
+export type { NotificationItem };
 
 interface NotificationCenterProps {
   userRole?: "organizer" | "vendor" | "attendee" | "dual";
 }
 
-const NotificationCenter: React.FC<NotificationCenterProps> = ({
-  userRole = "attendee",
-}) => {
+const NotificationCenter: React.FC<NotificationCenterProps> = () => {
   const router = useRouter();
+  const { isAuthenticated } = useUserStore();
   const [isOpen, setIsOpen] = useState(false);
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Mock notifications based on user role - Replace with API call
+  // Fetch notifications when dropdown opens
+  const fetchNotifications = useCallback(async () => {
+    if (!isAuthenticated) return;
+    try {
+      const data = await NotificationService.getNotifications({ limit: 10 });
+      setNotifications(data.notifications);
+    } catch {
+      // Silently fail for header component
+    }
+  }, [isAuthenticated]);
+
+  // Fetch unread count on mount and periodically
   useEffect(() => {
-    const mockNotifications: NotificationItem[] = [];
+    if (!isAuthenticated) return;
 
-    if (userRole === "organizer" || userRole === "dual") {
-      // mockNotifications.push(
-      //   {
-      //     id: "1",
-      //     type: "ticket_sale",
-      //     title: "New Ticket Sale",
-      //     message: "5 tickets sold for Tech Fest Lagos 2024",
-      //     timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
-      //     read: false,
-      //     actionUrl: "/events/1/manage",
-      //     metadata: { eventId: "1", amount: 25000 },
-      //   },
-      //   {
-      //     id: "2",
-      //     type: "vendor_booked",
-      //     title: "Vendor Booked",
-      //     message: "Elite Photography Studio confirmed booking for Design Conference 2025",
-      //     timestamp: new Date(Date.now() - 5 * 60 * 60 * 1000), // 5 hours ago
-      //     read: false,
-      //     actionUrl: "/events/2/manage",
-      //     metadata: { vendorId: "1", bookingId: "1" },
-      //   },
-      //   {
-      //     id: "3",
-      //     type: "event_reminder",
-      //     title: "Event Starting Soon",
-      //     message: "Tech Meetup Lagos starts in 24 hours",
-      //     timestamp: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000), // 1 day ago
-      //     read: true,
-      //     actionUrl: "/events/1",
-      //     metadata: { eventId: "1" },
-      //   }
-      // );
+    const fetchCount = async () => {
+      try {
+        const count = await NotificationService.getUnreadCount();
+        setUnreadCount(count);
+      } catch {
+        // Silently fail
+      }
+    };
+
+    fetchCount();
+    const interval = setInterval(fetchCount, 60000); // Poll every 60 seconds
+    return () => clearInterval(interval);
+  }, [isAuthenticated]);
+
+  // Fetch notifications when dropdown opens
+  useEffect(() => {
+    if (isOpen) {
+      fetchNotifications();
     }
-
-    if (userRole === "vendor" || userRole === "dual") {
-      // mockNotifications.push(
-      //   {
-      //     id: "4",
-      //     type: "booking_request",
-      //     title: "New Booking Request",
-      //     message: "Tech Events Nigeria requested your services for Tech Conference 2025",
-      //     timestamp: new Date(Date.now() - 30 * 60 * 1000), // 30 minutes ago
-      //     read: false,
-      //     actionUrl: "/vendor/bookings",
-      //     metadata: { bookingId: "2", eventId: "3" },
-      //   },
-      //   {
-      //     id: "5",
-      //     type: "review_received",
-      //     title: "New Review",
-      //     message: "Sarah Johnson left a 5-star review for your services",
-      //     timestamp: new Date(Date.now() - 3 * 60 * 60 * 1000), // 3 hours ago
-      //     read: false,
-      //     actionUrl: "/marketplace/1",
-      //     metadata: { rating: 5 },
-      //   },
-      //   {
-      //     id: "6",
-      //     type: "payment_received",
-      //     title: "Payment Received",
-      //     message: "₦150,000 received for Design Conference 2025 booking",
-      //     timestamp: new Date(Date.now() - 6 * 60 * 60 * 1000), // 6 hours ago
-      //     read: true,
-      //     actionUrl: "/vendor/bookings",
-      //     metadata: { amount: 150000, bookingId: "1" },
-      //   }
-      // );
-    }
-
-    if (userRole === "attendee" || userRole === "dual") {
-      // mockNotifications.push(
-      //   {
-      //     id: "7",
-      //     type: "event_nearby",
-      //     title: "Event Near You",
-      //     message: "Tech Fest Lagos 2024 is happening near you in 2 days",
-      //     timestamp: new Date(Date.now() - 1 * 60 * 60 * 1000), // 1 hour ago
-      //     read: false,
-      //     actionUrl: "/events/1",
-      //     metadata: { eventId: "1" },
-      //   },
-      //   {
-      //     id: "8",
-      //     type: "event_reminder",
-      //     title: "Event Reminder",
-      //     message: "Afro Nation Festival starts tomorrow at 4:00 PM",
-      //     timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000), // 4 hours ago
-      //     read: false,
-      //     actionUrl: "/events/3",
-      //     metadata: { eventId: "3" },
-      //   },
-      //   {
-      //     id: "9",
-      //     type: "ticket_sale",
-      //     title: "Ticket Confirmed",
-      //     message: "Your ticket for DevFest Lagos 2024 has been confirmed",
-      //     timestamp: new Date(Date.now() - 12 * 60 * 60 * 1000), // 12 hours ago
-      //     read: true,
-      //     actionUrl: "/profile?tab=tickets",
-      //     metadata: { eventId: "4" },
-      //   }
-      // );
-    }
-
-    // Sort by timestamp (newest first)
-    mockNotifications.sort(
-      (a, b) => b.timestamp.getTime() - a.timestamp.getTime()
-    );
-    setNotifications(mockNotifications);
-  }, [userRole]);
+  }, [isOpen, fetchNotifications]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -197,40 +89,61 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({
     };
   }, [isOpen]);
 
-  const unreadCount = notifications.filter((n) => !n.read).length;
+  const handleNotificationClick = async (notification: NotificationItem) => {
+    if (!notification.read) {
+      try {
+        await NotificationService.markAsRead(notification.id);
+        setNotifications((prev) =>
+          prev.map((n) =>
+            n.id === notification.id ? { ...n, read: true } : n
+          )
+        );
+        setUnreadCount((prev) => Math.max(0, prev - 1));
+      } catch {
+        // Continue navigation even if mark as read fails
+      }
+    }
 
-  const handleNotificationClick = (notification: NotificationItem) => {
-    // Mark as read
-    setNotifications((prev) =>
-      prev.map((n) =>
-        n.id === notification.id ? { ...n, read: true } : n
-      )
-    );
-
-    // Navigate if action URL exists
     if (notification.actionUrl) {
       router.push(notification.actionUrl);
       setIsOpen(false);
     }
   };
 
-  const handleMarkAllAsRead = () => {
-    setNotifications((prev) =>
-      prev.map((n) => ({ ...n, read: true }))
-    );
+  const handleMarkAllAsRead = async () => {
+    try {
+      await NotificationService.markAllAsRead();
+      setNotifications((prev) =>
+        prev.map((n) => ({ ...n, read: true }))
+      );
+      setUnreadCount(0);
+    } catch {
+      // Silently fail
+    }
   };
 
-  const handleDeleteNotification = (id: string, e: React.MouseEvent) => {
+  const handleDeleteNotification = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    setNotifications((prev) => prev.filter((n) => n.id !== id));
+    try {
+      await NotificationService.deleteNotification(id);
+      const deleted = notifications.find((n) => n.id === id);
+      setNotifications((prev) => prev.filter((n) => n.id !== id));
+      if (deleted && !deleted.read) {
+        setUnreadCount((prev) => Math.max(0, prev - 1));
+      }
+    } catch {
+      // Silently fail
+    }
   };
 
-  const getNotificationIcon = (type: NotificationItem["type"]) => {
+  const getNotificationIcon = (type: string) => {
     switch (type) {
       case "ticket_sale":
         return <Ticket size={20} color="currentColor" variant="Bold" className="text-primary" />;
       case "event_reminder":
       case "event_nearby":
+      case "event_updated":
+      case "event_cancelled":
         return <Calendar size={20} color="currentColor" variant="Bold" className="text-primary" />;
       case "booking_request":
       case "booking_accepted":
@@ -249,9 +162,10 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({
     }
   };
 
-  const formatTimestamp = (timestamp: Date) => {
+  const formatTimestamp = (dateStr: string) => {
+    const date = new Date(dateStr);
     const now = new Date();
-    const diff = now.getTime() - timestamp.getTime();
+    const diff = now.getTime() - date.getTime();
     const minutes = Math.floor(diff / 60000);
     const hours = Math.floor(diff / 3600000);
     const days = Math.floor(diff / 86400000);
@@ -260,7 +174,7 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({
     if (minutes < 60) return `${minutes}m ago`;
     if (hours < 24) return `${hours}h ago`;
     if (days < 7) return `${days}d ago`;
-    return timestamp.toLocaleDateString();
+    return date.toLocaleDateString();
   };
 
   return (
@@ -347,7 +261,7 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({
                         </p>
                         <div className="flex items-center gap-2 text-xs text-foreground/50">
                           <Clock size={14} color="currentColor" variant="Outline" />
-                          <span>{formatTimestamp(notification.timestamp)}</span>
+                          <span>{formatTimestamp(notification.createdAt)}</span>
                         </div>
                       </div>
                       <button
@@ -385,4 +299,3 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({
 };
 
 export default NotificationCenter;
-

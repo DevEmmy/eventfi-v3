@@ -1,182 +1,168 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import {
-  MessageText1,
   SearchNormal1,
   ArrowLeft2,
   Send,
   User,
-  TickCircle,
   Clock,
   Calendar,
   Location,
   People,
 } from "iconsax-react";
-
-interface Message {
-  id: string;
-  senderId: string;
-  senderName: string;
-  senderAvatar?: string;
-  senderRole?: "organizer" | "vendor" | "attendee";
-  content: string;
-  timestamp: Date;
-  read: boolean;
-}
-
-interface EventChat {
-  id: string;
-  eventId: string;
-  eventName: string;
-  eventDate: string;
-  eventLocation: string;
-  eventImage?: string;
-  organizerName: string;
-  participantCount: number;
-  unreadCount: number;
-  lastMessage: string;
-  lastMessageTime: Date;
-  messages: Message[];
-  isOrganizer?: boolean;
-  isVendor?: boolean;
-}
+import { ChatService } from "@/services/chat";
+import { chatSocket } from "@/services/chatSocket";
+import { useUserStore } from "@/store/useUserStore";
+import toast from "@/lib/toast";
+import type {
+  EventChatPreview,
+  ChatMessage,
+  ChatRole,
+} from "@/types/chat";
 
 const MessagesPage = () => {
   const router = useRouter();
-  const [activeChat, setActiveChat] = useState<string | null>(null);
+  const { user } = useUserStore();
+  const [eventChats, setEventChats] = useState<EventChatPreview[]>([]);
+  const [activeEventId, setActiveEventId] = useState<string | null>(null);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [messageInput, setMessageInput] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [messagesLoading, setMessagesLoading] = useState(false);
+  const [hasMore, setHasMore] = useState(false);
+  const [typingUsers, setTypingUsers] = useState<Array<{ id: string; name: string }>>([]);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const activeEventIdRef = useRef<string | null>(null);
 
-  // Mock event chats - Replace with API call
-  const [eventChats, setEventChats] = useState<EventChat[]>([
-    {
-      id: "1",
-      eventId: "1",
-      eventName: "Tech Fest Lagos 2024",
-      eventDate: "March 15, 2024",
-      eventLocation: "Lagos Convention Centre",
-      eventImage: undefined,
-      organizerName: "Tech Events Nigeria",
-      participantCount: 1247,
-      unreadCount: 5,
-      lastMessage: "Sarah: Can't wait for this event! 🔥",
-      lastMessageTime: new Date(Date.now() - 15 * 60 * 1000),
-      isOrganizer: true,
-      messages: [
-        {
-          id: "m1",
-          senderId: "user1",
-          senderName: "Sarah Johnson",
-          senderRole: "attendee",
-          content: "Hey everyone! Is anyone carpooling from Victoria Island?",
-          timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000),
-          read: true,
-        },
-        {
-          id: "m2",
-          senderId: "user2",
-          senderName: "Mike Chen",
-          senderRole: "attendee",
-          content: "I'm coming from VI! We can share a ride.",
-          timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000 + 10 * 60 * 1000),
-          read: true,
-        },
-        {
-          id: "m3",
-          senderId: "organizer",
-          senderName: "Tech Events Nigeria",
-          senderRole: "organizer",
-          content: "Great to see the community connecting! Don't forget to bring your ID for registration.",
-          timestamp: new Date(Date.now() - 1 * 60 * 60 * 1000),
-          read: true,
-        },
-        {
-          id: "m4",
-          senderId: "vendor1",
-          senderName: "Elite Photography",
-          senderRole: "vendor",
-          content: "We'll be covering the event! Say hi if you see us 📸",
-          timestamp: new Date(Date.now() - 45 * 60 * 1000),
-          read: true,
-        },
-        {
-          id: "m5",
-          senderId: "user3",
-          senderName: "Alex Johnson",
-          senderRole: "attendee",
-          content: "Can't wait for this event! 🔥",
-          timestamp: new Date(Date.now() - 15 * 60 * 1000),
-          read: false,
-        },
-      ],
-    },
-    {
-      id: "2",
-      eventId: "2",
-      eventName: "Design Conference 2025",
-      eventDate: "Feb 10, 2025",
-      eventLocation: "Eko Hotel & Suites",
-      eventImage: undefined,
-      organizerName: "Design Hub Lagos",
-      participantCount: 450,
-      unreadCount: 0,
-      lastMessage: "Organizer: Welcome everyone!",
-      lastMessageTime: new Date(Date.now() - 3 * 60 * 60 * 1000),
-      isVendor: true,
-      messages: [
-        {
-          id: "m7",
-          senderId: "organizer",
-          senderName: "Design Hub Lagos",
-          senderRole: "organizer",
-          content: "Welcome everyone! We're excited to have you all here.",
-          timestamp: new Date(Date.now() - 3 * 60 * 60 * 1000),
-          read: true,
-        },
-      ],
-    },
-  ]);
+  // Keep ref in sync
+  useEffect(() => {
+    activeEventIdRef.current = activeEventId;
+  }, [activeEventId]);
 
-  const handleSendMessage = () => {
-    if (!messageInput.trim() || !activeChat) return;
-
-    const eventChat = eventChats.find((c) => c.id === activeChat);
-    if (!eventChat) return;
-
-    const newMessage: Message = {
-      id: `m${Date.now()}`,
-      senderId: "current",
-      senderName: "You",
-      senderRole: eventChat.isOrganizer ? "organizer" : eventChat.isVendor ? "vendor" : "attendee",
-      content: messageInput.trim(),
-      timestamp: new Date(),
-      read: false,
+  // Fetch user's event chats
+  useEffect(() => {
+    const fetchChats = async () => {
+      try {
+        setLoading(true);
+        const chats = await ChatService.getUserEventChats();
+        setEventChats(chats);
+      } catch {
+        toast.error("Failed to load chats");
+      } finally {
+        setLoading(false);
+      }
     };
+    fetchChats();
+  }, []);
 
-    setEventChats((prev) =>
-      prev.map((chat) =>
-        chat.id === activeChat
-          ? {
-              ...chat,
-              lastMessage: `${newMessage.senderName}: ${newMessage.content}`,
-              lastMessageTime: newMessage.timestamp,
-              messages: [...chat.messages, newMessage],
-            }
-          : chat
-      )
-    );
+  // Connect WebSocket
+  useEffect(() => {
+    const wsUrl = process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:8000";
+    chatSocket.connect(wsUrl);
 
+    chatSocket.on("chat:message", ({ message }) => {
+      setMessages((prev) => [...prev, message]);
+      setEventChats((prev) =>
+        prev.map((chat) =>
+          chat.eventId === activeEventIdRef.current
+            ? {
+                ...chat,
+                lastMessage: `${message.sender.name}: ${message.content.substring(0, 50)}`,
+                lastMessageTime: message.createdAt,
+                unreadCount: 0,
+              }
+            : chat
+        )
+      );
+    });
+
+    chatSocket.on("chat:message:deleted", ({ messageId }) => {
+      setMessages((prev) => prev.filter((m) => m.id !== messageId));
+    });
+
+    chatSocket.on("chat:typing", ({ users }) => {
+      setTypingUsers(users.filter((u) => u.id !== user?.id));
+    });
+
+    chatSocket.on("chat:error", ({ message }) => {
+      toast.error(message);
+    });
+
+    return () => {
+      chatSocket.disconnect();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
+
+  // Scroll to bottom when new messages arrive
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  // Join chat room when selecting an event
+  const handleSelectChat = useCallback(async (eventId: string) => {
+    if (activeEventId === eventId) return;
+
+    chatSocket.leaveRoom();
+    setMessages([]);
+    setActiveEventId(eventId);
+    setMessagesLoading(true);
+
+    try {
+      chatSocket.joinRoom(eventId);
+
+      const result = await ChatService.getMessages(eventId, { limit: 50 });
+      setMessages(result.messages);
+      setHasMore(result.hasMore);
+
+      setEventChats((prev) =>
+        prev.map((c) =>
+          c.eventId === eventId ? { ...c, unreadCount: 0 } : c
+        )
+      );
+    } catch {
+      toast.error("Failed to load messages");
+    } finally {
+      setMessagesLoading(false);
+    }
+  }, [activeEventId]);
+
+  // Load more messages (pagination)
+  const loadMoreMessages = async () => {
+    if (!activeEventId || !hasMore || messagesLoading) return;
+    const oldestMessage = messages[0];
+    if (!oldestMessage) return;
+
+    try {
+      const result = await ChatService.getMessages(activeEventId, {
+        before: oldestMessage.id,
+        limit: 50,
+      });
+      setMessages((prev) => [...result.messages, ...prev]);
+      setHasMore(result.hasMore);
+    } catch {
+      toast.error("Failed to load older messages");
+    }
+  };
+
+  // Send message
+  const handleSendMessage = () => {
+    if (!messageInput.trim() || !activeEventId) return;
+    chatSocket.sendMessage({ content: messageInput.trim() });
     setMessageInput("");
   };
 
-  const activeEventChat = eventChats.find((c) => c.id === activeChat);
+  const activeChat = eventChats.find((c) => c.eventId === activeEventId);
   const filteredChats = eventChats.filter((chat) =>
     chat.eventName.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const formatTime = (date: Date) => {
+  const formatTime = (dateStr: string | null) => {
+    if (!dateStr) return "";
+    const date = new Date(dateStr);
     const now = new Date();
     const diff = now.getTime() - date.getTime();
     const minutes = Math.floor(diff / 60000);
@@ -186,6 +172,20 @@ const MessagesPage = () => {
     if (minutes < 60) return `${minutes}m ago`;
     if (hours < 24) return `${hours}h ago`;
     return date.toLocaleDateString();
+  };
+
+  const getRoleBadge = (role: ChatRole) => {
+    const roleColors: Record<ChatRole, string> = {
+      ORGANIZER: "bg-primary/20 text-primary border-primary/30",
+      MODERATOR: "bg-amber-500/20 text-amber-600 border-amber-500/30",
+      MEMBER: "bg-foreground/5 text-foreground border-foreground/10",
+    };
+    const roleLabels: Record<ChatRole, string> = {
+      ORGANIZER: "organizer",
+      MODERATOR: "moderator",
+      MEMBER: "attendee",
+    };
+    return { color: roleColors[role], label: roleLabels[role] };
   };
 
   return (
@@ -230,7 +230,12 @@ const MessagesPage = () => {
 
               {/* Event Chats */}
               <div className="flex-1 overflow-y-auto">
-                {filteredChats.length === 0 ? (
+                {loading ? (
+                  <div className="p-8 text-center">
+                    <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full mx-auto mb-3" />
+                    <p className="text-foreground/60">Loading chats...</p>
+                  </div>
+                ) : filteredChats.length === 0 ? (
                   <div className="p-8 text-center">
                     <Calendar
                       size={48}
@@ -250,18 +255,9 @@ const MessagesPage = () => {
                     {filteredChats.map((chat) => (
                       <button
                         key={chat.id}
-                        onClick={() => {
-                          setActiveChat(chat.id);
-                          setEventChats((prev) =>
-                            prev.map((c) =>
-                              c.id === chat.id
-                                ? { ...c, unreadCount: 0, messages: c.messages.map((m) => ({ ...m, read: true })) }
-                                : c
-                            )
-                          );
-                        }}
+                        onClick={() => handleSelectChat(chat.eventId)}
                         className={`w-full p-4 hover:bg-foreground/5 transition-colors text-left ${
-                          activeChat === chat.id ? "bg-primary/5" : ""
+                          activeEventId === chat.eventId ? "bg-primary/5" : ""
                         }`}
                       >
                         <div className="flex items-start gap-3">
@@ -288,22 +284,22 @@ const MessagesPage = () => {
                             <div className="flex items-center gap-2 mb-1 text-xs text-foreground/60">
                               <People size={12} color="currentColor" variant="Outline" />
                               <span>{chat.participantCount.toLocaleString()}</span>
-                              {chat.isOrganizer && (
+                              {chat.userRole === "ORGANIZER" && (
                                 <>
-                                  <span>•</span>
+                                  <span>·</span>
                                   <span className="text-primary font-medium">Organizer</span>
                                 </>
                               )}
-                              {chat.isVendor && (
+                              {chat.userRole === "MODERATOR" && (
                                 <>
-                                  <span>•</span>
-                                  <span className="text-secondary font-medium">Vendor</span>
+                                  <span>·</span>
+                                  <span className="text-amber-600 font-medium">Moderator</span>
                                 </>
                               )}
                             </div>
                             <div className="flex items-center justify-between gap-2">
                               <p className="text-sm text-foreground/70 truncate">
-                                {chat.lastMessage}
+                                {chat.lastMessage || "No messages yet"}
                               </p>
                               {chat.unreadCount > 0 && (
                                 <span className="w-5 h-5 bg-primary text-white text-xs font-bold rounded-full flex items-center justify-center shrink-0">
@@ -322,14 +318,14 @@ const MessagesPage = () => {
 
             {/* Chat View */}
             <div className="lg:col-span-2 bg-background border border-foreground/10 rounded-2xl flex flex-col overflow-hidden">
-              {activeChat && activeEventChat ? (
+              {activeEventId && activeChat ? (
                 <>
                   {/* Chat Header */}
                   <div className="p-4 border-b border-foreground/10 flex items-center gap-3">
-                    {activeEventChat.eventImage ? (
+                    {activeChat.eventImage ? (
                       <img
-                        src={activeEventChat.eventImage}
-                        alt={activeEventChat.eventName}
+                        src={activeChat.eventImage}
+                        alt={activeChat.eventName}
                         className="w-12 h-12 rounded-xl object-cover"
                       />
                     ) : (
@@ -338,17 +334,17 @@ const MessagesPage = () => {
                       </div>
                     )}
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-foreground truncate">{activeEventChat.eventName}</h3>
+                      <h3 className="font-semibold text-foreground truncate">{activeChat.eventName}</h3>
                       <div className="flex items-center gap-2 text-xs text-foreground/60">
                         <People size={12} color="currentColor" variant="Outline" />
-                        <span>{activeEventChat.participantCount.toLocaleString()} participants</span>
-                        <span>•</span>
+                        <span>{activeChat.participantCount.toLocaleString()} participants</span>
+                        <span>·</span>
                         <Calendar size={12} color="currentColor" variant="Outline" />
-                        <span>{activeEventChat.eventDate}</span>
+                        <span>{activeChat.eventDate}</span>
                       </div>
                     </div>
                     <button
-                      onClick={() => router.push(`/events/${activeEventChat.eventId}`)}
+                      onClick={() => router.push(`/events/${activeChat.eventId}`)}
                       className="px-3 py-1.5 text-xs font-medium text-primary hover:bg-primary/10 rounded-lg transition-colors"
                     >
                       View Event
@@ -359,87 +355,108 @@ const MessagesPage = () => {
                   <div className="p-3 bg-primary/5 border-b border-foreground/10">
                     <div className="flex items-center gap-2 text-xs text-foreground/70">
                       <Location size={14} color="currentColor" variant="Outline" />
-                      <span className="truncate">{activeEventChat.eventLocation}</span>
+                      <span className="truncate">{activeChat.eventLocation}</span>
                     </div>
                   </div>
 
                   {/* Messages */}
                   <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                    {activeEventChat.messages.map((message) => {
-                      const isOwnMessage = message.senderId === "current";
-                      const roleColors = {
-                        organizer: "bg-primary/20 text-primary border-primary/30",
-                        vendor: "bg-secondary/20 text-secondary border-secondary/30",
-                        attendee: "bg-foreground/5 text-foreground border-foreground/10",
-                      };
-                      const roleColor = message.senderRole ? roleColors[message.senderRole] : roleColors.attendee;
+                    {hasMore && (
+                      <button
+                        onClick={loadMoreMessages}
+                        className="w-full text-center text-sm text-primary hover:underline py-2"
+                      >
+                        Load older messages
+                      </button>
+                    )}
 
-                      return (
-                        <div
-                          key={message.id}
-                          className={`flex gap-3 ${
-                            isOwnMessage ? "flex-row-reverse" : "flex-row"
-                          }`}
-                        >
-                          {!isOwnMessage && (
-                            <div className="w-8 h-8 rounded-full bg-foreground/5 flex items-center justify-center shrink-0">
-                              {message.senderAvatar ? (
-                                <img
-                                  src={message.senderAvatar}
-                                  alt={message.senderName}
-                                  className="w-full h-full rounded-full"
-                                />
-                              ) : (
-                                <User size={16} color="currentColor" variant="Bold" className="text-foreground/60" />
-                              )}
-                            </div>
-                          )}
+                    {messagesLoading ? (
+                      <div className="flex items-center justify-center py-8">
+                        <div className="animate-spin w-6 h-6 border-2 border-primary border-t-transparent rounded-full" />
+                      </div>
+                    ) : messages.length === 0 ? (
+                      <div className="flex items-center justify-center py-8 text-foreground/50 text-sm">
+                        No messages yet. Be the first to say hello!
+                      </div>
+                    ) : (
+                      messages.map((message) => {
+                        const isOwnMessage = message.sender.id === user?.id;
+                        const badge = getRoleBadge(message.sender.role);
+
+                        return (
                           <div
-                            className={`max-w-[75%] ${
-                              isOwnMessage ? "items-end" : "items-start"
-                            } flex flex-col gap-1`}
+                            key={message.id}
+                            className={`flex gap-3 ${isOwnMessage ? "flex-row-reverse" : "flex-row"}`}
                           >
                             {!isOwnMessage && (
-                              <div className="flex items-center gap-2 px-1">
-                                <span className="text-xs font-semibold text-foreground">
-                                  {message.senderName}
-                                </span>
-                                {message.senderRole && (
-                                  <span
-                                    className={`text-xs px-2 py-0.5 rounded-full border ${roleColor}`}
-                                  >
-                                    {message.senderRole}
-                                  </span>
+                              <div className="w-8 h-8 rounded-full bg-foreground/5 flex items-center justify-center shrink-0">
+                                {message.sender.avatar ? (
+                                  <img
+                                    src={message.sender.avatar}
+                                    alt={message.sender.name}
+                                    className="w-full h-full rounded-full object-cover"
+                                  />
+                                ) : (
+                                  <User size={16} color="currentColor" variant="Bold" className="text-foreground/60" />
                                 )}
                               </div>
                             )}
                             <div
-                              className={`px-4 py-2 rounded-2xl ${
-                                isOwnMessage
-                                  ? "bg-primary text-white rounded-br-sm"
-                                  : "bg-foreground/5 text-foreground rounded-bl-sm"
-                              }`}
+                              className={`max-w-[75%] ${isOwnMessage ? "items-end" : "items-start"} flex flex-col gap-1`}
                             >
-                              <p className="text-sm whitespace-pre-wrap break-words">
-                                {message.content}
-                              </p>
-                            </div>
-                            <div className="flex items-center gap-1 text-xs text-foreground/50 px-1">
-                              <span>{formatTime(message.timestamp)}</span>
-                              {isOwnMessage && (
-                                <>
-                                  {message.read ? (
-                                    <TickCircle size={12} color="currentColor" variant="Bold" />
-                                  ) : (
-                                    <Clock size={12} color="currentColor" variant="Outline" />
+                              {!isOwnMessage && (
+                                <div className="flex items-center gap-2 px-1">
+                                  <span className="text-xs font-semibold text-foreground">
+                                    {message.sender.name}
+                                  </span>
+                                  {message.sender.role !== "MEMBER" && (
+                                    <span className={`text-xs px-2 py-0.5 rounded-full border ${badge.color}`}>
+                                      {badge.label}
+                                    </span>
                                   )}
-                                </>
+                                </div>
                               )}
+                              {message.replyTo && (
+                                <div className="px-3 py-1 bg-foreground/5 border-l-2 border-primary/50 rounded text-xs text-foreground/60">
+                                  <span className="font-medium">{message.replyTo.senderName}</span>: {message.replyTo.content}
+                                </div>
+                              )}
+                              <div
+                                className={`px-4 py-2 rounded-2xl ${
+                                  message.type === "ANNOUNCEMENT"
+                                    ? "bg-amber-500/10 text-foreground border border-amber-500/20"
+                                    : message.type === "SYSTEM"
+                                    ? "bg-foreground/5 text-foreground/60 italic text-center w-full"
+                                    : isOwnMessage
+                                    ? "bg-primary text-white rounded-br-sm"
+                                    : "bg-foreground/5 text-foreground rounded-bl-sm"
+                                }`}
+                              >
+                                {message.type === "ANNOUNCEMENT" && (
+                                  <span className="text-xs font-medium text-amber-600 block mb-1">Announcement</span>
+                                )}
+                                <p className="text-sm whitespace-pre-wrap break-words">
+                                  {message.content}
+                                </p>
+                              </div>
+                              <div className="flex items-center gap-1 text-xs text-foreground/50 px-1">
+                                <span>{formatTime(message.createdAt)}</span>
+                                {message.isPinned && <span className="text-amber-500">pinned</span>}
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      );
-                    })}
+                        );
+                      })
+                    )}
+
+                    {/* Typing indicator */}
+                    {typingUsers.length > 0 && (
+                      <div className="text-xs text-foreground/50 italic px-1">
+                        {typingUsers.map((u) => u.name).join(", ")}{" "}
+                        {typingUsers.length === 1 ? "is" : "are"} typing...
+                      </div>
+                    )}
+                    <div ref={messagesEndRef} />
                   </div>
 
                   {/* Input */}
@@ -448,8 +465,11 @@ const MessagesPage = () => {
                       <input
                         type="text"
                         value={messageInput}
-                        onChange={(e) => setMessageInput(e.target.value)}
-                        onKeyPress={(e) => {
+                        onChange={(e) => {
+                          setMessageInput(e.target.value);
+                          chatSocket.sendTyping();
+                        }}
+                        onKeyDown={(e) => {
                           if (e.key === "Enter" && !e.shiftKey) {
                             e.preventDefault();
                             handleSendMessage();
@@ -495,4 +515,3 @@ const MessagesPage = () => {
 };
 
 export default MessagesPage;
-

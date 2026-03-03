@@ -54,6 +54,22 @@ export interface EventChatInfo {
     isMuted: boolean;
 }
 
+// Event chat preview (from getUserEventChats)
+export interface EventChatPreview {
+    id: string;
+    eventId: string;
+    eventName: string;
+    eventDate: string;
+    eventLocation: string;
+    eventImage: string | null;
+    organizerName: string;
+    participantCount: number;
+    unreadCount: number;
+    lastMessage: string;
+    lastMessageTime: string | null;
+    userRole: ChatRole;
+}
+
 // ============ API Response Types ============
 
 export interface JoinChatResponse {

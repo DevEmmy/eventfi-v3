@@ -54,6 +54,8 @@ export const useUserStore = create<UserState>()(
             setUser: (user, token) => {
                 if (token) {
                     localStorage.setItem('token', token);
+                    // Set cookie for Next.js middleware route protection
+                    document.cookie = `auth-token=${token}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Lax`;
                 }
                 set({ user, isAuthenticated: true, token: token || null });
             },
@@ -63,6 +65,8 @@ export const useUserStore = create<UserState>()(
                 })),
             logout: () => {
                 localStorage.removeItem('token');
+                // Clear auth cookie
+                document.cookie = 'auth-token=; path=/; max-age=0';
                 set({ user: null, isAuthenticated: false, token: null });
                 window.location.href = '/auth/login';
             },

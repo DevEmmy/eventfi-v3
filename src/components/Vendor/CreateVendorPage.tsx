@@ -1,7 +1,10 @@
 "use client";
 
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import Button from "@/components/Button";
+import { VendorService } from "@/services/vendor";
+import customToast from "@/lib/toast";
 import {
   Shop,
   DocumentText,
@@ -15,7 +18,21 @@ import {
   Sms,
 } from "iconsax-react";
 
+const categoryApiMap: Record<string, string> = {
+  Photography: "PHOTOGRAPHY",
+  Videography: "VIDEOGRAPHY",
+  "DJ & Music": "DJ_MUSIC",
+  Catering: "CATERING",
+  Venues: "VENUES",
+  Decorations: "DECORATIONS",
+  Security: "SECURITY",
+  Lighting: "LIGHTING",
+  "Sound System": "SOUND_SYSTEM",
+};
+
 const CreateVendorPage = () => {
+  const router = useRouter();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     category: "",
@@ -122,12 +139,15 @@ const CreateVendorPage = () => {
   };
 
   const handleSaveDraft = () => {
-    console.log("Saving draft:", formData);
-    alert("Vendor profile saved as draft!");
+    try {
+      localStorage.setItem("vendor-draft", JSON.stringify(formData));
+      customToast.success("Draft saved locally!");
+    } catch {
+      customToast.error("Failed to save draft");
+    }
   };
 
-  const handlePublish = () => {
-    // Validate required fields
+  const handlePublish = async () => {
     if (
       !formData.name ||
       !formData.category ||
@@ -136,13 +156,38 @@ const CreateVendorPage = () => {
       !formData.phone ||
       !formData.email
     ) {
-      alert("Please fill in all required fields");
+      customToast.error("Please fill in all required fields");
       return;
     }
-    console.log("Publishing vendor profile:", formData);
-    alert("Vendor profile created successfully!");
-    // Redirect to vendor profile or marketplace
-    window.location.href = "/marketplace";
+
+    setIsSubmitting(true);
+    try {
+      await VendorService.create({
+        name: formData.name,
+        category: categoryApiMap[formData.category] || "OTHER",
+        description: formData.description,
+        location: formData.location,
+        address: formData.address || undefined,
+        phone: formData.phone,
+        email: formData.email,
+        website: formData.website || undefined,
+        priceMin: formData.priceRangeMin ? parseFloat(formData.priceRangeMin) : undefined,
+        priceMax: formData.priceRangeMax ? parseFloat(formData.priceRangeMax) : undefined,
+        specialties: formData.specialties,
+        yearsOfExperience: formData.yearsOfExperience ? parseInt(formData.yearsOfExperience) : undefined,
+        availability: formData.availability.toUpperCase(),
+        logo: formData.logo || undefined,
+        coverImage: formData.coverImage || undefined,
+        portfolio: formData.portfolio,
+      });
+      customToast.success("Vendor profile created successfully!");
+      localStorage.removeItem("vendor-draft");
+      router.push("/marketplace");
+    } catch (err: any) {
+      customToast.error(err.response?.data?.message || "Failed to create vendor profile");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const renderSection = () => {
@@ -702,6 +747,8 @@ const CreateVendorPage = () => {
                   size="md"
                   rightIcon={Shop}
                   onClick={handlePublish}
+                  isLoading={isSubmitting}
+                  disabled={isSubmitting}
                 >
                   Create Vendor Profile
                 </Button>

@@ -20,6 +20,7 @@ import {
   Share,
   Game,
 } from "iconsax-react";
+import customToast from "@/lib/toast";
 
 interface VendorDashboardContentProps {
   // This would typically come from props or context
@@ -169,7 +170,7 @@ const VendorDashboardContent: React.FC<VendorDashboardContentProps> = () => {
       icon: Chart,
       bgColor: "bg-primary/10",
       iconColor: "text-primary",
-      onClick: () => console.log("View analytics"),
+      onClick: () => customToast.info("Analytics coming soon"),
     },
   ];
 
@@ -386,14 +387,14 @@ const VendorDashboardContent: React.FC<VendorDashboardContentProps> = () => {
                         <Button
                           variant="primary"
                           size="sm"
-                          onClick={() => console.log("Accept booking", request.id)}
+                          onClick={() => customToast.info("Booking management coming soon")}
                         >
                           Accept
                         </Button>
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => console.log("Decline booking", request.id)}
+                          onClick={() => customToast.info("Booking management coming soon")}
                         >
                           Decline
                         </Button>
@@ -531,7 +532,7 @@ const VendorDashboardContent: React.FC<VendorDashboardContentProps> = () => {
                   size="sm"
                   fullWidth
                   leftIcon={Chart}
-                  onClick={() => console.log("View detailed analytics")}
+                  onClick={() => customToast.info("Detailed analytics coming soon")}
                 >
                   View Analytics
                 </Button>
