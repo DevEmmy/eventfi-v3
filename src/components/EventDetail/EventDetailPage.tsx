@@ -62,6 +62,10 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
             avatar: data.organizer?.avatar || ""
           },
           description: data.description,
+          locationType: data.locationType || "PHYSICAL",
+          lat: data.lat || null,
+          lng: data.lng || null,
+          onlineUrl: data.onlineUrl || null,
           schedule: data.scheduleItems && data.scheduleItems.length > 0
             ? data.scheduleItems
             : [
@@ -246,7 +250,7 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
                 </div>
                 <div className="flex items-center gap-2 text-foreground/70">
                   <Location size={20} color="currentColor" variant="Outline" />
-                  <span>{event.location}</span>
+                  <span>{event.locationType === "ONLINE" ? "Online Event" : event.location}</span>
                 </div>
                 <div className="flex items-center gap-2 text-foreground/70">
                   <People size={20} color="currentColor" variant="Outline" />
@@ -423,33 +427,67 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
                     <div className="font-semibold text-primary min-w-[100px]">
                       {item.time}
                     </div>
-                    <div className="text-foreground/70">{item.activity}</div>
+                    <div>
+                      <div className="text-foreground/70">{item.activity}</div>
+                      {item.description && (
+                        <div className="text-sm text-foreground/50 mt-1">{item.description}</div>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Location Map */}
-            <div>
-              <h2 className="text-2xl font-bold font-[family-name:var(--font-clash-display)] mb-4 text-foreground">
-                Location
-              </h2>
-              <div className="bg-foreground/5 rounded-2xl border border-foreground/10 p-6">
-                <div className="flex items-start gap-4 mb-4">
-                  <Map size={24} color="currentColor" variant="Bold" className="text-primary" />
-                  <div>
-                    <p className="font-semibold text-foreground mb-1">
-                      {event.location}
-                    </p>
-                    <p className="text-foreground/70 text-sm">{event.address}</p>
+            {/* Location Map - Only for physical events */}
+            {event.locationType !== "ONLINE" && (
+              <div>
+                <h2 className="text-2xl font-bold font-[family-name:var(--font-clash-display)] mb-4 text-foreground">
+                  Location
+                </h2>
+                <div className="bg-foreground/5 rounded-2xl border border-foreground/10 p-6">
+                  <div className="flex items-start gap-4 mb-4">
+                    <Map size={24} color="currentColor" variant="Bold" className="text-primary" />
+                    <div>
+                      <p className="font-semibold text-foreground mb-1">
+                        {event.location}
+                      </p>
+                      <p className="text-foreground/70 text-sm">{event.address}</p>
+                    </div>
                   </div>
-                </div>
-                {/* Map placeholder - Replace with actual map component */}
-                <div className="w-full h-64 bg-foreground/10 rounded-xl flex items-center justify-center">
-                  <Map size={48} color="currentColor" variant="Outline" className="text-foreground/30" />
+                  {/* Embedded Map */}
+                  {event.lat && event.lng && event.lat !== 0 && event.lng !== 0 ? (
+                    <iframe
+                      className="w-full h-64 rounded-xl border-0"
+                      loading="lazy"
+                      referrerPolicy="no-referrer-when-downgrade"
+                      src={`https://www.openstreetmap.org/export/embed.html?bbox=${event.lng - 0.01},${event.lat - 0.01},${event.lng + 0.01},${event.lat + 0.01}&layer=mapnik&marker=${event.lat},${event.lng}`}
+                      title="Event location map"
+                    />
+                  ) : (
+                    <iframe
+                      className="w-full h-64 rounded-xl border-0"
+                      loading="lazy"
+                      referrerPolicy="no-referrer-when-downgrade"
+                      src={`https://www.openstreetmap.org/export/embed.html?bbox=3.35,6.42,3.45,6.48&layer=mapnik`}
+                      title="Event location map"
+                    />
+                  )}
+                  <a
+                    href={
+                      event.lat && event.lng && event.lat !== 0 && event.lng !== 0
+                        ? `https://www.google.com/maps/search/?api=1&query=${event.lat},${event.lng}`
+                        : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.address || event.location)}`
+                    }
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 mt-3 text-sm text-primary hover:text-primary/80 transition-colors font-medium"
+                  >
+                    <Location size={16} color="currentColor" variant="Outline" />
+                    Open in Google Maps
+                  </a>
                 </div>
               </div>
-            </div>
+            )}
 
             {/* Reviews Section */}
             <div>

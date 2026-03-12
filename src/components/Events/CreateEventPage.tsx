@@ -13,7 +13,7 @@ import { getApiCategory } from "@/utils/event-utils";
 import React, { useState } from "react";
 import Button from "@/components/Button";
 import customToast from "@/lib/toast";
-import { Add, ArrowLeft2, ArrowRight2, CalendarAdd, Camera, Trash } from "iconsax-react";
+import { Add, ArrowLeft2, ArrowRight2, CalendarAdd, Camera, Clock, Trash } from "iconsax-react";
 // ... existing imports
 
 interface TicketType {
@@ -21,6 +21,13 @@ interface TicketType {
   name: string;
   price: string;
   quantity: number;
+  description: string;
+}
+
+interface AgendaItem {
+  id: string;
+  time: string;
+  activity: string;
   description: string;
 }
 
@@ -59,6 +66,8 @@ const CreateEventPage = () => {
     { id: '1', name: '', price: '', quantity: 0, description: '' }
   ]);
 
+  const [agendaItems, setAgendaItems] = useState<AgendaItem[]>([]);
+
   const addTicketType = () => {
     setTicketTypes([
       ...ticketTypes,
@@ -73,6 +82,20 @@ const CreateEventPage = () => {
   const handleTicketTypeChange = (id: string, field: keyof TicketType, value: any) => {
     setTicketTypes(ticketTypes.map(t =>
       t.id === id ? { ...t, [field]: value } : t
+    ));
+  };
+
+  const addAgendaItem = () => {
+    setAgendaItems([...agendaItems, { id: Date.now().toString(), time: '', activity: '', description: '' }]);
+  };
+
+  const removeAgendaItem = (id: string) => {
+    setAgendaItems(agendaItems.filter(item => item.id !== id));
+  };
+
+  const handleAgendaChange = (id: string, field: keyof AgendaItem, value: string) => {
+    setAgendaItems(agendaItems.map(item =>
+      item.id === id ? { ...item, [field]: value } : item
     ));
   };
 
@@ -289,7 +312,17 @@ const CreateEventPage = () => {
         },
 
         privacy: formData.visibility === "public" ? EventPrivacy.PUBLIC : EventPrivacy.PRIVATE,
-        tags: [formData.category]
+        tags: [formData.category],
+        ...(agendaItems.length > 0 && {
+          scheduleItems: agendaItems
+            .filter(item => item.time && item.activity)
+            .map((item, index) => ({
+              time: item.time,
+              activity: item.activity,
+              description: item.description || undefined,
+              order: index,
+            }))
+        })
       };
 
       await EventService.createEvent({
@@ -472,6 +505,73 @@ const CreateEventPage = () => {
                   />
                 </label>
               )}
+            </div>
+
+            {/* Agenda / Schedule */}
+            <div className="pt-6 border-t border-foreground/10">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className="text-lg font-semibold text-foreground">Event Agenda</h3>
+                  <p className="text-sm text-foreground/50 mt-1">Add the schedule of activities for your event</p>
+                </div>
+              </div>
+              <div className="space-y-4">
+                {agendaItems.map((item, index) => (
+                  <div
+                    key={item.id}
+                    className="p-4 bg-foreground/5 border border-foreground/10 rounded-xl"
+                  >
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        <Clock size={16} color="currentColor" variant="Outline" className="text-primary" />
+                        <span className="text-sm font-medium text-foreground/60">Item {index + 1}</span>
+                      </div>
+                      <button
+                        onClick={() => removeAgendaItem(item.id)}
+                        className="p-1.5 text-foreground/40 hover:text-primary transition-colors"
+                      >
+                        <Trash size={16} color="currentColor" variant="Outline" />
+                      </button>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-[140px_1fr] gap-3">
+                      <div>
+                        <input
+                          type="time"
+                          value={item.time}
+                          onChange={(e) => handleAgendaChange(item.id, 'time', e.target.value)}
+                          className="w-full px-3 py-2.5 bg-background border border-foreground/20 rounded-lg text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200"
+                          placeholder="Time"
+                        />
+                      </div>
+                      <div>
+                        <input
+                          type="text"
+                          value={item.activity}
+                          onChange={(e) => handleAgendaChange(item.id, 'activity', e.target.value)}
+                          placeholder="e.g., Registration & Networking"
+                          className="w-full px-3 py-2.5 bg-background border border-foreground/20 rounded-lg text-foreground text-sm placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200"
+                        />
+                      </div>
+                    </div>
+                    <div className="mt-3">
+                      <input
+                        type="text"
+                        value={item.description}
+                        onChange={(e) => handleAgendaChange(item.id, 'description', e.target.value)}
+                        placeholder="Brief description (optional)"
+                        className="w-full px-3 py-2.5 bg-background border border-foreground/20 rounded-lg text-foreground text-sm placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200"
+                      />
+                    </div>
+                  </div>
+                ))}
+                <button
+                  onClick={addAgendaItem}
+                  className="w-full py-3 border-2 border-dashed border-foreground/20 rounded-xl text-foreground/60 hover:text-primary hover:border-primary transition-all duration-200 flex items-center justify-center gap-2"
+                >
+                  <Add size={20} color="currentColor" variant="Outline" />
+                  <span className="font-medium">Add Agenda Item</span>
+                </button>
+              </div>
             </div>
           </div>
         );

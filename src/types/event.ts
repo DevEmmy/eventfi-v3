@@ -147,6 +147,12 @@ export interface CreateEventPayload {
     media: EventMedia;
 
     tickets: EventTicket[];
+    scheduleItems?: {
+        time: string;
+        activity: string;
+        description?: string;
+        order?: number;
+    }[];
 }
 
 export interface EventQueryParams {

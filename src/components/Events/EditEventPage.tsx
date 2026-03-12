@@ -21,6 +21,7 @@ import {
   ArrowLeft2,
   ArrowRight2,
   Add,
+  Clock,
   Trash,
 } from "iconsax-react";
 
@@ -29,6 +30,13 @@ interface TicketType {
   name: string;
   price: string;
   quantity: number;
+  description: string;
+}
+
+interface AgendaItem {
+  id: string;
+  time: string;
+  activity: string;
   description: string;
 }
 
@@ -79,9 +87,12 @@ const EditEventPage: React.FC<EditEventPageProps> = ({ eventId }) => {
     { id: "1", name: "", price: "", quantity: 0, description: "" },
   ]);
 
+  const [agendaItems, setAgendaItems] = useState<AgendaItem[]>([]);
+
   const [activeSection, setActiveSection] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [fetchError, setFetchError] = useState<string | null>(null);
 
@@ -122,12 +133,23 @@ const EditEventPage: React.FC<EditEventPageProps> = ({ eventId }) => {
 
         if (event.tickets && event.tickets.length > 0) {
           setTicketTypes(
-            event.tickets.map((t, i) => ({
+            event.tickets.map((t: any, i: number) => ({
               id: t.id || String(i + 1),
               name: t.name || "",
               price: String(t.price || 0),
               quantity: t.quantity || 0,
               description: t.description || "",
+            }))
+          );
+        }
+
+        if (event.scheduleItems && event.scheduleItems.length > 0) {
+          setAgendaItems(
+            event.scheduleItems.map((s: any, i: number) => ({
+              id: s.id || String(i + 1),
+              time: s.time || "",
+              activity: s.activity || "",
+              description: s.description || "",
             }))
           );
         }
@@ -153,15 +175,29 @@ const EditEventPage: React.FC<EditEventPageProps> = ({ eventId }) => {
     }));
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      setImageFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFormData((prev) => ({ ...prev, image: reader.result as string }));
-      };
-      reader.readAsDataURL(file);
+    if (!file) return;
+
+    // Show local preview immediately
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setFormData((prev) => ({ ...prev, image: reader.result as string }));
+    };
+    reader.readAsDataURL(file);
+
+    // Upload to Cloudinary right away
+    setUploading(true);
+    const uploadedUrl = await uploadImage(file);
+    setUploading(false);
+
+    if (uploadedUrl) {
+      setFormData((prev) => ({ ...prev, image: uploadedUrl }));
+      setImageFile(null);
+      customToast.success("Image uploaded successfully");
+    } else {
+      setFormData((prev) => ({ ...prev, image: null }));
+      customToast.error("Failed to upload image. Please try again.");
     }
   };
 
@@ -210,6 +246,18 @@ const EditEventPage: React.FC<EditEventPageProps> = ({ eventId }) => {
     if (ticketTypes.length > 1) {
       setTicketTypes((prev) => prev.filter((ticket) => ticket.id !== id));
     }
+  };
+
+  const addAgendaItem = () => {
+    setAgendaItems((prev) => [...prev, { id: Date.now().toString(), time: '', activity: '', description: '' }]);
+  };
+
+  const removeAgendaItem = (id: string) => {
+    setAgendaItems((prev) => prev.filter((item) => item.id !== id));
+  };
+
+  const handleAgendaChange = (id: string, field: keyof AgendaItem, value: string) => {
+    setAgendaItems((prev) => prev.map((item) => (item.id === id ? { ...item, [field]: value } : item)));
   };
 
   const validateForm = (): boolean => {
@@ -289,23 +337,14 @@ const EditEventPage: React.FC<EditEventPageProps> = ({ eventId }) => {
   };
 
   const handleUpdate = async () => {
-    if (isUpdating) return;
+    if (isUpdating || uploading) return;
     if (!validateForm()) return;
 
     setIsUpdating(true);
 
     try {
-      let coverImageUrl = formData.image;
-
-      // Upload new image if selected
-      if (imageFile) {
-        const uploadedUrl = await uploadImage(imageFile);
-        if (uploadedUrl) {
-          coverImageUrl = uploadedUrl;
-        } else {
-          customToast.error("Failed to upload image. Proceeding without it.");
-        }
-      }
+      // Image is already uploaded to Cloudinary via handleImageUpload
+      const coverImageUrl = formData.image;
 
       const startDateTime = new Date(`${formData.startDate}T${formData.startTime || "00:00"}`);
       const endDateTime = formData.endDate
@@ -345,6 +384,14 @@ const EditEventPage: React.FC<EditEventPageProps> = ({ eventId }) => {
         },
         privacy: formData.visibility === "public" ? EventPrivacy.PUBLIC : EventPrivacy.PRIVATE,
         tags: [formData.category],
+        scheduleItems: agendaItems
+          .filter(item => item.time && item.activity)
+          .map((item, index) => ({
+            time: item.time,
+            activity: item.activity,
+            description: item.description || undefined,
+            order: index,
+          })),
       };
 
       await EventService.updateEvent(eventId, payload);
@@ -482,14 +529,24 @@ const EditEventPage: React.FC<EditEventPageProps> = ({ eventId }) => {
                   <img
                     src={formData.image}
                     alt="Event cover"
-                    className="w-full h-64 object-cover rounded-xl border border-foreground/10"
+                    className={`w-full h-64 object-cover rounded-xl border border-foreground/10 ${uploading ? 'opacity-50' : ''}`}
                   />
-                  <button
-                    onClick={() => setFormData((prev) => ({ ...prev, image: null }))}
-                    className="absolute top-4 right-4 p-2 bg-background/90 backdrop-blur-sm rounded-full text-foreground/60 hover:text-primary transition-colors"
-                  >
-                    <Trash size={20} color="currentColor" variant="Outline" />
-                  </button>
+                  {uploading && (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="flex items-center gap-2 bg-background/90 backdrop-blur-sm px-4 py-2 rounded-full">
+                        <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-primary" />
+                        <span className="text-sm font-medium text-foreground">Uploading...</span>
+                      </div>
+                    </div>
+                  )}
+                  {!uploading && (
+                    <button
+                      onClick={() => setFormData((prev) => ({ ...prev, image: null }))}
+                      className="absolute top-4 right-4 p-2 bg-background/90 backdrop-blur-sm rounded-full text-foreground/60 hover:text-primary transition-colors"
+                    >
+                      <Trash size={20} color="currentColor" variant="Outline" />
+                    </button>
+                  )}
                 </div>
               ) : (
                 <label className="block">
@@ -515,6 +572,73 @@ const EditEventPage: React.FC<EditEventPageProps> = ({ eventId }) => {
                   />
                 </label>
               )}
+            </div>
+
+            {/* Agenda / Schedule */}
+            <div className="pt-6 border-t border-foreground/10">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className="text-lg font-semibold text-foreground">Event Agenda</h3>
+                  <p className="text-sm text-foreground/50 mt-1">Add the schedule of activities for your event</p>
+                </div>
+              </div>
+              <div className="space-y-4">
+                {agendaItems.map((item, index) => (
+                  <div
+                    key={item.id}
+                    className="p-4 bg-foreground/5 border border-foreground/10 rounded-xl"
+                  >
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        <Clock size={16} color="currentColor" variant="Outline" className="text-primary" />
+                        <span className="text-sm font-medium text-foreground/60">Item {index + 1}</span>
+                      </div>
+                      <button
+                        onClick={() => removeAgendaItem(item.id)}
+                        className="p-1.5 text-foreground/40 hover:text-primary transition-colors"
+                      >
+                        <Trash size={16} color="currentColor" variant="Outline" />
+                      </button>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-[140px_1fr] gap-3">
+                      <div>
+                        <input
+                          type="time"
+                          value={item.time}
+                          onChange={(e) => handleAgendaChange(item.id, 'time', e.target.value)}
+                          className="w-full px-3 py-2.5 bg-background border border-foreground/20 rounded-lg text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200"
+                          placeholder="Time"
+                        />
+                      </div>
+                      <div>
+                        <input
+                          type="text"
+                          value={item.activity}
+                          onChange={(e) => handleAgendaChange(item.id, 'activity', e.target.value)}
+                          placeholder="e.g., Registration & Networking"
+                          className="w-full px-3 py-2.5 bg-background border border-foreground/20 rounded-lg text-foreground text-sm placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200"
+                        />
+                      </div>
+                    </div>
+                    <div className="mt-3">
+                      <input
+                        type="text"
+                        value={item.description}
+                        onChange={(e) => handleAgendaChange(item.id, 'description', e.target.value)}
+                        placeholder="Brief description (optional)"
+                        className="w-full px-3 py-2.5 bg-background border border-foreground/20 rounded-lg text-foreground text-sm placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200"
+                      />
+                    </div>
+                  </div>
+                ))}
+                <button
+                  onClick={addAgendaItem}
+                  className="w-full py-3 border-2 border-dashed border-foreground/20 rounded-xl text-foreground/60 hover:text-primary hover:border-primary transition-all duration-200 flex items-center justify-center gap-2"
+                >
+                  <Add size={20} color="currentColor" variant="Outline" />
+                  <span className="font-medium">Add Agenda Item</span>
+                </button>
+              </div>
             </div>
           </div>
         );
