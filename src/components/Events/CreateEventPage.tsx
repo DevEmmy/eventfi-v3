@@ -35,6 +35,7 @@ const sections = [
 const CreateEventPage = () => {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [activeSection, setActiveSection] = useState(0);
   const [imageFile, setImageFile] = useState<File | null>(null); // State to store the actual file
   const [formData, setFormData] = useState({
@@ -92,15 +93,29 @@ const CreateEventPage = () => {
   };
   // ... existing code
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      setImageFile(file); // Store file for upload
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFormData((prev) => ({ ...prev, image: reader.result as string }));
-      };
-      reader.readAsDataURL(file);
+    if (!file) return;
+
+    // Show local preview immediately
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setFormData((prev) => ({ ...prev, image: reader.result as string }));
+    };
+    reader.readAsDataURL(file);
+
+    // Upload to Cloudinary right away
+    setUploading(true);
+    const uploadedUrl = await uploadImage(file);
+    setUploading(false);
+
+    if (uploadedUrl) {
+      setFormData((prev) => ({ ...prev, image: uploadedUrl }));
+      setImageFile(null); // No need to re-upload at publish
+      customToast.success("Image uploaded successfully");
+    } else {
+      setFormData((prev) => ({ ...prev, image: null }));
+      customToast.error("Failed to upload image. Please try again.");
     }
   };
 
@@ -222,7 +237,7 @@ const CreateEventPage = () => {
   };
 
   const handlePublish = async () => {
-    if (isLoading) return;
+    if (isLoading || uploading) return;
 
     if (!validateForm()) {
       return;
@@ -231,17 +246,8 @@ const CreateEventPage = () => {
     setIsLoading(true);
 
     try {
-      let coverImageUrl = formData.image;
-
-      // Upload image if a new file is selected
-      if (imageFile) {
-        const uploadedUrl = await uploadImage(imageFile);
-        if (uploadedUrl) {
-          coverImageUrl = uploadedUrl;
-        } else {
-          customToast.error("Failed to upload image. Proceeding without it.");
-        }
-      }
+      // Image is already uploaded to Cloudinary via handleImageUpload
+      const coverImageUrl = formData.image;
 
       // Construct Date Objects
       const startDateTime = new Date(`${formData.startDate}T${formData.startTime || '00:00'}`);
@@ -423,14 +429,24 @@ const CreateEventPage = () => {
                   <img
                     src={formData.image}
                     alt="Event cover"
-                    className="w-full h-64 object-cover rounded-xl border border-foreground/10"
+                    className={`w-full h-64 object-cover rounded-xl border border-foreground/10 ${uploading ? 'opacity-50' : ''}`}
                   />
-                  <button
-                    onClick={() => setFormData((prev) => ({ ...prev, image: null }))}
-                    className="absolute top-4 right-4 p-2 bg-background/90 backdrop-blur-sm rounded-full text-foreground/60 hover:text-primary transition-colors"
-                  >
-                    <Trash size={20} color="currentColor" variant="Outline" />
-                  </button>
+                  {uploading && (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="flex items-center gap-2 bg-background/90 backdrop-blur-sm px-4 py-2 rounded-full">
+                        <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-primary" />
+                        <span className="text-sm font-medium text-foreground">Uploading...</span>
+                      </div>
+                    </div>
+                  )}
+                  {!uploading && (
+                    <button
+                      onClick={() => setFormData((prev) => ({ ...prev, image: null }))}
+                      className="absolute top-4 right-4 p-2 bg-background/90 backdrop-blur-sm rounded-full text-foreground/60 hover:text-primary transition-colors"
+                    >
+                      <Trash size={20} color="currentColor" variant="Outline" />
+                    </button>
+                  )}
                 </div>
               ) : (
                 <label className="block">
