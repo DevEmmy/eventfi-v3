@@ -1,13 +1,17 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Button from "@/components/Button";
 import { User, ArrowRight2 } from "iconsax-react";
 import axios from "axios";
 import axiosInstance from "@/lib/axios";
 import toast from "@/lib/toast";
+import { useUserStore } from "@/store/useUserStore";
 
 const IdentityStep = () => {
+  const router = useRouter();
+  const { updateUser } = useUserStore();
   const [displayName, setDisplayName] = useState("");
   const [username, setUsername] = useState("");
   const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
@@ -26,14 +30,22 @@ const IdentityStep = () => {
     if (displayName && username) {
       setLoading(true);
       try {
-        await axiosInstance.patch("/auth/profile", {
+        const res = await axiosInstance.patch("/auth/profile", {
           displayName,
           username,
           avatar: profilePhoto,
         });
 
+        // Update store immediately so SessionInit won't redirect back
+        const updatedUser = res.data?.data;
+        if (updatedUser) {
+          updateUser(updatedUser);
+        } else {
+          updateUser({ displayName, username, avatar: profilePhoto });
+        }
+
         toast.success("Profile updated successfully");
-        window.location.href = "/";
+        router.push("/");
       } catch (error: any) {
         console.error(error);
         toast.error(error.response?.data?.message || "Failed to update profile");

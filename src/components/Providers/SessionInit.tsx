@@ -5,7 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useUserStore } from "@/store/useUserStore";
 
 export default function SessionInit({ children }: { children: React.ReactNode }) {
-    const { fetchUser, user, isAuthenticated } = useUserStore();
+    const { fetchUser, user, isAuthenticated, loading } = useUserStore();
     const pathname = usePathname();
     const router = useRouter();
 
@@ -14,6 +14,9 @@ export default function SessionInit({ children }: { children: React.ReactNode })
     }, [fetchUser]);
 
     useEffect(() => {
+        // Don't redirect while still fetching user data
+        if (loading) return;
+
         // Skip redirect on auth/onboarding pages to avoid loops
         const isExemptRoute = pathname.startsWith("/auth") || pathname.startsWith("/onboarding");
         if (isExemptRoute) return;
@@ -22,7 +25,7 @@ export default function SessionInit({ children }: { children: React.ReactNode })
         if (isAuthenticated && user && !user.username) {
             router.replace("/onboarding/identity");
         }
-    }, [isAuthenticated, user, pathname, router]);
+    }, [isAuthenticated, user, pathname, router, loading]);
 
     return <>{children}</>;
 }
