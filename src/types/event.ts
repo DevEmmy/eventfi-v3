@@ -122,6 +122,13 @@ export interface Event {
     videoUrl?: string;
 
     tickets: EventTicket[];
+    scheduleItems?: {
+        id: string;
+        time: string;
+        activity: string;
+        description?: string;
+        order: number;
+    }[];
 
     organizerId: string;
     organizer: EventOrganizer;
