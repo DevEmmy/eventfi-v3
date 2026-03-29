@@ -9,6 +9,7 @@ import Button from "../Button";
 import EventCard from "../Homepage/EventCard";
 import { useUserStore } from "@/store/useUserStore";
 import { useMessengerStore } from "@/store/useMessengerStore";
+import AttendeeGameView from "@/components/Games/AttendeeGameView";
 
 interface EventDetailPageProps {
   eventId: string;
@@ -151,6 +152,7 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
   };
 
   return (
+    <>
     <div className="min-h-screen bg-background">
       {/* Back Button */}
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-6">
@@ -781,6 +783,10 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
         </div>
       </div>
     </div>
+
+    {/* Live game overlay for attendees */}
+    <AttendeeGameView eventId={eventId} />
+    </>
   );
 };
 

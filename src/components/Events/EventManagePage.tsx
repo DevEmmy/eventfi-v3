@@ -32,8 +32,10 @@ import {
   Send2,
   DocumentText,
   TickCircle,
+  Gift,
 } from "iconsax-react";
 import { ManageEventService } from "@/services/manage";
+import OrganizerGamePanel from "@/components/Games/OrganizerGamePanel";
 import customToast from "@/lib/toast";
 import {
   ManageDashboardResponse,
@@ -75,7 +77,7 @@ const ROLE_PERMISSIONS: Record<Exclude<TeamRole, "organizer">, TeamMember["permi
 
 const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<"overview" | "attendees" | "analytics" | "team">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "attendees" | "analytics" | "team" | "games">("overview");
   const [showAddMemberModal, setShowAddMemberModal] = useState(false);
   const [showBulkEmailModal, setShowBulkEmailModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -221,6 +223,7 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
     { id: "attendees" as const, label: "Attendees", icon: People, count: attendeesTotal },
     { id: "analytics" as const, label: "Analytics", icon: Chart },
     { id: "team" as const, label: "Team", icon: Profile2User, count: teamMembers.length },
+    { id: "games" as const, label: "Games", icon: Gift },
   ];
 
   const handleEdit = () => {
@@ -1274,6 +1277,12 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                   </div>
                 </div>
               </div>
+            </div>
+          )}
+
+          {activeTab === "games" && (
+            <div className="bg-background border border-foreground/10 rounded-2xl p-6">
+              <OrganizerGamePanel eventId={eventId} />
             </div>
           )}
         </div>
