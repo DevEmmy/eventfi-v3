@@ -127,7 +127,8 @@ export function useActivity(eventId: string, isOrganizer: boolean = false) {
         });
 
         activitySocket.on("activity:ended", (_data: any) => {
-            const isApplause = store.activeActivity?.type === "APPLAUSE_METER";
+            // Use getState() to avoid stale closure — store.activeActivity captured at mount may be null
+            const isApplause = useActivityStore.getState().activeActivity?.type === "APPLAUSE_METER";
 
             store.setActiveActivity(null);
             store.setDrawCountdown(null);
@@ -261,7 +262,7 @@ export function useActivity(eventId: string, isOrganizer: boolean = false) {
     const endActivity = useCallback(
         async (activityId: string): Promise<EventActivity> => {
             store.setIsLoading(true);
-            const isApplause = store.activeActivity?.type === "APPLAUSE_METER";
+            const isApplause = useActivityStore.getState().activeActivity?.type === "APPLAUSE_METER";
             try {
                 const activity = await ActivityService.end(eventId, activityId);
                 activitySocket.emitEnd({

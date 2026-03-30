@@ -127,8 +127,8 @@ function ApplausePodium({
         </div>
       </div>
 
-      <Button variant="primary" size="md" onClick={onDone} className="w-full">
-        Done
+      <Button variant="primary" size="md" leftIcon={Stop} onClick={onDone} className="w-full">
+        End Game &amp; Close
       </Button>
 
       <style jsx>{`
@@ -490,14 +490,17 @@ const OrganizerGamePanel: React.FC<OrganizerGamePanelProps> = ({ eventId }) => {
           )}
         </div>
 
-        <div className="flex gap-3">
+        <div className="flex gap-3 items-center">
           <div className="flex-1 bg-foreground/5 rounded-xl p-3 flex items-center gap-2 text-foreground/60">
             <People size={16} color="currentColor" variant="Outline" />
             <span className="text-xs">Attendees see a live tap button on their screen</span>
           </div>
-          <Button variant="outline" size="md" leftIcon={Stop} onClick={handleEnd} disabled={isLoading}>
-            End Game
-          </Button>
+          {/* Only show End Game once the timer has expired */}
+          {(applauseTimeLeft === null || applauseTimeLeft <= 0) && (
+            <Button variant="outline" size="md" leftIcon={Stop} onClick={handleEnd} disabled={isLoading}>
+              End Game
+            </Button>
+          )}
         </div>
       </div>
     );
