@@ -9,6 +9,11 @@ export interface ActivityStartedEvent {
     type: string;
 }
 
+export interface ActivityDrawCountdownEvent {
+    activityId: string;
+    seconds: number;
+}
+
 export interface ActivityDrawResultEvent {
     activityId: string;
     winners: Array<{
@@ -35,6 +40,7 @@ type ActivityEventHandler<T> = (data: T) => void;
 
 interface ActivitySocketEvents {
     "activity:started": ActivityEventHandler<ActivityStartedEvent>;
+    "activity:draw_countdown": ActivityEventHandler<ActivityDrawCountdownEvent>;
     "activity:draw_result": ActivityEventHandler<ActivityDrawResultEvent>;
     "activity:tap_update": ActivityEventHandler<ActivityTapUpdateEvent>;
     "activity:ended": ActivityEventHandler<ActivityEndedEvent>;
@@ -82,6 +88,7 @@ interface ActivityEndEmit {
 class ActivitySocketService {
     private socket: Socket | null = null;
     private handlers: Partial<ActivitySocketEvents> = {};
+    _pendingEventId: string | null = null;
 
     /**
      * Connect to the activity WebSocket namespace.
@@ -106,6 +113,10 @@ class ActivitySocketService {
 
         this.socket.on("connect", () => {
             console.log("[ActivitySocket] Connected");
+            // Re-join room if we have a pending eventId
+            if (this._pendingEventId) {
+                this.socket?.emit("activity:join_event", { eventId: this._pendingEventId });
+            }
         });
 
         this.socket.on("disconnect", (reason) => {
@@ -154,6 +165,17 @@ class ActivitySocketService {
     }
 
     // ---------------------------------------------------------------------------
+    // Room management
+    // ---------------------------------------------------------------------------
+
+    joinEventRoom(eventId: string): void {
+        this._pendingEventId = eventId;
+        if (this.socket?.connected) {
+            this.socket.emit("activity:join_event", { eventId });
+        }
+    }
+
+    // ---------------------------------------------------------------------------
     // Emit helpers (organizer)
     // ---------------------------------------------------------------------------
 
@@ -187,6 +209,13 @@ class ActivitySocketService {
         this.socket.on("activity:started", (data: ActivityStartedEvent) => {
             this.handlers["activity:started"]?.(data);
         });
+
+        this.socket.on(
+            "activity:draw_countdown",
+            (data: ActivityDrawCountdownEvent) => {
+                this.handlers["activity:draw_countdown"]?.(data);
+            }
+        );
 
         this.socket.on(
             "activity:draw_result",

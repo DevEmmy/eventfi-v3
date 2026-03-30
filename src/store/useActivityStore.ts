@@ -15,6 +15,8 @@ interface ActivityState {
     drawWinners: DrawWinner[];
     drawTotalPool: number;
     showDrawReveal: boolean;
+    // Countdown before draw reveal (null = no countdown)
+    drawCountdown: number | null;
     // Applause state
     totalTaps: number;
     participantCount: number;
@@ -27,6 +29,7 @@ interface ActivityState {
     setDrawResult: (winners: DrawWinner[], totalPool: number) => void;
     showReveal: () => void;
     hideReveal: () => void;
+    setDrawCountdown: (n: number | null) => void;
     setTapCount: (totalTaps: number, participantCount: number) => void;
     setHasUserTapped: (tapped: boolean) => void;
     setIsLoading: (loading: boolean) => void;
@@ -38,6 +41,7 @@ const initialState = {
     drawWinners: [],
     drawTotalPool: 0,
     showDrawReveal: false,
+    drawCountdown: null as number | null,
     totalTaps: 0,
     participantCount: 0,
     hasUserTapped: false,
@@ -52,6 +56,7 @@ export const useActivityStore = create<ActivityState>((set) => ({
         set({ drawWinners: winners, drawTotalPool: totalPool }),
     showReveal: () => set({ showDrawReveal: true }),
     hideReveal: () => set({ showDrawReveal: false }),
+    setDrawCountdown: (n) => set({ drawCountdown: n }),
     setTapCount: (totalTaps, participantCount) =>
         set({ totalTaps, participantCount }),
     setHasUserTapped: (tapped) => set({ hasUserTapped: tapped }),

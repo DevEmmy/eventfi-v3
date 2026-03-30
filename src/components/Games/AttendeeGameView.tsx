@@ -15,128 +15,158 @@ const AttendeeGameView: React.FC<AttendeeGameViewProps> = ({ eventId }) => {
     drawWinners,
     drawTotalPool,
     showDrawReveal,
+    drawCountdown,
     totalTaps,
     participantCount,
     tapApplause,
     hideReveal,
   } = useActivity(eventId, false);
 
-  // Animate the tap button scale on click
   const tapBtnRef = useRef<HTMLButtonElement>(null);
 
   const handleTap = () => {
     if (!activeActivity) return;
     tapApplause(activeActivity.id);
-
-    // Micro-animation: scale down then back up
     if (tapBtnRef.current) {
       tapBtnRef.current.classList.add("scale-90");
-      setTimeout(() => {
-        tapBtnRef.current?.classList.remove("scale-90");
-      }, 100);
+      setTimeout(() => tapBtnRef.current?.classList.remove("scale-90"), 100);
     }
   };
 
-  // Auto-hide draw reveal after 10s on attendee side
+  // Auto-hide winner reveal after 15s
   useEffect(() => {
     if (!showDrawReveal) return;
-    const timer = setTimeout(hideReveal, 10000);
-    return () => clearTimeout(timer);
+    const t = setTimeout(hideReveal, 15000);
+    return () => clearTimeout(t);
   }, [showDrawReveal]);
 
   if (!activeActivity) return null;
 
-  // ----- Lucky Draw -----
+  // ─── Lucky Draw ──────────────────────────────────────────────────────────────
+
   if (activeActivity.type === "LUCKY_DRAW") {
-    // Draw in progress — no result yet
-    if (!showDrawReveal || drawWinners.length === 0) {
+    // Countdown in progress
+    if (drawCountdown !== null) {
       return (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] max-w-md">
-          <div className="bg-background border border-yellow-500/30 shadow-2xl rounded-2xl p-5 flex items-center gap-4 animate-slide-up">
-            <div className="w-12 h-12 rounded-xl bg-yellow-500/10 flex items-center justify-center shrink-0 animate-pulse">
-              <Gift size={24} color="#f59e0b" variant="Bold" />
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+          <div className="text-center">
+            {/* Spinning ring */}
+            <div className="relative w-40 h-40 mx-auto mb-6">
+              <div className="absolute inset-0 rounded-full border-4 border-yellow-500/20"></div>
+              <div
+                className="absolute inset-0 rounded-full border-4 border-yellow-400 border-t-transparent animate-spin"
+                style={{ animationDuration: "1s" }}
+              ></div>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className="text-6xl font-bold font-(family-name:--font-clash-display) text-yellow-400 tabular-nums">
+                  {drawCountdown}
+                </span>
+              </div>
             </div>
-            <div>
-              <p className="font-bold text-foreground text-sm">Lucky Draw is Live!</p>
-              <p className="text-xs text-foreground/50 mt-0.5">
-                Stay tuned — the organizer is about to draw a winner
-              </p>
+            <Gift size={28} color="#f59e0b" variant="Bold" className="mx-auto mb-3" />
+            <p className="text-white text-xl font-bold font-[family-name:var(--font-clash-display)]">
+              Drawing a winner…
+            </p>
+            <p className="text-white/50 text-sm mt-1">Get ready!</p>
+          </div>
+        </div>
+      );
+    }
+
+    // Winner reveal
+    if (showDrawReveal && drawWinners.length > 0) {
+      return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+          <div className="bg-background border border-yellow-500/30 rounded-2xl shadow-2xl p-8 w-full max-w-sm text-center relative">
+            <button
+              onClick={hideReveal}
+              className="absolute top-3 right-3 text-foreground/40 hover:text-foreground/70 transition-colors cursor-pointer"
+            >
+              <CloseCircle size={20} color="currentColor" variant="Bold" />
+            </button>
+
+            {/* Confetti dots */}
+            <div className="absolute inset-0 overflow-hidden rounded-2xl pointer-events-none">
+              {Array.from({ length: 24 }).map((_, i) => (
+                <span
+                  key={i}
+                  className="absolute w-2 h-2 rounded-full opacity-70 animate-bounce"
+                  style={{
+                    left: `${(i * 13) % 100}%`,
+                    top: `${(i * 17) % 100}%`,
+                    animationDelay: `${(i * 0.07).toFixed(2)}s`,
+                    backgroundColor: ["#f59e0b", "#6366f1", "#ec4899", "#10b981"][i % 4],
+                  }}
+                />
+              ))}
+            </div>
+
+            <Crown size={40} color="#f59e0b" variant="Bold" className="mx-auto mb-3" />
+            <h3 className="text-2xl font-bold font-(family-name:--font-clash-display) text-foreground mb-1">
+              {drawWinners.length === 1 ? "🎉 Winner!" : `🎉 ${drawWinners.length} Winners!`}
+            </h3>
+            <p className="text-xs text-foreground/50 mb-6">
+              Drawn from {drawTotalPool} participants
+            </p>
+
+            <div className="flex flex-wrap justify-center gap-4">
+              {drawWinners.map((winner, i) => (
+                <div key={winner.userId} className="flex flex-col items-center gap-2">
+                  <div className="relative w-20 h-20">
+                    {winner.avatar ? (
+                      <Image
+                        src={winner.avatar}
+                        alt={winner.name}
+                        fill
+                        className="rounded-full object-cover ring-4 ring-yellow-400"
+                      />
+                    ) : (
+                      <div className="w-20 h-20 rounded-full bg-yellow-500/20 ring-4 ring-yellow-400 flex items-center justify-center text-2xl font-bold text-yellow-500">
+                        {winner.name.charAt(0)}
+                      </div>
+                    )}
+                    <span className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-yellow-400 text-xs font-bold text-white flex items-center justify-center">
+                      {i + 1}
+                    </span>
+                  </div>
+                  <div>
+                    <p className="font-bold text-foreground text-sm">{winner.name}</p>
+                    {winner.username && (
+                      <p className="text-xs text-foreground/50">@{winner.username}</p>
+                    )}
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
       );
     }
 
-    // Winner revealed
+    // Game is live — waiting for draw
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-        <div className="bg-background border border-yellow-500/30 rounded-2xl shadow-2xl p-8 w-full max-w-sm text-center relative animate-scale-in">
-          <button
-            onClick={hideReveal}
-            className="absolute top-3 right-3 text-foreground/40 hover:text-foreground/70 transition-colors cursor-pointer"
-          >
-            <CloseCircle size={20} color="currentColor" variant="Bold" />
-          </button>
-
-          {/* Confetti dots */}
-          <div className="absolute inset-0 overflow-hidden rounded-2xl pointer-events-none">
-            {Array.from({ length: 20 }).map((_, i) => (
-              <span
-                key={i}
-                className="absolute w-2 h-2 rounded-full opacity-70 animate-bounce"
-                style={{
-                  left: `${Math.random() * 100}%`,
-                  top: `${Math.random() * 100}%`,
-                  animationDelay: `${Math.random() * 1}s`,
-                  backgroundColor: ["#f59e0b", "#6366f1", "#ec4899", "#10b981"][i % 4],
-                }}
-              />
-            ))}
+      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] max-w-md">
+        <div className="bg-background border border-yellow-500/30 shadow-2xl rounded-2xl p-5 flex items-center gap-4">
+          <div className="w-12 h-12 rounded-xl bg-yellow-500/10 flex items-center justify-center shrink-0 animate-pulse">
+            <Gift size={24} color="#f59e0b" variant="Bold" />
           </div>
-
-          <Crown size={40} color="#f59e0b" variant="Bold" className="mx-auto mb-4" />
-          <h3 className="text-2xl font-bold font-[family-name:var(--font-clash-display)] text-foreground mb-1">
-            {drawWinners.length === 1 ? "🎉 Winner!" : `🎉 ${drawWinners.length} Winners!`}
-          </h3>
-          <p className="text-xs text-foreground/50 mb-6">
-            Drawn from {drawTotalPool} participants
-          </p>
-
-          <div className="flex flex-wrap justify-center gap-4">
-            {drawWinners.map((winner, i) => (
-              <div key={winner.userId} className="flex flex-col items-center gap-2">
-                <div className="relative w-20 h-20">
-                  {winner.avatar ? (
-                    <Image
-                      src={winner.avatar}
-                      alt={winner.name}
-                      fill
-                      className="rounded-full object-cover ring-4 ring-yellow-400"
-                    />
-                  ) : (
-                    <div className="w-20 h-20 rounded-full bg-yellow-500/20 ring-4 ring-yellow-400 flex items-center justify-center text-2xl font-bold text-yellow-500">
-                      {winner.name.charAt(0)}
-                    </div>
-                  )}
-                  <span className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-yellow-400 text-xs font-bold text-white flex items-center justify-center">
-                    {i + 1}
-                  </span>
-                </div>
-                <div>
-                  <p className="font-bold text-foreground text-sm">{winner.name}</p>
-                  {winner.username && (
-                    <p className="text-xs text-foreground/50">@{winner.username}</p>
-                  )}
-                </div>
-              </div>
-            ))}
+          <div className="flex-1">
+            <p className="font-bold text-foreground text-sm">Lucky Draw is Live!</p>
+            <p className="text-xs text-foreground/50 mt-0.5">
+              Stay tuned — the organizer is about to draw a winner
+            </p>
           </div>
+          <span className="flex items-center gap-1 px-2 py-1 rounded-full bg-green-500/10 text-green-500 text-xs font-semibold shrink-0">
+            <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block animate-pulse" />
+            Live
+          </span>
         </div>
       </div>
     );
   }
 
-  // ----- Applause Meter -----
+  // ─── Applause Meter ──────────────────────────────────────────────────────────
+
   if (activeActivity.type === "APPLAUSE_METER") {
     const percent = participantCount > 0
       ? Math.min((totalTaps / (participantCount * 10)) * 100, 100)
@@ -144,8 +174,7 @@ const AttendeeGameView: React.FC<AttendeeGameViewProps> = ({ eventId }) => {
 
     return (
       <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] max-w-sm">
-        <div className="bg-background border border-primary/30 shadow-2xl rounded-2xl p-5 animate-slide-up">
-          {/* Header */}
+        <div className="bg-background border border-primary/30 shadow-2xl rounded-2xl p-5">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
               <Music size={16} color="currentColor" variant="Bold" className="text-primary" />
@@ -162,15 +191,13 @@ const AttendeeGameView: React.FC<AttendeeGameViewProps> = ({ eventId }) => {
             </div>
           </div>
 
-          {/* Progress bar */}
           <div className="h-2 bg-foreground/5 rounded-full overflow-hidden mb-4">
             <div
-              className="h-full bg-gradient-to-r from-primary to-secondary rounded-full transition-all duration-300"
+              className="h-full bg-linear-to-r from-primary to-secondary rounded-full transition-all duration-300"
               style={{ width: `${percent}%` }}
             />
           </div>
 
-          {/* Big tap button */}
           <button
             ref={tapBtnRef}
             onClick={handleTap}

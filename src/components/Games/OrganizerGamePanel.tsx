@@ -26,6 +26,7 @@ const OrganizerGamePanel: React.FC<OrganizerGamePanelProps> = ({ eventId }) => {
     drawWinners,
     drawTotalPool,
     showDrawReveal,
+    drawCountdown,
     totalTaps,
     participantCount,
     isLoading,
@@ -173,8 +174,22 @@ const OrganizerGamePanel: React.FC<OrganizerGamePanelProps> = ({ eventId }) => {
           </span>
         </div>
 
+        {/* Countdown before reveal */}
+        {drawCountdown !== null && (
+          <div className="bg-background border border-yellow-500/20 rounded-2xl p-6 text-center">
+            <div className="relative w-24 h-24 mx-auto mb-3">
+              <div className="absolute inset-0 rounded-full border-4 border-yellow-500/20"></div>
+              <div className="absolute inset-0 rounded-full border-4 border-yellow-400 border-t-transparent animate-spin" style={{ animationDuration: "1s" }}></div>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className="text-4xl font-bold text-yellow-400 tabular-nums">{drawCountdown}</span>
+              </div>
+            </div>
+            <p className="text-sm font-semibold text-foreground/70">Drawing winner — attendees are watching…</p>
+          </div>
+        )}
+
         {/* Winner reveal area */}
-        {showDrawReveal && drawWinners.length > 0 ? (
+        {!drawCountdown && showDrawReveal && drawWinners.length > 0 ? (
           <div className="relative bg-gradient-to-br from-yellow-500/10 to-amber-600/5 border border-yellow-500/20 rounded-2xl p-6">
             <button
               onClick={hideReveal}
@@ -236,10 +251,10 @@ const OrganizerGamePanel: React.FC<OrganizerGamePanelProps> = ({ eventId }) => {
             size="md"
             leftIcon={showDrawReveal ? Refresh : Crown}
             onClick={handleDraw}
-            disabled={isLoading}
+            disabled={isLoading || drawCountdown !== null}
             className="flex-1"
           >
-            {isLoading ? "Drawing…" : showDrawReveal ? "Draw Again" : "Draw Winner"}
+            {isLoading ? "Drawing…" : drawCountdown !== null ? `Revealing in ${drawCountdown}…` : showDrawReveal ? "Draw Again" : "Draw Winner"}
           </Button>
           <Button
             variant="outline"

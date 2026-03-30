@@ -6,6 +6,8 @@ import { ActivityService, EventActivity, DrawResult } from "@/services/activity"
 import { activitySocket } from "@/services/activitySocket";
 import customToast from "@/lib/toast";
 
+const COUNTDOWN_SECONDS = 10;
+
 const WS_URL = process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:4000";
 
 export function useActivity(eventId: string, isOrganizer: boolean = false) {
@@ -41,11 +43,13 @@ export function useActivity(eventId: string, isOrganizer: boolean = false) {
             .catch(() => {});
     }, [eventId]);
 
-    // Connect socket and listen for WS activity events
+    // Connect socket, join the activity room, and listen for WS activity events
     useEffect(() => {
         if (!eventId) return;
 
         activitySocket.connect(WS_URL);
+        // Join the dedicated activity room so we receive game events
+        activitySocket.joinEventRoom(eventId);
 
         activitySocket.on("activity:started", (_data) => {
             ActivityService.getActive(eventId)
@@ -55,8 +59,24 @@ export function useActivity(eventId: string, isOrganizer: boolean = false) {
                 .catch(() => {});
         });
 
+        // Countdown: tick from COUNTDOWN_SECONDS down to 0
+        activitySocket.on("activity:draw_countdown", (_data) => {
+            store.setDrawCountdown(COUNTDOWN_SECONDS);
+            let n = COUNTDOWN_SECONDS;
+            const tick = setInterval(() => {
+                n -= 1;
+                if (n <= 0) {
+                    clearInterval(tick);
+                    store.setDrawCountdown(null);
+                } else {
+                    store.setDrawCountdown(n);
+                }
+            }, 1000);
+        });
+
         activitySocket.on("activity:draw_result", (data) => {
             store.setDrawResult(data.winners, data.totalPool);
+            store.setDrawCountdown(null);
             store.showReveal();
         });
 
@@ -66,12 +86,14 @@ export function useActivity(eventId: string, isOrganizer: boolean = false) {
 
         activitySocket.on("activity:ended", (_data) => {
             store.setActiveActivity(null);
+            store.setDrawCountdown(null);
             // Keep results visible for a few seconds before clearing
             setTimeout(() => store.reset(), 5000);
         });
 
         return () => {
             activitySocket.off("activity:started");
+            activitySocket.off("activity:draw_countdown");
             activitySocket.off("activity:draw_result");
             activitySocket.off("activity:tap_update");
             activitySocket.off("activity:ended");
@@ -125,15 +147,28 @@ export function useActivity(eventId: string, isOrganizer: boolean = false) {
             store.setIsLoading(true);
             try {
                 const result = await ActivityService.draw(eventId, activityId);
+                // Store the result but don't reveal yet — countdown first
                 store.setDrawResult(result.winners, result.totalPool);
-                store.showReveal();
-                // Broadcast draw result via WS
+                // Broadcast to all attendees (server adds 10s delay before draw_result)
                 activitySocket.emitBroadcastDraw({
                     eventId,
                     activityId,
                     winners: result.winners,
                     totalPool: result.totalPool,
                 });
+                // Organizer also counts down locally (server will echo back via WS too)
+                store.setDrawCountdown(COUNTDOWN_SECONDS);
+                let n = COUNTDOWN_SECONDS;
+                const tick = setInterval(() => {
+                    n -= 1;
+                    if (n <= 0) {
+                        clearInterval(tick);
+                        store.setDrawCountdown(null);
+                        store.showReveal();
+                    } else {
+                        store.setDrawCountdown(n);
+                    }
+                }, 1000);
                 return result;
             } catch (e: any) {
                 customToast.error(
@@ -207,6 +242,7 @@ export function useActivity(eventId: string, isOrganizer: boolean = false) {
         drawWinners: store.drawWinners,
         drawTotalPool: store.drawTotalPool,
         showDrawReveal: store.showDrawReveal,
+        drawCountdown: store.drawCountdown,
         totalTaps: store.totalTaps,
         participantCount: store.participantCount,
         isLoading: store.isLoading,
