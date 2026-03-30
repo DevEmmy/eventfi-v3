@@ -43,12 +43,12 @@ const Banner = () => {
     primaryCTA: {
       label: "Create Event",
       icon: CalendarAdd,
-      href: "#create-event",
+      href: "/events/create",
     },
     secondaryCTA: {
       label: "Explore Marketplace",
       icon: Shop,
-      href: "#marketplace",
+      href: "/marketplace",
     },
     trustSignal: (
       <>
@@ -76,7 +76,7 @@ const Banner = () => {
     primaryCTA: {
       label: "Explore",
       icon: Location,
-      href: "#explore-events",
+      href: "/explore-events",
     },
     secondaryCTA: {
       label: "How it Works",
@@ -157,7 +157,12 @@ const Banner = () => {
                 size="md"
                 leftIcon={currentContent.secondaryCTA.icon}
                 onClick={() => {
-                  window.location.href = currentContent.secondaryCTA.href;
+                  const href = currentContent.secondaryCTA.href;
+                  if (href.startsWith("#")) {
+                    document.getElementById(href.slice(1))?.scrollIntoView({ behavior: "smooth" });
+                  } else {
+                    window.location.href = href;
+                  }
                 }}
               >
                 {currentContent.secondaryCTA.label}

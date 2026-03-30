@@ -33,7 +33,7 @@ const FinalCTASection = () => {
               rightIcon={ArrowRight2}
               iconVariant="Bold"
               onClick={() => {
-                window.location.href = "#signup";
+                window.location.href = "/auth/signup";
               }}
               className="bg-white !text-primary hover:bg-white/90 shadow-lg hover:shadow-xl"
             >
@@ -43,7 +43,7 @@ const FinalCTASection = () => {
             {/* Secondary Link */}
             <button
               onClick={() => {
-                window.location.href = "#contact-sales";
+                window.location.href = "/about";
               }}
               className="flex items-center gap-2 px-6 py-3 text-white hover:text-white/80 font-medium transition-colors duration-200 border-2 border-white/30 hover:border-white/50 rounded-full"
             >

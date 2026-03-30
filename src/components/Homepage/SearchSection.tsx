@@ -29,15 +29,24 @@ const SearchSection = () => {
 
           {/* Quick Filters */}
           <div className="flex flex-wrap items-center justify-center gap-4">
-            <button className="flex items-center gap-2 px-4 py-2 rounded-full border border-foreground/20 text-foreground/70 hover:border-primary hover:text-primary transition-all duration-200 text-sm font-medium">
+            <button
+              onClick={() => window.location.href = "/explore-events"}
+              className="flex items-center gap-2 px-4 py-2 rounded-full border border-foreground/20 text-foreground/70 hover:border-primary hover:text-primary transition-all duration-200 text-sm font-medium"
+            >
               <Location size={18} color="currentColor" variant="Outline" />
               <span>Near Me</span>
             </button>
-            <button className="flex items-center gap-2 px-4 py-2 rounded-full border border-foreground/20 text-foreground/70 hover:border-primary hover:text-primary transition-all duration-200 text-sm font-medium">
+            <button
+              onClick={() => window.location.href = "/explore-events"}
+              className="flex items-center gap-2 px-4 py-2 rounded-full border border-foreground/20 text-foreground/70 hover:border-primary hover:text-primary transition-all duration-200 text-sm font-medium"
+            >
               <Calendar size={18} color="currentColor" variant="Outline" />
               <span>This Week</span>
             </button>
-            <button className="flex items-center gap-2 px-4 py-2 rounded-full border border-foreground/20 text-foreground/70 hover:border-primary hover:text-primary transition-all duration-200 text-sm font-medium">
+            <button
+              onClick={() => window.location.href = "/explore-events"}
+              className="flex items-center gap-2 px-4 py-2 rounded-full border border-foreground/20 text-foreground/70 hover:border-primary hover:text-primary transition-all duration-200 text-sm font-medium"
+            >
               <Filter size={18} color="currentColor" variant="Outline" />
               <span>All Filters</span>
             </button>

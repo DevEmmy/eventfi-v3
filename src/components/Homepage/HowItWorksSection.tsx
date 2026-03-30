@@ -38,7 +38,7 @@ const HowItWorksSection = () => {
   ];
 
   return (
-    <section className="py-16 lg:py-24 bg-background">
+    <section id="how-it-works" className="py-16 lg:py-24 bg-background">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-12 lg:mb-16">
@@ -141,7 +141,7 @@ const HowItWorksSection = () => {
               rightIcon={ArrowRight2}
               iconVariant="Bold"
               onClick={() => {
-                window.location.href = "#create-event";
+                window.location.href = "/events/create";
               }}
             >
               Get Started Now

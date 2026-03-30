@@ -13,7 +13,7 @@ const DualValueSection = () => {
           <div
             className="group relative bg-gradient-to-br from-primary/5 via-primary/10 to-primary/5 rounded-2xl p-8 lg:p-12 border border-primary/20 hover:border-primary/40 transition-all duration-300 hover:shadow-xl cursor-pointer overflow-hidden"
             onClick={() => {
-              window.location.href = "#host-event";
+              window.location.href = "/events/create";
             }}
           >
             {/* Decorative Background Elements */}
@@ -49,7 +49,7 @@ const DualValueSection = () => {
                 rightIcon={ArrowRight}
                 onClick={(e) => {
                   e.stopPropagation();
-                  window.location.href = "#host-event";
+                  window.location.href = "/events/create";
                 }}
                 className="group-hover:scale-105 transition-transform duration-300"
               >
@@ -65,7 +65,7 @@ const DualValueSection = () => {
           <div
             className="group relative bg-gradient-to-br from-secondary/5 via-secondary/10 to-secondary/5 rounded-2xl p-8 lg:p-12 border border-secondary/20 hover:border-secondary/40 transition-all duration-300 hover:shadow-xl cursor-pointer overflow-hidden"
             onClick={() => {
-              window.location.href = "#explore-events";
+              window.location.href = "/explore-events";
             }}
           >
             {/* Decorative Background Elements */}
@@ -101,7 +101,7 @@ const DualValueSection = () => {
                 rightIcon={ArrowRight}
                 onClick={(e) => {
                   e.stopPropagation();
-                  window.location.href = "#explore-events";
+                  window.location.href = "/explore-events";
                 }}
                 className="group-hover:scale-105 transition-transform duration-300"
               >
