@@ -10,6 +10,7 @@ import EventCard from "../Homepage/EventCard";
 import { useUserStore } from "@/store/useUserStore";
 import { useMessengerStore } from "@/store/useMessengerStore";
 import AttendeeGameView from "@/components/Games/AttendeeGameView";
+import { getEventShareUrl } from "@/utils/generateEventSlug";
 
 interface EventDetailPageProps {
   eventId: string;
@@ -139,8 +140,7 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
   }
 
   const handleShare = () => {
-    const slug = event.title.replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
-    const shareUrl = `${window.location.origin}/${slug}`;
+    const shareUrl = getEventShareUrl(event.title);
 
     if (navigator.share) {
       navigator.share({

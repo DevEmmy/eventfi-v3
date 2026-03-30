@@ -2,7 +2,6 @@
 
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { EventService } from "@/services/events";
 
 const ShortUrlPage = () => {
   const params = useParams();
@@ -14,10 +13,16 @@ const ShortUrlPage = () => {
     if (!slug) return;
 
     const resolveSlug = async () => {
-      const event = await EventService.getEventBySlug(slug);
-      if (event) {
-        router.replace(`/events/${event.id}`);
-      } else {
+      try {
+        const res = await fetch(`/api/events/slug/${encodeURIComponent(slug)}`);
+        const data = await res.json();
+
+        if (res.ok && data.found && data.eventId) {
+          router.replace(`/events/${data.eventId}`);
+        } else {
+          setNotFound(true);
+        }
+      } catch {
         setNotFound(true);
       }
     };
