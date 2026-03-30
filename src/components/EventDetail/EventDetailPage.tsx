@@ -395,7 +395,7 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
             >
               <div className="flex items-center gap-4">
                 <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center overflow-hidden">
-                  <Image
+                  <img
                     src={event.organizer.avatar || "/placeholder.jpg"}
                     alt={event.organizer.name}
                     width={64}
