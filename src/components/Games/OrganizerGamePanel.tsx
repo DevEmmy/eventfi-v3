@@ -165,6 +165,18 @@ const OrganizerGamePanel: React.FC<OrganizerGamePanelProps> = ({ eventId }) => {
   const [launching, setLaunching] = useState<"LUCKY_DRAW" | "APPLAUSE_METER" | null>(null);
   const [selectedDuration, setSelectedDuration] = useState(30);
 
+  // Confetti when Lucky Draw winner is revealed
+  useEffect(() => {
+    if (!showDrawReveal || drawCountdown !== null || drawWinners.length === 0) return;
+    const end = Date.now() + 3500;
+    const frame = () => {
+      confetti({ particleCount: 4, angle: 60, spread: 65, origin: { x: 0 }, colors: ["#f59e0b", "#6366f1", "#ec4899", "#10b981"] });
+      confetti({ particleCount: 4, angle: 120, spread: 65, origin: { x: 1 }, colors: ["#f59e0b", "#6366f1", "#ec4899", "#10b981"] });
+      if (Date.now() < end) requestAnimationFrame(frame);
+    };
+    frame();
+  }, [showDrawReveal, drawCountdown]);
+
   const handleLaunchLucky = async () => {
     setLaunching("LUCKY_DRAW");
     try { await createAndStart("LUCKY_DRAW"); }
