@@ -15,6 +15,7 @@ import {
   Clock,
   Trash,
 } from "iconsax-react";
+import { io, Socket } from "socket.io-client";
 import { NotificationService, NotificationItem } from "@/services/notifications";
 import { useUserStore } from "@/store/useUserStore";
 
@@ -32,6 +33,45 @@ const NotificationCenter: React.FC<NotificationCenterProps> = () => {
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const socketRef = useRef<Socket | null>(null);
+
+  // Real-time notification updates via Socket.IO
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+    let origin: string;
+    try {
+      const parsed = new URL(apiUrl);
+      const protocol = parsed.protocol === "wss:" ? "https:" : parsed.protocol === "ws:" ? "http:" : parsed.protocol;
+      origin = `${protocol}//${parsed.host}`;
+    } catch {
+      origin = apiUrl;
+    }
+
+    const socket = io(origin, {
+      auth: { token },
+      path: "/ws/chat",
+      transports: ["websocket"],
+      reconnection: true,
+    });
+
+    socketRef.current = socket;
+
+    socket.on("notification:new", (notification: NotificationItem) => {
+      // Prepend to list and bump unread count
+      setNotifications((prev) => [notification, ...prev].slice(0, 10));
+      setUnreadCount((prev) => prev + 1);
+    });
+
+    return () => {
+      socket.disconnect();
+      socketRef.current = null;
+    };
+  }, [isAuthenticated]);
 
   // Fetch notifications when dropdown opens
   const fetchNotifications = useCallback(async () => {
@@ -44,22 +84,12 @@ const NotificationCenter: React.FC<NotificationCenterProps> = () => {
     }
   }, [isAuthenticated]);
 
-  // Fetch unread count on mount and periodically
+  // Fetch unread count on mount
   useEffect(() => {
     if (!isAuthenticated) return;
-
-    const fetchCount = async () => {
-      try {
-        const count = await NotificationService.getUnreadCount();
-        setUnreadCount(count);
-      } catch {
-        // Silently fail
-      }
-    };
-
-    fetchCount();
-    const interval = setInterval(fetchCount, 60000); // Poll every 60 seconds
-    return () => clearInterval(interval);
+    NotificationService.getUnreadCount()
+      .then(setUnreadCount)
+      .catch(() => {});
   }, [isAuthenticated]);
 
   // Fetch notifications when dropdown opens
