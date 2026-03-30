@@ -10,11 +10,32 @@ import {
     ReviewStats,
     CreateReviewPayload
 } from "@/types/event";
+import { generateEventSlug } from "@/utils/generateEventSlug";
 
 /**
  * Service to handle all Event-related API calls
  */
 export const EventService = {
+    /**
+     * Look up an event by its short URL slug.
+     * Searches events using the slug as a query and matches by comparing slugified titles.
+     * @param slug The short URL slug (e.g., "DEVFEST2025")
+     * @returns The matching event, or null if not found
+     */
+    getEventBySlug: async (slug: string): Promise<Event | null> => {
+        try {
+            const response = await axiosInstance.get<ApiResponse<PaginatedResponse<Event>>>("/events", {
+                params: { search: slug, limit: 20 },
+            });
+            const events = response.data.data.data || [];
+            const match = events.find(
+                (event: Event) => generateEventSlug(event.title) === slug.toUpperCase()
+            );
+            return match || null;
+        } catch {
+            return null;
+        }
+    },
     /**
      * Create a new event
      * @param data Event creation payload

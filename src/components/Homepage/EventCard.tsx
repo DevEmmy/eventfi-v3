@@ -71,7 +71,8 @@ const EventCard: React.FC<EventCardProps> = ({
     e.stopPropagation();
     e.preventDefault();
 
-    const shareUrl = `${window.location.origin}/events/${id}`;
+    const slug = title.replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
+    const shareUrl = `${window.location.origin}/${slug}`;
 
     if (navigator.share) {
       try {

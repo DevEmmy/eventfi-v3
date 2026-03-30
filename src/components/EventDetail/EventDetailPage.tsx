@@ -139,15 +139,17 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
   }
 
   const handleShare = () => {
+    const slug = event.title.replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
+    const shareUrl = `${window.location.origin}/${slug}`;
+
     if (navigator.share) {
       navigator.share({
         title: event.title,
         text: `Check out ${event.title} on EventFi!`,
-        url: window.location.href,
+        url: shareUrl,
       });
     } else {
-      navigator.clipboard.writeText(window.location.href);
-      // You can add a toast notification here
+      navigator.clipboard.writeText(shareUrl);
     }
   };
 
