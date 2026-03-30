@@ -72,14 +72,6 @@ interface ActivityBroadcastDrawEmit {
 interface ActivityTapEmit {
     eventId: string;
     activityId: string;
-    totalTaps: number;
-    participantCount: number;
-    leaderboard?: Array<{
-        userId: string;
-        name: string;
-        avatar: string | null;
-        taps: number;
-    }>;
 }
 
 interface ActivityEndEmit {

@@ -116,8 +116,17 @@ export function useActivity(eventId: string, isOrganizer: boolean = false) {
             store.setTapCount(
                 data.totalTaps,
                 data.participantCount,
-                undefined,
+                undefined,    // myTaps comes from tap_ack, not broadcast
                 data.leaderboard
+            );
+        });
+
+        // Server ack with this user's personal tap count
+        activitySocket.on("activity:tap_ack", (data: any) => {
+            store.setTapCount(
+                store.totalTaps,   // keep current broadcast total
+                store.participantCount,
+                data.myTaps
             );
         });
 
@@ -138,6 +147,7 @@ export function useActivity(eventId: string, isOrganizer: boolean = false) {
             activitySocket.off("activity:draw_countdown");
             activitySocket.off("activity:draw_result");
             activitySocket.off("activity:tap_update");
+            activitySocket.off("activity:tap_ack");
             activitySocket.off("activity:ended");
             if (applauseTickRef.current) {
                 clearInterval(applauseTickRef.current);
@@ -277,32 +287,24 @@ export function useActivity(eventId: string, isOrganizer: boolean = false) {
     // -------------------------------------------------------------------------
 
     const tapApplause = useCallback(
-        async (activityId: string): Promise<void> => {
+        (activityId: string): void => {
             if (store.hasUserTapped) return; // Debounce
             store.setHasUserTapped(true);
-            try {
-                const result = await ActivityService.tap(eventId, activityId);
-                store.setTapCount(
-                    result.totalTaps,
-                    result.participantCount,
-                    result.myTaps,
-                    result.leaderboard
-                );
-                // Broadcast tap update via WS
-                activitySocket.emitTap({
-                    eventId,
-                    activityId,
-                    totalTaps: result.totalTaps,
-                    participantCount: result.participantCount,
-                    leaderboard: result.leaderboard,
-                });
-            } catch (_e) {
-                store.setHasUserTapped(false);
-            }
-            // Re-enable tapping after 500 ms (allow multiple taps but rate-limited)
-            setTimeout(() => store.setHasUserTapped(false), 500);
+
+            // Optimistic: increment local counts immediately so UI feels instant
+            store.setTapCount(
+                store.totalTaps + 1,
+                store.participantCount,
+                store.myTaps + 1
+            );
+
+            // Emit via socket — server persists and broadcasts real totals to all
+            activitySocket.emitTap({ eventId, activityId });
+
+            // Re-enable after 150ms (fast but prevents runaway clicks)
+            setTimeout(() => store.setHasUserTapped(false), 150);
         },
-        [eventId, store.hasUserTapped]
+        [eventId, store.hasUserTapped, store.totalTaps, store.participantCount, store.myTaps]
     );
 
     return {
