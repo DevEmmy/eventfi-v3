@@ -14,6 +14,7 @@ const WS_URL = process.env.NEXT_PUBLIC_WS_URL || "http://localhost:8000";
 export function useActivity(eventId: string, isOrganizer: boolean = false) {
     const store = useActivityStore();
     const isInitialized = useRef(false);
+    const applauseTickRef = useRef<NodeJS.Timeout | null>(null);
 
     // Fetch active activity on mount
     useEffect(() => {
@@ -44,6 +45,21 @@ export function useActivity(eventId: string, isOrganizer: boolean = false) {
             .catch(() => {});
     }, [eventId]);
 
+    // Helper: start the applause countdown ticker
+    const startApplauseTicker = useCallback((endsAt: number) => {
+        if (applauseTickRef.current) clearInterval(applauseTickRef.current);
+        const tick = () => {
+            const left = Math.max(0, Math.round((endsAt - Date.now()) / 1000));
+            store.setApplauseTimeLeft(left);
+            if (left <= 0) {
+                clearInterval(applauseTickRef.current!);
+                applauseTickRef.current = null;
+            }
+        };
+        tick();
+        applauseTickRef.current = setInterval(tick, 500);
+    }, []);
+
     // Connect socket, join the activity room, and listen for WS activity events
     useEffect(() => {
         if (!eventId) return;
@@ -55,16 +71,28 @@ export function useActivity(eventId: string, isOrganizer: boolean = false) {
         // Join the dedicated activity room so we receive game events
         activitySocket.joinEventRoom(eventId);
 
-        activitySocket.on("activity:started", (_data) => {
+        activitySocket.on("activity:started", (data: any) => {
             ActivityService.getActive(eventId)
                 .then((activity) => {
-                    if (activity) store.setActiveActivity(activity);
+                    if (activity) {
+                        store.setActiveActivity(activity);
+                        // If applause meter with a duration, start local ticker
+                        if (
+                            activity.type === "APPLAUSE_METER" &&
+                            data?.durationSeconds > 0 &&
+                            data?.startedAt
+                        ) {
+                            const endsAt = data.startedAt + data.durationSeconds * 1000;
+                            store.setApplauseDuration(data.durationSeconds);
+                            startApplauseTicker(endsAt);
+                        }
+                    }
                 })
                 .catch(() => {});
         });
 
         // Countdown: tick from COUNTDOWN_SECONDS down to 0
-        activitySocket.on("activity:draw_countdown", (_data) => {
+        activitySocket.on("activity:draw_countdown", (_data: any) => {
             store.setDrawCountdown(COUNTDOWN_SECONDS);
             let n = COUNTDOWN_SECONDS;
             const tick = setInterval(() => {
@@ -78,19 +106,29 @@ export function useActivity(eventId: string, isOrganizer: boolean = false) {
             }, 1000);
         });
 
-        activitySocket.on("activity:draw_result", (data) => {
+        activitySocket.on("activity:draw_result", (data: any) => {
             store.setDrawResult(data.winners, data.totalPool);
             store.setDrawCountdown(null);
             store.showReveal();
         });
 
-        activitySocket.on("activity:tap_update", (data) => {
-            store.setTapCount(data.totalTaps, data.participantCount);
+        activitySocket.on("activity:tap_update", (data: any) => {
+            store.setTapCount(
+                data.totalTaps,
+                data.participantCount,
+                undefined,
+                data.leaderboard
+            );
         });
 
-        activitySocket.on("activity:ended", (_data) => {
+        activitySocket.on("activity:ended", (_data: any) => {
             store.setActiveActivity(null);
             store.setDrawCountdown(null);
+            store.setApplauseTimeLeft(null);
+            if (applauseTickRef.current) {
+                clearInterval(applauseTickRef.current);
+                applauseTickRef.current = null;
+            }
             // Keep results visible for a few seconds before clearing
             setTimeout(() => store.reset(), 5000);
         });
@@ -101,6 +139,10 @@ export function useActivity(eventId: string, isOrganizer: boolean = false) {
             activitySocket.off("activity:draw_result");
             activitySocket.off("activity:tap_update");
             activitySocket.off("activity:ended");
+            if (applauseTickRef.current) {
+                clearInterval(applauseTickRef.current);
+                applauseTickRef.current = null;
+            }
         };
     }, [eventId]);
 
@@ -125,12 +167,24 @@ export function useActivity(eventId: string, isOrganizer: boolean = false) {
                     activity.id
                 );
                 store.setActiveActivity(started);
+
+                const durationSeconds: number = config.durationSeconds || 0;
+
                 // Broadcast to all attendees via WS
                 activitySocket.emitStart({
                     eventId,
                     activityId: started.id,
                     type: started.type,
+                    durationSeconds,
                 });
+
+                // Organizer starts local applause ticker immediately
+                if (type === "APPLAUSE_METER" && durationSeconds > 0) {
+                    const endsAt = Date.now() + durationSeconds * 1000;
+                    store.setApplauseDuration(durationSeconds);
+                    startApplauseTicker(endsAt);
+                }
+
                 return started;
             } catch (e: any) {
                 customToast.error(
@@ -143,7 +197,7 @@ export function useActivity(eventId: string, isOrganizer: boolean = false) {
                 store.setIsLoading(false);
             }
         },
-        [eventId]
+        [eventId, startApplauseTicker]
     );
 
     const performDraw = useCallback(
@@ -197,6 +251,11 @@ export function useActivity(eventId: string, isOrganizer: boolean = false) {
                     results: activity.results ?? null,
                 });
                 store.setActiveActivity(null);
+                store.setApplauseTimeLeft(null);
+                if (applauseTickRef.current) {
+                    clearInterval(applauseTickRef.current);
+                    applauseTickRef.current = null;
+                }
                 setTimeout(() => store.reset(), 3000);
                 return activity;
             } catch (e: any) {
@@ -223,13 +282,19 @@ export function useActivity(eventId: string, isOrganizer: boolean = false) {
             store.setHasUserTapped(true);
             try {
                 const result = await ActivityService.tap(eventId, activityId);
-                store.setTapCount(result.totalTaps, result.participantCount);
+                store.setTapCount(
+                    result.totalTaps,
+                    result.participantCount,
+                    result.myTaps,
+                    result.leaderboard
+                );
                 // Broadcast tap update via WS
                 activitySocket.emitTap({
                     eventId,
                     activityId,
                     totalTaps: result.totalTaps,
                     participantCount: result.participantCount,
+                    leaderboard: result.leaderboard,
                 });
             } catch (_e) {
                 store.setHasUserTapped(false);
@@ -249,6 +314,9 @@ export function useActivity(eventId: string, isOrganizer: boolean = false) {
         drawCountdown: store.drawCountdown,
         totalTaps: store.totalTaps,
         participantCount: store.participantCount,
+        myTaps: store.myTaps,
+        leaderboard: store.leaderboard,
+        applauseTimeLeft: store.applauseTimeLeft,
         isLoading: store.isLoading,
         // Actions
         createAndStart,

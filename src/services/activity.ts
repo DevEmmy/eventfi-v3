@@ -29,6 +29,13 @@ export interface DrawResult {
 export interface TapResult {
     totalTaps: number;
     participantCount: number;
+    myTaps: number;
+    leaderboard: Array<{
+        userId: string;
+        name: string;
+        avatar: string | null;
+        taps: number;
+    }>;
 }
 
 export const ActivityService = {

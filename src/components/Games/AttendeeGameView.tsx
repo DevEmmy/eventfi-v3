@@ -1,8 +1,9 @@
 "use client";
 
 import React, { useEffect, useRef } from "react";
+import confetti from "canvas-confetti";
 import { useActivity } from "@/hooks/useActivity";
-import { Gift, Crown, CloseCircle, Music } from "iconsax-react";
+import { Gift, Crown, CloseCircle, Music, Timer } from "iconsax-react";
 import Image from "next/image";
 
 interface AttendeeGameViewProps {
@@ -18,6 +19,8 @@ const AttendeeGameView: React.FC<AttendeeGameViewProps> = ({ eventId }) => {
     drawCountdown,
     totalTaps,
     participantCount,
+    myTaps,
+    applauseTimeLeft,
     tapApplause,
     hideReveal,
   } = useActivity(eventId, false);
@@ -32,6 +35,33 @@ const AttendeeGameView: React.FC<AttendeeGameViewProps> = ({ eventId }) => {
       setTimeout(() => tapBtnRef.current?.classList.remove("scale-90"), 100);
     }
   };
+
+  // Fire confetti when winner is revealed
+  useEffect(() => {
+    if (!showDrawReveal || drawWinners.length === 0) return;
+
+    const duration = 3000;
+    const end = Date.now() + duration;
+
+    const frame = () => {
+      confetti({
+        particleCount: 3,
+        angle: 60,
+        spread: 55,
+        origin: { x: 0 },
+        colors: ["#f59e0b", "#6366f1", "#ec4899", "#10b981"],
+      });
+      confetti({
+        particleCount: 3,
+        angle: 120,
+        spread: 55,
+        origin: { x: 1 },
+        colors: ["#f59e0b", "#6366f1", "#ec4899", "#10b981"],
+      });
+      if (Date.now() < end) requestAnimationFrame(frame);
+    };
+    frame();
+  }, [showDrawReveal]);
 
   // Auto-hide winner reveal after 15s
   useEffect(() => {
@@ -58,7 +88,7 @@ const AttendeeGameView: React.FC<AttendeeGameViewProps> = ({ eventId }) => {
                 style={{ animationDuration: "1s" }}
               ></div>
               <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-6xl font-bold font-(family-name:--font-clash-display) text-yellow-400 tabular-nums">
+                <span className="text-6xl font-bold font-[family-name:var(--font-clash-display)] text-yellow-400 tabular-nums">
                   {drawCountdown}
                 </span>
               </div>
@@ -85,24 +115,8 @@ const AttendeeGameView: React.FC<AttendeeGameViewProps> = ({ eventId }) => {
               <CloseCircle size={20} color="currentColor" variant="Bold" />
             </button>
 
-            {/* Confetti dots */}
-            <div className="absolute inset-0 overflow-hidden rounded-2xl pointer-events-none">
-              {Array.from({ length: 24 }).map((_, i) => (
-                <span
-                  key={i}
-                  className="absolute w-2 h-2 rounded-full opacity-70 animate-bounce"
-                  style={{
-                    left: `${(i * 13) % 100}%`,
-                    top: `${(i * 17) % 100}%`,
-                    animationDelay: `${(i * 0.07).toFixed(2)}s`,
-                    backgroundColor: ["#f59e0b", "#6366f1", "#ec4899", "#10b981"][i % 4],
-                  }}
-                />
-              ))}
-            </div>
-
             <Crown size={40} color="#f59e0b" variant="Bold" className="mx-auto mb-3" />
-            <h3 className="text-2xl font-bold font-(family-name:--font-clash-display) text-foreground mb-1">
+            <h3 className="text-2xl font-bold font-[family-name:var(--font-clash-display)] text-foreground mb-1">
               {drawWinners.length === 1 ? "🎉 Winner!" : `🎉 ${drawWinners.length} Winners!`}
             </h3>
             <p className="text-xs text-foreground/50 mb-6">
@@ -172,16 +186,21 @@ const AttendeeGameView: React.FC<AttendeeGameViewProps> = ({ eventId }) => {
       ? Math.min((totalTaps / (participantCount * 10)) * 100, 100)
       : 0;
 
+    const timeExpired = applauseTimeLeft !== null && applauseTimeLeft <= 0;
+
     return (
       <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] max-w-sm">
         <div className="bg-background border border-primary/30 shadow-2xl rounded-2xl p-5">
-          <div className="flex items-center gap-3 mb-4">
+          {/* Header row */}
+          <div className="flex items-center gap-3 mb-3">
             <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
               <Music size={16} color="currentColor" variant="Bold" className="text-primary" />
             </div>
             <div className="flex-1">
               <p className="font-bold text-foreground text-sm">Applause Meter</p>
-              <p className="text-xs text-foreground/50">Tap as fast as you can!</p>
+              <p className="text-xs text-foreground/50">
+                {timeExpired ? "Time's up!" : "Tap as fast as you can!"}
+              </p>
             </div>
             <div className="text-right">
               <div className="text-2xl font-bold font-[family-name:var(--font-clash-display)] text-primary tabular-nums">
@@ -191,9 +210,28 @@ const AttendeeGameView: React.FC<AttendeeGameViewProps> = ({ eventId }) => {
             </div>
           </div>
 
+          {/* Countdown or progress */}
+          {applauseTimeLeft !== null && (
+            <div className="flex items-center justify-between mb-2">
+              <div
+                className={`flex items-center gap-1 text-xs font-semibold ${
+                  applauseTimeLeft <= 5 ? "text-red-400" : "text-orange-400"
+                }`}
+              >
+                <Timer size={12} color="currentColor" />
+                {timeExpired ? "Ended" : `${applauseTimeLeft}s left`}
+              </div>
+              {myTaps > 0 && (
+                <div className="text-xs text-foreground/50">
+                  Your taps: <span className="font-bold text-foreground">{myTaps}</span>
+                </div>
+              )}
+            </div>
+          )}
+
           <div className="h-2 bg-foreground/5 rounded-full overflow-hidden mb-4">
             <div
-              className="h-full bg-linear-to-r from-primary to-secondary rounded-full transition-all duration-300"
+              className="h-full bg-gradient-to-r from-primary to-secondary rounded-full transition-all duration-300"
               style={{ width: `${percent}%` }}
             />
           </div>
@@ -201,9 +239,10 @@ const AttendeeGameView: React.FC<AttendeeGameViewProps> = ({ eventId }) => {
           <button
             ref={tapBtnRef}
             onClick={handleTap}
-            className="w-full py-4 rounded-xl bg-primary text-white font-bold text-lg transition-transform duration-100 active:scale-95 hover:bg-primary/90 cursor-pointer select-none"
+            disabled={timeExpired}
+            className="w-full py-4 rounded-xl bg-primary text-white font-bold text-lg transition-transform duration-100 active:scale-95 hover:bg-primary/90 cursor-pointer select-none disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            👏 TAP!
+            {timeExpired ? "⏰ Time's up!" : `👏 TAP! ${myTaps > 0 ? `(${myTaps})` : ""}`}
           </button>
         </div>
       </div>

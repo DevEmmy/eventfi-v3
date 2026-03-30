@@ -1,25 +1,35 @@
 import { create } from "zustand";
 import { EventActivity } from "@/services/activity";
 
-interface DrawWinner {
+export interface DrawWinner {
     userId: string;
     name: string;
     avatar: string | null;
     username: string | null;
 }
 
+export interface LeaderboardEntry {
+    userId: string;
+    name: string;
+    avatar: string | null;
+    taps: number;
+}
+
 interface ActivityState {
-    // Current active activity (shown to attendees)
+    // Current active activity
     activeActivity: EventActivity | null;
-    // Draw result (shown during reveal animation)
+    // Lucky Draw
     drawWinners: DrawWinner[];
     drawTotalPool: number;
     showDrawReveal: boolean;
-    // Countdown before draw reveal (null = no countdown)
     drawCountdown: number | null;
-    // Applause state
+    // Applause Meter
     totalTaps: number;
     participantCount: number;
+    myTaps: number;
+    leaderboard: LeaderboardEntry[];
+    applauseEndsAt: number | null;      // epoch ms when the meter closes
+    applauseTimeLeft: number | null;    // seconds left in the window
     hasUserTapped: boolean;
     // Loading
     isLoading: boolean;
@@ -30,7 +40,9 @@ interface ActivityState {
     showReveal: () => void;
     hideReveal: () => void;
     setDrawCountdown: (n: number | null) => void;
-    setTapCount: (totalTaps: number, participantCount: number) => void;
+    setTapCount: (totalTaps: number, participantCount: number, myTaps?: number, leaderboard?: LeaderboardEntry[]) => void;
+    setApplauseDuration: (durationSeconds: number) => void;
+    setApplauseTimeLeft: (n: number | null) => void;
     setHasUserTapped: (tapped: boolean) => void;
     setIsLoading: (loading: boolean) => void;
     reset: () => void;
@@ -44,6 +56,10 @@ const initialState = {
     drawCountdown: null as number | null,
     totalTaps: 0,
     participantCount: 0,
+    myTaps: 0,
+    leaderboard: [] as LeaderboardEntry[],
+    applauseEndsAt: null as number | null,
+    applauseTimeLeft: null as number | null,
     hasUserTapped: false,
     isLoading: false,
 };
@@ -57,8 +73,16 @@ export const useActivityStore = create<ActivityState>((set) => ({
     showReveal: () => set({ showDrawReveal: true }),
     hideReveal: () => set({ showDrawReveal: false }),
     setDrawCountdown: (n) => set({ drawCountdown: n }),
-    setTapCount: (totalTaps, participantCount) =>
-        set({ totalTaps, participantCount }),
+    setTapCount: (totalTaps, participantCount, myTaps, leaderboard) =>
+        set((s) => ({
+            totalTaps,
+            participantCount,
+            myTaps: myTaps ?? s.myTaps,
+            leaderboard: leaderboard ?? s.leaderboard,
+        })),
+    setApplauseDuration: (durationSeconds) =>
+        set({ applauseEndsAt: Date.now() + durationSeconds * 1000 }),
+    setApplauseTimeLeft: (n) => set({ applauseTimeLeft: n }),
     setHasUserTapped: (tapped) => set({ hasUserTapped: tapped }),
     setIsLoading: (loading) => set({ isLoading: loading }),
     reset: () => set(initialState),
