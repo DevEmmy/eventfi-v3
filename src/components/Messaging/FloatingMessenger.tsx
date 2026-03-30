@@ -286,8 +286,10 @@ const FloatingMessenger: React.FC = () => {
     chat.eventName.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const formatTime = (date: Date | string) => {
+  const formatTime = (date: Date | string | null | undefined) => {
+    if (!date) return "";
     const d = typeof date === "string" ? new Date(date) : date;
+    if (!d || isNaN(d.getTime())) return "";
     const now = new Date();
     const diff = now.getTime() - d.getTime();
     const minutes = Math.floor(diff / 60000);
