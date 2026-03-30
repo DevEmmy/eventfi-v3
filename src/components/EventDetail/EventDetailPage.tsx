@@ -46,6 +46,12 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
         const mappedEvent = {
           id: data.id,
           title: data.title,
+          isLive: (() => {
+            const now = new Date();
+            const start = new Date(`${data.startDate}T${data.startTime || '00:00'}`);
+            const end = new Date(`${data.endDate || data.startDate}T${data.endTime || '23:59'}`);
+            return now >= start && now <= end;
+          })(),
           date: new Date(data.startDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
           time: `${data.startTime} - ${data.endTime}`,
           location: data.venueName || data.city || "Online",
@@ -223,11 +229,17 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
           </button>
         </div>
 
-        {/* Category Badge */}
-        <div className="absolute top-4 left-4">
+        {/* Category Badge + Live Badge */}
+        <div className="absolute top-4 left-4 flex items-center gap-2">
           <span className="px-4 py-2 bg-background/90 backdrop-blur-sm rounded-full text-sm font-semibold text-primary">
             {event.category}
           </span>
+          {event.isLive && (
+            <span className="flex items-center gap-1.5 px-3 py-2 bg-red-600 rounded-full text-sm font-bold text-white shadow-lg">
+              <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
+              LIVE
+            </span>
+          )}
         </div>
       </div>
 
