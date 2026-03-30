@@ -23,13 +23,16 @@ interface ActivityState {
     drawTotalPool: number;
     showDrawReveal: boolean;
     drawCountdown: number | null;
-    // Applause Meter
+    // Applause Meter — live state
     totalTaps: number;
     participantCount: number;
     myTaps: number;
     leaderboard: LeaderboardEntry[];
-    applauseEndsAt: number | null;      // epoch ms when the meter closes
-    applauseTimeLeft: number | null;    // seconds left in the window
+    applauseEndsAt: number | null;
+    applauseTimeLeft: number | null;
+    // Applause Meter — end results
+    applauseResults: LeaderboardEntry[];
+    showApplauseResults: boolean;
     hasUserTapped: boolean;
     // Loading
     isLoading: boolean;
@@ -41,8 +44,11 @@ interface ActivityState {
     hideReveal: () => void;
     setDrawCountdown: (n: number | null) => void;
     setTapCount: (totalTaps: number, participantCount: number, myTaps?: number, leaderboard?: LeaderboardEntry[]) => void;
+    setMyTaps: (n: number) => void;
     setApplauseDuration: (durationSeconds: number) => void;
     setApplauseTimeLeft: (n: number | null) => void;
+    captureApplauseResults: () => void;
+    hideApplauseResults: () => void;
     setHasUserTapped: (tapped: boolean) => void;
     setIsLoading: (loading: boolean) => void;
     reset: () => void;
@@ -60,11 +66,13 @@ const initialState = {
     leaderboard: [] as LeaderboardEntry[],
     applauseEndsAt: null as number | null,
     applauseTimeLeft: null as number | null,
+    applauseResults: [] as LeaderboardEntry[],
+    showApplauseResults: false,
     hasUserTapped: false,
     isLoading: false,
 };
 
-export const useActivityStore = create<ActivityState>((set) => ({
+export const useActivityStore = create<ActivityState>((set, get) => ({
     ...initialState,
 
     setActiveActivity: (activity) => set({ activeActivity: activity }),
@@ -80,9 +88,13 @@ export const useActivityStore = create<ActivityState>((set) => ({
             myTaps: myTaps ?? s.myTaps,
             leaderboard: leaderboard ?? s.leaderboard,
         })),
+    setMyTaps: (n) => set({ myTaps: n }),
     setApplauseDuration: (durationSeconds) =>
         set({ applauseEndsAt: Date.now() + durationSeconds * 1000 }),
     setApplauseTimeLeft: (n) => set({ applauseTimeLeft: n }),
+    captureApplauseResults: () =>
+        set((s) => ({ applauseResults: s.leaderboard, showApplauseResults: true })),
+    hideApplauseResults: () => set({ showApplauseResults: false }),
     setHasUserTapped: (tapped) => set({ hasUserTapped: tapped }),
     setIsLoading: (loading) => set({ isLoading: loading }),
     reset: () => set(initialState),

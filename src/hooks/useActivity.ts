@@ -121,16 +121,14 @@ export function useActivity(eventId: string, isOrganizer: boolean = false) {
             );
         });
 
-        // Server ack with this user's personal tap count
+        // Server ack with this user's personal tap count — only update myTaps
         activitySocket.on("activity:tap_ack", (data: any) => {
-            store.setTapCount(
-                store.totalTaps,   // keep current broadcast total
-                store.participantCount,
-                data.myTaps
-            );
+            store.setMyTaps(data.myTaps);
         });
 
         activitySocket.on("activity:ended", (_data: any) => {
+            const isApplause = store.activeActivity?.type === "APPLAUSE_METER";
+
             store.setActiveActivity(null);
             store.setDrawCountdown(null);
             store.setApplauseTimeLeft(null);
@@ -138,8 +136,18 @@ export function useActivity(eventId: string, isOrganizer: boolean = false) {
                 clearInterval(applauseTickRef.current);
                 applauseTickRef.current = null;
             }
-            // Keep results visible for a few seconds before clearing
-            setTimeout(() => store.reset(), 5000);
+
+            if (isApplause) {
+                // Snapshot the live leaderboard and show the podium modal
+                store.captureApplauseResults();
+                // Auto-dismiss and reset after 10s
+                setTimeout(() => {
+                    store.hideApplauseResults();
+                    store.reset();
+                }, 10000);
+            } else {
+                setTimeout(() => store.reset(), 5000);
+            }
         });
 
         return () => {
@@ -253,6 +261,7 @@ export function useActivity(eventId: string, isOrganizer: boolean = false) {
     const endActivity = useCallback(
         async (activityId: string): Promise<EventActivity> => {
             store.setIsLoading(true);
+            const isApplause = store.activeActivity?.type === "APPLAUSE_METER";
             try {
                 const activity = await ActivityService.end(eventId, activityId);
                 activitySocket.emitEnd({
@@ -266,7 +275,15 @@ export function useActivity(eventId: string, isOrganizer: boolean = false) {
                     clearInterval(applauseTickRef.current);
                     applauseTickRef.current = null;
                 }
-                setTimeout(() => store.reset(), 3000);
+                if (isApplause) {
+                    store.captureApplauseResults();
+                    setTimeout(() => {
+                        store.hideApplauseResults();
+                        store.reset();
+                    }, 10000);
+                } else {
+                    setTimeout(() => store.reset(), 3000);
+                }
                 return activity;
             } catch (e: any) {
                 customToast.error(
@@ -319,6 +336,8 @@ export function useActivity(eventId: string, isOrganizer: boolean = false) {
         myTaps: store.myTaps,
         leaderboard: store.leaderboard,
         applauseTimeLeft: store.applauseTimeLeft,
+        applauseResults: store.applauseResults,
+        showApplauseResults: store.showApplauseResults,
         isLoading: store.isLoading,
         // Actions
         createAndStart,
@@ -326,5 +345,6 @@ export function useActivity(eventId: string, isOrganizer: boolean = false) {
         endActivity,
         tapApplause,
         hideReveal: store.hideReveal,
+        hideApplauseResults: store.hideApplauseResults,
     };
 }
