@@ -39,6 +39,11 @@ const sections = [
   { id: 'settings', label: 'Settings' }
 ];
 
+const getTodayDate = () => {
+  const today = new Date();
+  return today.toISOString().split('T')[0];
+};
+
 const CreateEventPage = () => {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
@@ -199,15 +204,21 @@ const CreateEventPage = () => {
     }
 
     const startDateTime = new Date(`${formData.startDate}T${formData.startTime}`);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
-    // Optional: Prevent past dates (if desired, but commenting out for flexibility unless requested)
-    // if (startDateTime < new Date()) {
-    //   customToast.error("Start date cannot be in the past");
-    //   setActiveSection(0);
-    //   return false;
-    // }
+    if (new Date(formData.startDate) < today) {
+      customToast.error("Start date cannot be in the past");
+      setActiveSection(0);
+      return false;
+    }
 
     if (formData.endDate) {
+      if (new Date(formData.endDate) < today) {
+        customToast.error("End date cannot be in the past");
+        setActiveSection(0);
+        return false;
+      }
       const endDateTime = new Date(`${formData.endDate}T${formData.endTime || '23:59'}`);
       if (endDateTime <= startDateTime) {
         customToast.error("End time must be after start time");
@@ -408,6 +419,7 @@ const CreateEventPage = () => {
                     name="startDate"
                     value={formData.startDate}
                     onChange={handleInputChange}
+                    min={getTodayDate()}
                     className="w-full px-4 py-3 bg-background border border-foreground/20 rounded-xl text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200"
                     required
                   />
@@ -436,6 +448,7 @@ const CreateEventPage = () => {
                     name="endDate"
                     value={formData.endDate}
                     onChange={handleInputChange}
+                    min={formData.startDate || getTodayDate()}
                     className="w-full px-4 py-3 bg-background border border-foreground/20 rounded-xl text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200"
                   />
                 </div>

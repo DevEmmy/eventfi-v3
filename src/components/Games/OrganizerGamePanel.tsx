@@ -18,6 +18,7 @@ import {
 } from "iconsax-react";
 import Image from "next/image";
 import { LeaderboardEntry } from "@/store/useActivityStore";
+import GameHistoryPanel from "./GameHistoryPanel";
 
 interface OrganizerGamePanelProps {
   eventId: string;
@@ -289,6 +290,11 @@ const OrganizerGamePanel: React.FC<OrganizerGamePanelProps> = ({ eventId }) => {
               {launching === "APPLAUSE_METER" ? "Launching…" : `Launch — ${DURATION_OPTIONS.find((o) => o.value === selectedDuration)?.label}`}
             </Button>
           </div>
+        </div>
+
+        {/* Divider + history */}
+        <div className="border-t border-foreground/5 pt-2">
+          <GameHistoryPanel eventId={eventId} />
         </div>
       </div>
     );

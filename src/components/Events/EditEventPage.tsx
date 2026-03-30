@@ -46,6 +46,11 @@ interface EditEventPageProps {
 
 const categories = Object.values(EventCategory);
 
+const getTodayDate = () => {
+  const today = new Date();
+  return today.toISOString().split('T')[0];
+};
+
 // Reverse map from API category enum to display label
 const getCategoryLabel = (apiCategory: string): string => {
   const reverseMap: Record<string, string> = {
@@ -287,7 +292,21 @@ const EditEventPage: React.FC<EditEventPageProps> = ({ eventId }) => {
       return false;
     }
 
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    if (new Date(formData.startDate) < today) {
+      customToast.error("Start date cannot be in the past");
+      setActiveSection(0);
+      return false;
+    }
+
     if (formData.endDate) {
+      if (new Date(formData.endDate) < today) {
+        customToast.error("End date cannot be in the past");
+        setActiveSection(0);
+        return false;
+      }
       const startDateTime = new Date(`${formData.startDate}T${formData.startTime}`);
       const endDateTime = new Date(`${formData.endDate}T${formData.endTime || "23:59"}`);
       if (endDateTime <= startDateTime) {
@@ -475,6 +494,7 @@ const EditEventPage: React.FC<EditEventPageProps> = ({ eventId }) => {
                     name="startDate"
                     value={formData.startDate}
                     onChange={handleInputChange}
+                    min={getTodayDate()}
                     className="w-full px-4 py-3 bg-background border border-foreground/20 rounded-xl text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200"
                     required
                   />
@@ -503,6 +523,7 @@ const EditEventPage: React.FC<EditEventPageProps> = ({ eventId }) => {
                     name="endDate"
                     value={formData.endDate}
                     onChange={handleInputChange}
+                    min={formData.startDate || getTodayDate()}
                     className="w-full px-4 py-3 bg-background border border-foreground/20 rounded-xl text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200"
                   />
                 </div>

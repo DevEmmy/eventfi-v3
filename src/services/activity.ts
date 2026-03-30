@@ -15,6 +15,36 @@ export interface EventActivity {
     updatedAt: string;
 }
 
+export interface ActivitySummary extends EventActivity {
+    _count: { entries: number };
+}
+
+export interface ActivityLeaderboardEntry {
+    userId: string;
+    name: string;
+    avatar: string | null;
+    username: string | null;
+    taps: number;
+}
+
+export interface ActivityWinner {
+    userId: string;
+    name: string;
+    avatar: string | null;
+    username: string | null;
+}
+
+export interface ActivityDetail extends EventActivity {
+    participantCount: number;
+    // Lucky Draw
+    winners?: ActivityWinner[];
+    totalPool?: number;
+    drawnAt?: string | null;
+    // Applause Meter
+    leaderboard?: ActivityLeaderboardEntry[];
+    totalTaps?: number;
+}
+
 export interface DrawResult {
     winners: Array<{
         userId: string;
@@ -52,9 +82,15 @@ export const ActivityService = {
         return res.data.data;
     },
 
-    // Organizer: list all activities for event
-    list: async (eventId: string): Promise<EventActivity[]> => {
+    // Organizer: list all activities for event (with entry counts)
+    list: async (eventId: string): Promise<ActivitySummary[]> => {
         const res = await axiosInstance.get(`/events/${eventId}/activities`);
+        return res.data.data;
+    },
+
+    // Organizer: get enriched detail for a specific activity
+    getDetail: async (eventId: string, activityId: string): Promise<ActivityDetail> => {
+        const res = await axiosInstance.get(`/events/${eventId}/activities/${activityId}`);
         return res.data.data;
     },
 
