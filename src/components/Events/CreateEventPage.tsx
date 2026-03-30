@@ -14,6 +14,7 @@ import React, { useState } from "react";
 import Button from "@/components/Button";
 import customToast from "@/lib/toast";
 import { Add, ArrowLeft2, ArrowRight2, CalendarAdd, Camera, Clock, Trash } from "iconsax-react";
+import AIAssistPanel, { AIEventResult } from "./AIAssistPanel";
 // ... existing imports
 
 interface TicketType {
@@ -50,6 +51,8 @@ const CreateEventPage = () => {
   const [uploading, setUploading] = useState(false);
   const [activeSection, setActiveSection] = useState(0);
   const [imageFile, setImageFile] = useState<File | null>(null); // State to store the actual file
+  const [showAIPanel, setShowAIPanel] = useState(true);
+  const [aiFilledFields, setAiFilledFields] = useState(0);
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -114,6 +117,52 @@ const CreateEventPage = () => {
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));
     }
+  };
+
+  const handleAIGenerated = (result: AIEventResult) => {
+    setFormData(prev => ({
+      ...prev,
+      title: result.title || prev.title,
+      description: result.description || prev.description,
+      category: result.category || prev.category,
+      startDate: result.startDate || prev.startDate,
+      startTime: result.startTime || prev.startTime,
+      endDate: result.endDate || prev.endDate,
+      endTime: result.endTime || prev.endTime,
+      isOnline: result.isOnline ?? prev.isOnline,
+      venue: result.venue || prev.venue,
+      location: result.location || prev.location,
+      onlineLink: result.onlineLink || prev.onlineLink,
+      visibility: result.visibility || prev.visibility,
+    }));
+
+    if (result.tickets && result.tickets.length > 0) {
+      setTicketTypes(result.tickets.map((t, i) => ({
+        id: Date.now().toString() + i,
+        name: t.name,
+        price: t.price,
+        quantity: t.quantity,
+        description: t.description,
+      })));
+    }
+
+    if (result.agenda && result.agenda.length > 0) {
+      setAgendaItems(result.agenda.map((a, i) => ({
+        id: Date.now().toString() + i,
+        time: a.time,
+        activity: a.activity,
+        description: a.description,
+      })));
+    }
+
+    // Count non-empty fields filled
+    const filled = [
+      result.title, result.description, result.category,
+      result.startDate, result.startTime, result.venue || result.onlineLink,
+    ].filter(Boolean).length;
+    setAiFilledFields(filled);
+    setShowAIPanel(false);
+    customToast.success(`AI filled ${filled} fields — review and publish when ready!`);
   };
 
   const handleSaveDraft = async () => {
@@ -849,6 +898,43 @@ const CreateEventPage = () => {
               Fill in the details below to create your event
             </p>
           </div>
+
+          {/* AI Assist toggle + panel */}
+          {showAIPanel ? (
+            <div>
+              <AIAssistPanel onGenerated={handleAIGenerated} />
+              <div className="flex items-center gap-3 mb-8">
+                <div className="flex-1 h-px bg-foreground/10" />
+                <button
+                  onClick={() => setShowAIPanel(false)}
+                  className="text-xs text-foreground/40 hover:text-foreground/60 transition-colors whitespace-nowrap"
+                >
+                  Skip — fill manually
+                </button>
+                <div className="flex-1 h-px bg-foreground/10" />
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center justify-between mb-6">
+              {aiFilledFields > 0 && (
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-green-500/10 border border-green-500/20 rounded-full">
+                  <span className="w-2 h-2 rounded-full bg-green-500" />
+                  <span className="text-xs font-medium text-green-600 dark:text-green-400">
+                    AI filled {aiFilledFields} fields — review below
+                  </span>
+                </div>
+              )}
+              <button
+                onClick={() => setShowAIPanel(true)}
+                className="ml-auto flex items-center gap-1.5 text-xs text-primary hover:text-primary/80 font-medium transition-colors"
+              >
+                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 3l1.88 5.76L20 10l-6.12 1.24L12 17l-1.88-5.76L4 10l6.12-1.24L12 3z" />
+                </svg>
+                Use AI Assistant
+              </button>
+            </div>
+          )}
 
           {/* Minimal Progress Indicator */}
           <div className="mb-8">
