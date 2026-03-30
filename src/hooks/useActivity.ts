@@ -4,11 +4,12 @@ import { useEffect, useCallback, useRef } from "react";
 import { useActivityStore } from "@/store/useActivityStore";
 import { ActivityService, EventActivity, DrawResult } from "@/services/activity";
 import { activitySocket } from "@/services/activitySocket";
+import { chatSocket } from "@/services/chatSocket";
 import customToast from "@/lib/toast";
 
 const COUNTDOWN_SECONDS = 10;
 
-const WS_URL = process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:4000";
+const WS_URL = process.env.NEXT_PUBLIC_WS_URL || "http://localhost:8000";
 
 export function useActivity(eventId: string, isOrganizer: boolean = false) {
     const store = useActivityStore();
@@ -47,7 +48,10 @@ export function useActivity(eventId: string, isOrganizer: boolean = false) {
     useEffect(() => {
         if (!eventId) return;
 
-        activitySocket.connect(WS_URL);
+        // Ensure chatSocket is connected — activitySocket is a facade on top of it
+        if (!chatSocket.isConnected()) {
+            chatSocket.connect(WS_URL);
+        }
         // Join the dedicated activity room so we receive game events
         activitySocket.joinEventRoom(eventId);
 

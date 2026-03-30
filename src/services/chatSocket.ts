@@ -37,15 +37,35 @@ class ChatSocketService {
     private typingTimeout: NodeJS.Timeout | null = null;
 
     /**
-     * Connect to the chat WebSocket server
+     * Connect to the chat WebSocket server.
+     * Accepts the full API URL (e.g. https://host/api/v1 or wss://host/api/v1)
+     * and normalises it to just the origin so Socket.IO connects correctly.
+     * The server uses path /ws/chat — this is set explicitly here.
      */
     connect(wsUrl: string): void {
         if (this.socket?.connected) return;
 
         const token = localStorage.getItem("token");
 
-        this.socket = io(wsUrl, {
+        // Strip any pathname — Socket.IO must receive just the origin.
+        // Also normalise wss:// → https:// (Socket.IO handles the WS upgrade).
+        let origin: string;
+        try {
+            const parsed = new URL(wsUrl);
+            const protocol =
+                parsed.protocol === "wss:"
+                    ? "https:"
+                    : parsed.protocol === "ws:"
+                    ? "http:"
+                    : parsed.protocol;
+            origin = `${protocol}//${parsed.host}`;
+        } catch {
+            origin = wsUrl;
+        }
+
+        this.socket = io(origin, {
             auth: { token },
+            path: "/ws/chat",
             transports: ["websocket"],
             reconnection: true,
             reconnectionAttempts: 5,
@@ -155,6 +175,25 @@ class ChatSocketService {
      */
     isConnected(): boolean {
         return this.socket?.connected ?? false;
+    }
+
+    // ── Raw socket access (used by activitySocket facade) ──────────────────
+
+    /** Emit any event through the underlying socket */
+    emitRaw(event: string, data?: any): void {
+        this.socket?.emit(event, data);
+    }
+
+    /** Register a one-off event listener on the underlying socket */
+    onRaw(event: string, handler: (data: any) => void): void {
+        // Remove previous listener for this event first to avoid duplicates
+        this.socket?.off(event);
+        this.socket?.on(event, handler);
+    }
+
+    /** Remove a raw event listener */
+    offRaw(event: string): void {
+        this.socket?.off(event);
     }
 
     /**

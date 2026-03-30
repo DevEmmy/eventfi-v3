@@ -1,7 +1,17 @@
-import { io, Socket } from "socket.io-client";
+/**
+ * Activity socket — delegates to the existing chatSocket connection.
+ *
+ * The Socket.IO server listens on path /ws/chat.  Creating a second
+ * independent connection from activitySocket (which used the default
+ * /socket.io/ path) caused every connection attempt to fail.  Instead
+ * we reuse chatSocket's already-connected socket so there is exactly
+ * one WebSocket connection per client session.
+ */
+
+import { chatSocket } from "./chatSocket";
 
 // ---------------------------------------------------------------------------
-// Activity socket event payloads
+// Event payload types (re-exported for consumers)
 // ---------------------------------------------------------------------------
 
 export interface ActivityStartedEvent {
@@ -36,18 +46,8 @@ export interface ActivityEndedEvent {
     results: Record<string, any> | null;
 }
 
-type ActivityEventHandler<T> = (data: T) => void;
-
-interface ActivitySocketEvents {
-    "activity:started": ActivityEventHandler<ActivityStartedEvent>;
-    "activity:draw_countdown": ActivityEventHandler<ActivityDrawCountdownEvent>;
-    "activity:draw_result": ActivityEventHandler<ActivityDrawResultEvent>;
-    "activity:tap_update": ActivityEventHandler<ActivityTapUpdateEvent>;
-    "activity:ended": ActivityEventHandler<ActivityEndedEvent>;
-}
-
 // ---------------------------------------------------------------------------
-// Activity emit payloads
+// Emit payload types
 // ---------------------------------------------------------------------------
 
 interface ActivityStartEmit {
@@ -82,160 +82,56 @@ interface ActivityEndEmit {
 }
 
 // ---------------------------------------------------------------------------
-// Client class
+// Facade — all calls go through chatSocket's raw socket
 // ---------------------------------------------------------------------------
 
-class ActivitySocketService {
-    private socket: Socket | null = null;
-    private handlers: Partial<ActivitySocketEvents> = {};
+class ActivitySocketFacade {
     _pendingEventId: string | null = null;
 
-    /**
-     * Connect to the activity WebSocket namespace.
-     * Reuses the same server URL as the chat socket but connects independently
-     * so activity events are isolated from chat events.
-     */
-    connect(wsUrl: string): void {
-        if (this.socket?.connected) return;
-
-        const token =
-            typeof window !== "undefined"
-                ? localStorage.getItem("token")
-                : null;
-
-        this.socket = io(wsUrl, {
-            auth: { token },
-            transports: ["websocket"],
-            reconnection: true,
-            reconnectionAttempts: 5,
-            reconnectionDelay: 1000,
-        });
-
-        this.socket.on("connect", () => {
-            console.log("[ActivitySocket] Connected");
-            // Re-join room if we have a pending eventId
-            if (this._pendingEventId) {
-                this.socket?.emit("activity:join_event", { eventId: this._pendingEventId });
-            }
-        });
-
-        this.socket.on("disconnect", (reason) => {
-            console.log("[ActivitySocket] Disconnected:", reason);
-        });
-
-        this.socket.on("connect_error", (error) => {
-            console.error("[ActivitySocket] Connection error:", error);
-        });
-
-        this.setupEventListeners();
-    }
-
-    /**
-     * Disconnect from WebSocket
-     */
-    disconnect(): void {
-        if (this.socket) {
-            this.socket.disconnect();
-            this.socket = null;
+    /** No-op: connection is owned by chatSocket */
+    connect(_wsUrl: string): void {
+        // chatSocket manages the connection; nothing to do here.
+        // Re-join room if we already have one (handles reconnects)
+        if (this._pendingEventId) {
+            this.joinEventRoom(this._pendingEventId);
         }
     }
 
-    /**
-     * Check if connected
-     */
-    isConnected(): boolean {
-        return this.socket?.connected ?? false;
-    }
-
-    /**
-     * Register an event handler
-     */
-    on<K extends keyof ActivitySocketEvents>(
-        event: K,
-        handler: ActivitySocketEvents[K]
-    ): void {
-        this.handlers[event] = handler;
-    }
-
-    /**
-     * Remove an event handler
-     */
-    off<K extends keyof ActivitySocketEvents>(event: K): void {
-        delete this.handlers[event];
-    }
-
-    // ---------------------------------------------------------------------------
-    // Room management
-    // ---------------------------------------------------------------------------
-
+    /** Join the activity room for an event */
     joinEventRoom(eventId: string): void {
         this._pendingEventId = eventId;
-        if (this.socket?.connected) {
-            this.socket.emit("activity:join_event", { eventId });
-        }
+        chatSocket.emitRaw("activity:join_event", { eventId });
     }
 
-    // ---------------------------------------------------------------------------
-    // Emit helpers (organizer)
-    // ---------------------------------------------------------------------------
+    // ── Organizer emits ────────────────────────────────────────────────────
 
     emitStart(payload: ActivityStartEmit): void {
-        this.socket?.emit("activity:start", payload);
+        chatSocket.emitRaw("activity:start", payload);
     }
 
     emitBroadcastDraw(payload: ActivityBroadcastDrawEmit): void {
-        this.socket?.emit("activity:broadcast_draw", payload);
+        chatSocket.emitRaw("activity:broadcast_draw", payload);
     }
 
     emitEnd(payload: ActivityEndEmit): void {
-        this.socket?.emit("activity:end", payload);
+        chatSocket.emitRaw("activity:end", payload);
     }
 
-    // ---------------------------------------------------------------------------
-    // Emit helpers (attendee)
-    // ---------------------------------------------------------------------------
+    // ── Attendee emits ─────────────────────────────────────────────────────
 
     emitTap(payload: ActivityTapEmit): void {
-        this.socket?.emit("activity:tap", payload);
+        chatSocket.emitRaw("activity:tap", payload);
     }
 
-    // ---------------------------------------------------------------------------
-    // Private
-    // ---------------------------------------------------------------------------
+    // ── Event listener registration ────────────────────────────────────────
 
-    private setupEventListeners(): void {
-        if (!this.socket) return;
+    on(event: string, handler: (data: any) => void): void {
+        chatSocket.onRaw(event, handler);
+    }
 
-        this.socket.on("activity:started", (data: ActivityStartedEvent) => {
-            this.handlers["activity:started"]?.(data);
-        });
-
-        this.socket.on(
-            "activity:draw_countdown",
-            (data: ActivityDrawCountdownEvent) => {
-                this.handlers["activity:draw_countdown"]?.(data);
-            }
-        );
-
-        this.socket.on(
-            "activity:draw_result",
-            (data: ActivityDrawResultEvent) => {
-                this.handlers["activity:draw_result"]?.(data);
-            }
-        );
-
-        this.socket.on(
-            "activity:tap_update",
-            (data: ActivityTapUpdateEvent) => {
-                this.handlers["activity:tap_update"]?.(data);
-            }
-        );
-
-        this.socket.on("activity:ended", (data: ActivityEndedEvent) => {
-            this.handlers["activity:ended"]?.(data);
-        });
+    off(event: string): void {
+        chatSocket.offRaw(event);
     }
 }
 
-// Export singleton instance
-export const activitySocket = new ActivitySocketService();
+export const activitySocket = new ActivitySocketFacade();
