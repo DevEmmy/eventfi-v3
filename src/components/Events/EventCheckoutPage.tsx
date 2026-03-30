@@ -22,6 +22,7 @@ import { EventService } from "@/services/events";
 import customToast from "@/lib/toast";
 import { Event } from "@/types/event";
 import { BookingOrder, AttendeeInput, PaymentMethod } from "@/types/booking";
+import { useUserStore } from "@/store/useUserStore";
 
 interface EventCheckoutPageProps {
   eventId: string;
@@ -32,6 +33,7 @@ const EventCheckoutPage: React.FC<EventCheckoutPageProps> = ({ eventId }) => {
   const searchParams = useSearchParams();
   const initialQuantity = parseInt(searchParams.get("qty") || "1");
   const initialTicketTypeId = searchParams.get("typeId") || "";
+  const { user } = useUserStore();
 
   const [selectedTicketId, setSelectedTicketId] = useState<string>(initialTicketTypeId);
   const [quantity, setQuantity] = useState<number>(initialQuantity);
@@ -70,16 +72,19 @@ const EventCheckoutPage: React.FC<EventCheckoutPageProps> = ({ eventId }) => {
   }, [eventId, initialTicketTypeId]);
 
   // Initialize attendees array based on quantity and selected ticket
+  // Pre-populate first ticket with the logged-in user's details
   useEffect(() => {
     setAttendees(
-      Array.from({ length: quantity }, () => ({
+      Array.from({ length: quantity }, (_, i) => ({
         ticketTypeId: selectedTicketId,
-        name: "",
-        email: "",
+        name: i === 0 ? (user?.displayName || "") : "",
+        email: i === 0 ? (user?.email || "") : "",
         phone: "",
+        city: "",
+        location: "",
       }))
     );
-  }, [quantity, selectedTicketId]);
+  }, [quantity, selectedTicketId, user]);
 
   const selectedTicket = useMemo(() => {
     return event?.tickets.find(t => t.id === selectedTicketId);
@@ -399,7 +404,7 @@ const EventCheckoutPage: React.FC<EventCheckoutPageProps> = ({ eventId }) => {
                             required
                           />
                         </div>
-                        <div className="sm:col-span-2">
+                        <div>
                           <label className="block text-sm font-semibold text-foreground mb-2">
                             Phone Number *
                           </label>
@@ -412,6 +417,34 @@ const EventCheckoutPage: React.FC<EventCheckoutPageProps> = ({ eventId }) => {
                             placeholder="+234 800 000 0000"
                             className="w-full px-4 py-3 rounded-xl border-2 border-foreground/20 bg-background text-foreground placeholder:text-foreground/40 focus:outline-none focus:border-primary transition-colors"
                             required
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-foreground mb-2">
+                            City
+                          </label>
+                          <input
+                            type="text"
+                            value={attendee.city || ""}
+                            onChange={(e) =>
+                              handleAttendeeChange(index, "city", e.target.value)
+                            }
+                            placeholder="e.g. Lagos"
+                            className="w-full px-4 py-3 rounded-xl border-2 border-foreground/20 bg-background text-foreground placeholder:text-foreground/40 focus:outline-none focus:border-primary transition-colors"
+                          />
+                        </div>
+                        <div className="sm:col-span-2">
+                          <label className="block text-sm font-semibold text-foreground mb-2">
+                            Location / Country
+                          </label>
+                          <input
+                            type="text"
+                            value={attendee.location || ""}
+                            onChange={(e) =>
+                              handleAttendeeChange(index, "location", e.target.value)
+                            }
+                            placeholder="e.g. Nigeria"
+                            className="w-full px-4 py-3 rounded-xl border-2 border-foreground/20 bg-background text-foreground placeholder:text-foreground/40 focus:outline-none focus:border-primary transition-colors"
                           />
                         </div>
                       </div>

@@ -32,6 +32,8 @@ export interface AttendeeInput {
     name: string;
     email: string;
     phone?: string;
+    city?: string;
+    location?: string;
 }
 
 export interface BookingOrder {
