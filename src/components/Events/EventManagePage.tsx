@@ -1136,7 +1136,7 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                           {/* Avatar */}
                           <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
                             {member.avatar ? (
-                              <Image
+                              <img
                                 src={member.avatar}
                                 alt={member.name}
                                 width={48}
