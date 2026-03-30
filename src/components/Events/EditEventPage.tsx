@@ -391,6 +391,7 @@ const EditEventPage: React.FC<EditEventPageProps> = ({ eventId }) => {
           timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         },
         tickets: ticketTypes.map((t) => ({
+          id: t.id,
           name: t.name,
           type: parseFloat(t.price) > 0 ? ApiTicketType.PAID : ApiTicketType.FREE,
           price: parseFloat(t.price) || 0,
