@@ -291,6 +291,7 @@ const CreateEventPage = () => {
 
       const payload: CreateEventPayload = {
         title: formData.title,
+        slug: formData.title.replace(/[^a-zA-Z0-9]/g, "").toUpperCase(),
         description: formData.description,
         category: getApiCategory(formData.category),
 

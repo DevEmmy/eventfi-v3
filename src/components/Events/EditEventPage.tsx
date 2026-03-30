@@ -372,6 +372,7 @@ const EditEventPage: React.FC<EditEventPageProps> = ({ eventId }) => {
 
       const payload: Partial<CreateEventPayload> = {
         title: formData.title,
+        slug: formData.title.replace(/[^a-zA-Z0-9]/g, "").toUpperCase(),
         description: formData.description,
         category: getApiCategory(formData.category),
         location: {

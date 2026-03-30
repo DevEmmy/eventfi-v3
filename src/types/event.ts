@@ -88,6 +88,7 @@ export interface EventOrganizer {
 export interface Event {
     id: string;
     title: string;
+    slug?: string;
     description: string;
     shortDescription?: string;
     category: EventCategory;
@@ -144,6 +145,7 @@ export interface Event {
 // Payload for creating a new event (partial of Event)
 export interface CreateEventPayload {
     title: string;
+    slug?: string;
     description: string;
     category: EventCategory;
     tags?: string[];
