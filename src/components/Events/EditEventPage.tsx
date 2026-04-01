@@ -415,7 +415,21 @@ const EditEventPage: React.FC<EditEventPageProps> = ({ eventId }) => {
           })),
       };
 
-      await EventService.updateEvent(eventId, payload);
+      const updatedEvent = await EventService.updateEvent(eventId, payload);
+
+      // Sync ticketTypes with the real DB IDs returned by the server so that
+      // a subsequent edit doesn't treat existing tickets as new ones.
+      if (updatedEvent?.tickets && updatedEvent.tickets.length > 0) {
+        setTicketTypes(
+          updatedEvent.tickets.map((t: any) => ({
+            id: t.id,
+            name: t.name || "",
+            price: String(t.price ?? 0),
+            quantity: t.quantity ?? 0,
+            description: t.description || "",
+          }))
+        );
+      }
 
       customToast.success("Event updated successfully!");
       router.push(`/events/${eventId}/manage`);

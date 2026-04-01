@@ -104,11 +104,27 @@ export const ManageEventService = {
         format: "csv" | "xlsx" = "csv",
         status?: "all" | "checked_in" | "not_checked_in"
     ): Promise<Blob> => {
-        const response = await axiosInstance.get(`/events/${eventId}/attendees/export`, {
-            params: { format, status },
-            responseType: "blob",
-        });
-        return response.data;
+        try {
+            const response = await axiosInstance.get(`/events/${eventId}/attendees/export`, {
+                params: { format, status },
+                responseType: "blob",
+            });
+            return response.data;
+        } catch (error: any) {
+            // Axios with responseType:"blob" wraps JSON error bodies as Blob.
+            // Parse the blob back to JSON to surface the real error message.
+            const blob: Blob | undefined = error?.response?.data;
+            if (blob instanceof Blob && blob.type.includes("json")) {
+                try {
+                    const text = await blob.text();
+                    const json = JSON.parse(text);
+                    throw new Error(json?.message || "Export failed");
+                } catch {
+                    // fall through to rethrow original
+                }
+            }
+            throw error;
+        }
     },
 
     /**

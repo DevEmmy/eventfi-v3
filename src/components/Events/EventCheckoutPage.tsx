@@ -71,8 +71,8 @@ const EventCheckoutPage: React.FC<EventCheckoutPageProps> = ({ eventId }) => {
     fetchEvent();
   }, [eventId, initialTicketTypeId]);
 
-  // Initialize attendees array based on quantity and selected ticket
-  // Pre-populate first ticket with the logged-in user's details
+  // Initialize attendees array based on quantity and selected ticket.
+  // First slot is pre-populated with the logged-in user's details.
   useEffect(() => {
     setAttendees(
       Array.from({ length: quantity }, (_, i) => ({
@@ -81,7 +81,7 @@ const EventCheckoutPage: React.FC<EventCheckoutPageProps> = ({ eventId }) => {
         email: i === 0 ? (user?.email || "") : "",
         phone: "",
         city: "",
-        location: "",
+        location: i === 0 ? (user?.location || "") : "",
       }))
     );
   }, [quantity, selectedTicketId, user]);

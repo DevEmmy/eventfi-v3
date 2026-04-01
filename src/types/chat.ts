@@ -177,6 +177,10 @@ export interface ChatTypingEvent {
     users: Array<{ id: string; name: string }>;
 }
 
+export interface ChatTypingStopEvent {
+    userId: string;
+}
+
 export interface ChatSettingsEvent {
     slowMode: number;
     isActive: boolean;

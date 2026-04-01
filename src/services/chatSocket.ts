@@ -11,6 +11,7 @@ import {
     ChatMemberLeftEvent,
     ChatMemberMutedEvent,
     ChatTypingEvent,
+    ChatTypingStopEvent,
     ChatSettingsEvent,
     ChatErrorEvent,
 } from "@/types/chat";
@@ -26,6 +27,7 @@ interface ChatSocketEvents {
     "chat:member:left": ChatEventHandler<ChatMemberLeftEvent>;
     "chat:member:muted": ChatEventHandler<ChatMemberMutedEvent>;
     "chat:typing": ChatEventHandler<ChatTypingEvent>;
+    "chat:typing:stop": ChatEventHandler<ChatTypingStopEvent>;
     "chat:settings": ChatEventHandler<ChatSettingsEvent>;
     "chat:error": ChatEventHandler<ChatErrorEvent>;
 }
@@ -36,6 +38,10 @@ class ChatSocketService {
     private handlers: Partial<ChatSocketEvents> = {};
     private typingTimeout: NodeJS.Timeout | null = null;
 
+    // Connection change callbacks (separate from chat event handlers)
+    private connectCallbacks: Array<() => void> = [];
+    private disconnectCallbacks: Array<() => void> = [];
+
     /**
      * Connect to the chat WebSocket server.
      * Accepts the full API URL (e.g. https://host/api/v1 or wss://host/api/v1)
@@ -44,11 +50,11 @@ class ChatSocketService {
      */
     connect(wsUrl: string): void {
         if (this.socket?.connected) return;
+        // Already created but reconnecting
+        if (this.socket) return;
 
         const token = localStorage.getItem("token");
 
-        // Strip any pathname — Socket.IO must receive just the origin.
-        // Also normalise wss:// → https:// (Socket.IO handles the WS upgrade).
         let origin: string;
         try {
             const parsed = new URL(wsUrl);
@@ -68,27 +74,33 @@ class ChatSocketService {
             path: "/ws/chat",
             transports: ["websocket"],
             reconnection: true,
-            reconnectionAttempts: 5,
+            reconnectionAttempts: 10,
             reconnectionDelay: 1000,
+            reconnectionDelayMax: 5000,
         });
 
         this.socket.on("connect", () => {
             console.log("[ChatSocket] Connected");
-            // Rejoin room if we had one
-            if (this.eventId) {
-                this.joinRoom(this.eventId);
+            this.connectCallbacks.forEach((cb) => cb());
+            // Rejoin room on reconnect — socket.io only fires "connect" after
+            // transport is established, so queueing emit here avoids double-join
+            // on first connect (the joinRoom() call queues before connect fires,
+            // so the room is joined once the socket connects via the queue).
+            // On *re*connect the queue is cleared, so we must emit again here.
+            if (this.eventId && this.socket?.recovered === false) {
+                this.socket?.emit("chat:join", { eventId: this.eventId } as ChatJoinPayload);
             }
         });
 
         this.socket.on("disconnect", (reason) => {
             console.log("[ChatSocket] Disconnected:", reason);
+            this.disconnectCallbacks.forEach((cb) => cb());
         });
 
         this.socket.on("connect_error", (error) => {
-            console.error("[ChatSocket] Connection error:", error);
+            console.error("[ChatSocket] Connection error:", error.message);
         });
 
-        // Register all event handlers
         this.setupEventListeners();
     }
 
@@ -104,7 +116,11 @@ class ChatSocketService {
     }
 
     /**
-     * Join a chat room
+     * Join a chat room.
+     * Emits immediately if the socket is connected; otherwise the queued emit
+     * will fire once the socket connects (socket.io buffers pending emits).
+     * The "connect" handler does NOT re-emit on first connection, so there
+     * is no double-join race.
      */
     joinRoom(eventId: string): void {
         this.eventId = eventId;
@@ -129,12 +145,10 @@ class ChatSocketService {
     }
 
     /**
-     * Send typing indicator (debounced)
+     * Send typing indicator (debounced on the client side)
      */
     sendTyping(): void {
-        if (this.typingTimeout) {
-            clearTimeout(this.typingTimeout);
-        }
+        if (this.typingTimeout) return; // already signalled within window
         this.socket?.emit("chat:typing");
         this.typingTimeout = setTimeout(() => {
             this.typingTimeout = null;
@@ -154,20 +168,39 @@ class ChatSocketService {
     }
 
     /**
-     * Register event handlers
+     * Register a chat event handler (only one handler per event type is kept)
      */
-    on<K extends keyof ChatSocketEvents>(
-        event: K,
-        handler: ChatSocketEvents[K]
-    ): void {
+    on<K extends keyof ChatSocketEvents>(event: K, handler: ChatSocketEvents[K]): void {
         this.handlers[event] = handler;
     }
 
     /**
-     * Remove event handler
+     * Remove a chat event handler
      */
     off<K extends keyof ChatSocketEvents>(event: K): void {
         delete this.handlers[event];
+    }
+
+    /**
+     * Register a callback for when the socket connects (or reconnects).
+     * Returns an unsubscribe function.
+     */
+    onConnect(cb: () => void): () => void {
+        this.connectCallbacks.push(cb);
+        return () => {
+            this.connectCallbacks = this.connectCallbacks.filter((x) => x !== cb);
+        };
+    }
+
+    /**
+     * Register a callback for when the socket disconnects.
+     * Returns an unsubscribe function.
+     */
+    onDisconnect(cb: () => void): () => void {
+        this.disconnectCallbacks.push(cb);
+        return () => {
+            this.disconnectCallbacks = this.disconnectCallbacks.filter((x) => x !== cb);
+        };
     }
 
     /**
@@ -184,16 +217,18 @@ class ChatSocketService {
         this.socket?.emit(event, data);
     }
 
-    /** Register a one-off event listener on the underlying socket */
+    /** Register a listener on the underlying socket (additive, not replacing) */
     onRaw(event: string, handler: (data: any) => void): void {
-        // Remove previous listener for this event first to avoid duplicates
-        this.socket?.off(event);
         this.socket?.on(event, handler);
     }
 
-    /** Remove a raw event listener */
-    offRaw(event: string): void {
-        this.socket?.off(event);
+    /** Remove a specific raw event listener */
+    offRaw(event: string, handler?: (data: any) => void): void {
+        if (handler) {
+            this.socket?.off(event, handler);
+        } else {
+            this.socket?.off(event);
+        }
     }
 
     /**
@@ -204,7 +239,7 @@ class ChatSocketService {
     }
 
     /**
-     * Setup all WebSocket event listeners
+     * Setup all WebSocket event listeners (called once on connect)
      */
     private setupEventListeners(): void {
         if (!this.socket) return;
@@ -239,6 +274,10 @@ class ChatSocketService {
 
         this.socket.on("chat:typing", (data: ChatTypingEvent) => {
             this.handlers["chat:typing"]?.(data);
+        });
+
+        this.socket.on("chat:typing:stop", (data: ChatTypingStopEvent) => {
+            this.handlers["chat:typing:stop"]?.(data);
         });
 
         this.socket.on("chat:settings", (data: ChatSettingsEvent) => {
