@@ -177,7 +177,7 @@ const FloatingMessenger: React.FC = () => {
       // Use getState() to avoid stale closure on chatInfo
       const { chatInfo, setChatInfo } = useChatStore.getState();
       if (chatInfo) {
-        setChatInfo({ ...chatInfo, slowMode: data.slowMode, isActive: data.isActive });
+        setChatInfo({ ...chatInfo, slowMode: data.slowMode, isActive: data.isActive, readOnly: data.readOnly ?? !data.isActive });
       }
     });
 
@@ -273,8 +273,6 @@ const FloatingMessenger: React.FC = () => {
         customToast.error(
           joinResult.reason === "NO_TICKET"
             ? "You need a ticket to join this chat"
-            : joinResult.reason === "CHAT_DISABLED"
-            ? "Chat is disabled for this event"
             : "Cannot join chat"
         );
         return;
@@ -451,7 +449,8 @@ const FloatingMessenger: React.FC = () => {
   };
 
   const onlineCount = chatStore.onlineCount || chatStore.chatInfo?.onlineCount || 0;
-  const canSend = !chatStore.isMuted && slowModeRemaining === 0 && !!messageInput.trim();
+  const isReadOnly = chatStore.chatInfo?.readOnly ?? false;
+  const canSend = !chatStore.isMuted && !isReadOnly && slowModeRemaining === 0 && !!messageInput.trim();
 
   if (!user) return null;
 
@@ -745,7 +744,11 @@ const FloatingMessenger: React.FC = () => {
 
                   {/* Input */}
                   <div className="p-4 border-t border-foreground/10 bg-background shrink-0">
-                    {chatStore.isMuted ? (
+                    {isReadOnly ? (
+                      <div className="text-center text-sm text-foreground/50 py-3 px-4 bg-foreground/5 rounded-xl">
+                        💬 Chat is paused — you can read messages but cannot send new ones
+                      </div>
+                    ) : chatStore.isMuted ? (
                       <div className="text-center text-sm text-foreground/60 py-3">
                         You are muted in this chat
                       </div>

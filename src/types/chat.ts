@@ -46,6 +46,7 @@ export interface EventChatInfo {
     id: string;
     eventId: string;
     isActive: boolean;
+    readOnly: boolean; // true when organizer has paused chat — users can view but not send
     slowMode: number;
     membersOnly: boolean;
     memberCount: number;
@@ -75,7 +76,7 @@ export interface EventChatPreview {
 export interface JoinChatResponse {
     chat: EventChatInfo;
     canJoin: boolean;
-    reason: 'NO_TICKET' | 'CHAT_DISABLED' | 'EVENT_ENDED' | null;
+    reason: 'NO_TICKET' | null;
 }
 
 export interface ChatMessagesResponse {
@@ -184,6 +185,7 @@ export interface ChatTypingStopEvent {
 export interface ChatSettingsEvent {
     slowMode: number;
     isActive: boolean;
+    readOnly: boolean;
 }
 
 export interface ChatErrorEvent {
