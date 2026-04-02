@@ -33,8 +33,11 @@ import {
   DocumentText,
   TickCircle,
   Gift,
+  MessageText1,
+  Minus,
 } from "iconsax-react";
 import { ManageEventService } from "@/services/manage";
+import { ChatService } from "@/services/chat";
 import OrganizerGamePanel from "@/components/Games/OrganizerGamePanel";
 import customToast from "@/lib/toast";
 import {
@@ -115,6 +118,10 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
 
   // User search results
   const [searchResults, setSearchResults] = useState<UserSearchResult[]>([]);
+
+  // Chat state
+  const [chatActive, setChatActive] = useState(true);
+  const [togglingChat, setTogglingChat] = useState(false);
 
   // Derived data from dashboard
   const event = dashboardData?.event;
@@ -258,6 +265,19 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
         console.error("Cancel failed:", error);
         customToast.error(error.response?.data?.message || "Failed to cancel event");
       }
+    }
+  };
+
+  const handleToggleChat = async () => {
+    setTogglingChat(true);
+    try {
+      await ChatService.updateSettings(eventId, { isActive: !chatActive });
+      setChatActive((prev) => !prev);
+      customToast.success(chatActive ? "Chat paused — attendees can read but not send messages" : "Chat enabled");
+    } catch (error: any) {
+      customToast.error(error.response?.data?.message || "Failed to update chat settings");
+    } finally {
+      setTogglingChat(false);
     }
   };
 
@@ -747,7 +767,7 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                 <h3 className="text-xl font-bold font-[family-name:var(--font-clash-display)] mb-4 text-foreground">
                   Event Actions
                 </h3>
-                <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   <Button
                     variant="outline"
                     size="md"
@@ -774,6 +794,17 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                     onClick={() => router.push(`/events/${eventId}`)}
                   >
                     View Public
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="md"
+                    fullWidth
+                    leftIcon={chatActive ? Minus : MessageText1}
+                    onClick={handleToggleChat}
+                    disabled={togglingChat}
+                    className={chatActive ? "border-amber-500/20 text-amber-600 hover:bg-amber-500/10" : "border-green-500/20 text-green-600 hover:bg-green-500/10"}
+                  >
+                    {togglingChat ? "Updating…" : chatActive ? "Pause Chat" : "Enable Chat"}
                   </Button>
                   <Button
                     variant="outline"
