@@ -35,9 +35,11 @@ import {
   Gift,
   MessageText1,
   Minus,
+  Link2,
 } from "iconsax-react";
 import { ManageEventService } from "@/services/manage";
 import { ChatService } from "@/services/chat";
+import { EventService } from "@/services/events";
 import OrganizerGamePanel from "@/components/Games/OrganizerGamePanel";
 import customToast from "@/lib/toast";
 import {
@@ -123,6 +125,11 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
   const [chatActive, setChatActive] = useState(true);
   const [togglingChat, setTogglingChat] = useState(false);
 
+  // Slug modal state
+  const [showSlugModal, setShowSlugModal] = useState(false);
+  const [slugInput, setSlugInput] = useState("");
+  const [savingSlug, setSavingSlug] = useState(false);
+
   // Derived data from dashboard
   const event = dashboardData?.event;
   const stats = dashboardData?.stats || {
@@ -149,6 +156,7 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
         setLoading(true);
         const data = await ManageEventService.getDashboard(eventId);
         setDashboardData(data);
+        if (data?.event?.slug) setSlugInput(data.event.slug);
       } catch (error: any) {
         console.error("Failed to fetch dashboard:", error);
         customToast.error(error.response?.data?.message || "Failed to load event data");
@@ -278,6 +286,25 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
       customToast.error(error.response?.data?.message || "Failed to update chat settings");
     } finally {
       setTogglingChat(false);
+    }
+  };
+
+  const handleSaveSlug = async () => {
+    const cleaned = slugInput.replace(/[^a-zA-Z0-9-_]/g, "").toUpperCase();
+    if (!cleaned) {
+      customToast.error("Please enter a valid slug");
+      return;
+    }
+    setSavingSlug(true);
+    try {
+      await EventService.updateEvent(eventId, { slug: cleaned } as any);
+      setSlugInput(cleaned);
+      setShowSlugModal(false);
+      customToast.success("Custom URL updated!");
+    } catch (error: any) {
+      customToast.error(error.response?.data?.message || "Failed to update slug");
+    } finally {
+      setSavingSlug(false);
     }
   };
 
@@ -794,6 +821,15 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                     onClick={() => router.push(`/events/${eventId}`)}
                   >
                     View Public
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="md"
+                    fullWidth
+                    leftIcon={Link2}
+                    onClick={() => setShowSlugModal(true)}
+                  >
+                    Custom URL
                   </Button>
                   <Button
                     variant="outline"
@@ -1677,6 +1713,88 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                   {isSendingEmail ? "Sending..." : "Send Email"}
                 </Button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Slug / Custom URL Modal */}
+      {showSlugModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div
+            className="absolute inset-0 bg-foreground/50 backdrop-blur-sm"
+            onClick={() => setShowSlugModal(false)}
+          />
+          <div className="relative bg-background rounded-2xl shadow-2xl w-full max-w-md p-6 border border-foreground/10">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h3 className="text-xl font-bold font-[family-name:var(--font-clash-display)] text-foreground">
+                  Custom Event URL
+                </h3>
+                <p className="text-sm text-foreground/60 mt-1">
+                  Give your event a short, memorable link
+                </p>
+              </div>
+              <button
+                onClick={() => setShowSlugModal(false)}
+                className="p-2 hover:bg-foreground/10 rounded-xl transition-colors"
+              >
+                <CloseCircle size={22} color="currentColor" variant="Outline" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-foreground mb-2">
+                  Event URL
+                </label>
+                <div className="flex items-center">
+                  <span className="px-4 py-3 bg-foreground/5 border border-r-0 border-foreground/20 rounded-l-xl text-foreground/50 text-sm whitespace-nowrap select-none">
+                    eventfi.com/e/
+                  </span>
+                  <input
+                    type="text"
+                    value={slugInput}
+                    onChange={(e) =>
+                      setSlugInput(e.target.value.replace(/[^a-zA-Z0-9-_]/g, "").toUpperCase())
+                    }
+                    placeholder="MY-AWESOME-EVENT"
+                    maxLength={60}
+                    className="flex-1 px-4 py-3 bg-background border border-foreground/20 rounded-r-xl text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200 uppercase font-mono"
+                  />
+                </div>
+                <p className="text-xs text-foreground/50 mt-1.5">
+                  Letters, numbers, hyphens, and underscores only.
+                </p>
+              </div>
+
+              {slugInput && (
+                <div className="p-3 bg-primary/5 border border-primary/20 rounded-xl">
+                  <p className="text-xs text-foreground/60 mb-1">Preview</p>
+                  <p className="text-sm text-primary font-medium break-all">
+                    eventfi.com/e/{slugInput}
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <Button
+                variant="outline"
+                size="md"
+                fullWidth
+                onClick={() => setShowSlugModal(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="primary"
+                size="md"
+                fullWidth
+                onClick={handleSaveSlug}
+                disabled={savingSlug || !slugInput}
+              >
+                {savingSlug ? "Saving…" : "Save URL"}
+              </Button>
             </div>
           </div>
         </div>

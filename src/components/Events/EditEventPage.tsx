@@ -73,6 +73,7 @@ const EditEventPage: React.FC<EditEventPageProps> = ({ eventId }) => {
   const router = useRouter();
   const [formData, setFormData] = useState({
     title: "",
+    slug: "",
     description: "",
     category: "",
     startDate: "",
@@ -121,6 +122,7 @@ const EditEventPage: React.FC<EditEventPageProps> = ({ eventId }) => {
 
         setFormData({
           title: event.title || "",
+          slug: event.slug || "",
           description: event.description || "",
           category: getCategoryLabel(event.category),
           startDate,
@@ -174,10 +176,20 @@ const EditEventPage: React.FC<EditEventPageProps> = ({ eventId }) => {
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     const { name, value, type } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
-    }));
+    setFormData((prev) => {
+      const updated = {
+        ...prev,
+        [name]: type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
+      };
+      // Auto-fill slug from title only if slug hasn't been manually customized
+      if (name === 'title') {
+        const autoSlug = prev.title.replace(/[^a-zA-Z0-9]/g, '-').toUpperCase();
+        if (!prev.slug || prev.slug === autoSlug) {
+          (updated as any).slug = value.replace(/[^a-zA-Z0-9]/g, '-').toUpperCase();
+        }
+      }
+      return updated;
+    });
   };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -372,7 +384,7 @@ const EditEventPage: React.FC<EditEventPageProps> = ({ eventId }) => {
 
       const payload: Partial<CreateEventPayload> = {
         title: formData.title,
-        slug: formData.title.replace(/[^a-zA-Z0-9]/g, "").toUpperCase(),
+        ...(formData.slug && { slug: formData.slug.replace(/[^a-zA-Z0-9-_]/g, "").toUpperCase() }),
         description: formData.description,
         category: getApiCategory(formData.category),
         location: {
@@ -460,6 +472,26 @@ const EditEventPage: React.FC<EditEventPageProps> = ({ eventId }) => {
                 className="w-full px-4 py-3 bg-background border border-foreground/20 rounded-xl text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200"
                 required
               />
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-foreground mb-2">
+                Custom URL Slug <span className="text-foreground/40 font-normal">(optional)</span>
+              </label>
+              <div className="flex items-center">
+                <span className="px-4 py-3 bg-foreground/5 border border-r-0 border-foreground/20 rounded-l-xl text-foreground/50 text-sm whitespace-nowrap select-none">
+                  eventfi.com/e/
+                </span>
+                <input
+                  type="text"
+                  name="slug"
+                  value={formData.slug}
+                  onChange={handleInputChange}
+                  placeholder="MY-EVENT"
+                  className="flex-1 px-4 py-3 bg-background border border-foreground/20 rounded-r-xl text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200 uppercase"
+                />
+              </div>
+              <p className="text-xs text-foreground/50 mt-1.5">Only letters, numbers, hyphens and underscores. Leave blank to keep current.</p>
             </div>
 
             <div>

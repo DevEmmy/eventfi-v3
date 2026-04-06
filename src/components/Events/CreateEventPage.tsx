@@ -55,6 +55,7 @@ const CreateEventPage = () => {
   const [aiFilledFields, setAiFilledFields] = useState(0);
   const [formData, setFormData] = useState({
     title: "",
+    slug: "",
     description: "",
     category: "",
     startDate: "",
@@ -115,7 +116,14 @@ const CreateEventPage = () => {
       const checked = (e.target as HTMLInputElement).checked;
       setFormData(prev => ({ ...prev, [name]: checked }));
     } else {
-      setFormData(prev => ({ ...prev, [name]: value }));
+      setFormData(prev => {
+        const updated = { ...prev, [name]: value };
+        // Auto-fill slug from title only if slug hasn't been manually edited
+        if (name === 'title' && prev.slug === prev.title.replace(/[^a-zA-Z0-9]/g, '-').toUpperCase()) {
+          updated.slug = value.replace(/[^a-zA-Z0-9]/g, '-').toUpperCase();
+        }
+        return updated;
+      });
     }
   };
 
@@ -340,7 +348,7 @@ const CreateEventPage = () => {
 
       const payload: CreateEventPayload = {
         title: formData.title,
-        slug: formData.title.replace(/[^a-zA-Z0-9]/g, "").toUpperCase(),
+        slug: (formData.slug || formData.title).replace(/[^a-zA-Z0-9-_]/g, "").toUpperCase() || undefined,
         description: formData.description,
         category: getApiCategory(formData.category),
 
@@ -419,6 +427,26 @@ const CreateEventPage = () => {
                 className="w-full px-4 py-3 bg-background border border-foreground/20 rounded-xl text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200"
                 required
               />
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-foreground mb-2">
+                Custom URL Slug <span className="text-foreground/40 font-normal">(optional)</span>
+              </label>
+              <div className="flex items-center gap-0">
+                <span className="px-4 py-3 bg-foreground/5 border border-r-0 border-foreground/20 rounded-l-xl text-foreground/50 text-sm whitespace-nowrap select-none">
+                  eventfi.com/e/
+                </span>
+                <input
+                  type="text"
+                  name="slug"
+                  value={formData.slug}
+                  onChange={handleInputChange}
+                  placeholder="MY-EVENT"
+                  className="flex-1 px-4 py-3 bg-background border border-foreground/20 rounded-r-xl text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200 uppercase"
+                />
+              </div>
+              <p className="text-xs text-foreground/50 mt-1.5">Only letters, numbers, hyphens and underscores. Auto-filled from your title.</p>
             </div>
 
             <div>
