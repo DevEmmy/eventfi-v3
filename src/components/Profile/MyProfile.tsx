@@ -109,6 +109,7 @@ const MyProfile: React.FC<MyProfileProps> = ({ userData }) => {
         const mappedEvents = response.data.map((event: any) => ({
           id: event.id,
           title: event.title,
+          slug: event.slug || undefined,
           date: new Date(event.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
           time: `${event.startTime} - ${event.endTime}`,
           location: event.venueName || event.city || "Online",

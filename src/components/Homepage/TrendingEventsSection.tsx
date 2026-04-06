@@ -19,6 +19,7 @@ const TrendingEventsSection = () => {
         const mappedEvents = data.map((event: any) => ({
           id: event.id,
           title: event.title,
+          slug: event.slug || undefined,
           date: new Date(event.startDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
           time: `${event.startTime} - ${event.endTime}`,
           location: event.venueName || event.city || "Online",

@@ -69,6 +69,7 @@ const ExploreEventsPage = () => {
         const mappedEvents = response.data.map((event: any) => ({
           id: event.id,
           title: event.title,
+          slug: event.slug || undefined,
           date: formatDate(event.startDate),
           time: `${event.startTime} - ${event.endTime}`,
           location: event.venueName || event.city || "Online",

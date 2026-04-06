@@ -89,6 +89,7 @@ const EventRecommendations: React.FC<EventRecommendationsProps> = ({
         const mappedEvents: EventCardProps[] = events.map(event => ({
           id: event.id,
           title: event.title,
+          slug: event.slug || undefined,
           date: formatDate(event.startDate),
           time: `${event.startTime} - ${event.endTime}`,
           location: event.venueName || event.city || "Online",
@@ -123,7 +124,7 @@ const EventRecommendations: React.FC<EventRecommendationsProps> = ({
             <Star1 size={24} color="currentColor" variant="Bold" className="text-primary" />
           </div>
           <div>
-            <h2 className="text-2xl font-bold font-[family-name:var(--font-clash-display)] text-foreground">
+            <h2 className="text-2xl font-bold font-(family-name:--font-clash-display) text-foreground">
               Recommended for You
             </h2>
             <p className="text-sm text-foreground/60">

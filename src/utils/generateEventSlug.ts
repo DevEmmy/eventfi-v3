@@ -1,23 +1,25 @@
+const SHORT_DOMAIN = "https://eventfi.live";
+const FRONTEND_URL = process.env.NEXT_PUBLIC_FRONTEND_URL || (typeof window !== "undefined" ? window.location.origin : "https://eventfi.live");
+
 /**
- * Generates a short URL slug from an event title.
- * Removes all non-alphanumeric characters and converts to uppercase.
- *
- * Examples:
- *   "Dev Fest 2025"       → "DEVFEST2025"
- *   "Tech & Music Night"  → "TECHMUSICNIGHT"
- *   "Lagos Meet-Up #3"    → "LAGOSMEETUP3"
+ * Build the best shareable URL for an event.
+ * - If a DB slug exists → eventfi.live/[SLUG]
+ * - Otherwise → [FRONTEND_URL]/events/[id]
  */
-export const generateEventSlug = (title: string): string => {
-  return title.replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
+export const getEventShareUrl = (params: { slug?: string | null; id?: string }): string => {
+  if (params.slug) {
+    return `${SHORT_DOMAIN}/${params.slug}`;
+  }
+  if (params.id) {
+    return `${FRONTEND_URL}/events/${params.id}`;
+  }
+  return FRONTEND_URL;
 };
 
 /**
- * Generates the full shareable short URL for an event.
- * Strips "www." from the origin so URLs look like eventfi.live/DEVFEST2025.
+ * @deprecated Pass { slug, id } object to getEventShareUrl instead.
+ * Kept for any legacy callers — generates a slug from a title.
  */
-export const getEventShareUrl = (title: string): string => {
-  const slug = generateEventSlug(title);
-  const origin = typeof window !== "undefined" ? window.location.origin : "";
-  const cleanOrigin = origin.replace("://www.", "://");
-  return `${cleanOrigin}/${slug}`;
+export const generateEventSlug = (title: string): string => {
+  return title.replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
 };

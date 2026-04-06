@@ -11,6 +11,7 @@ import { useUserStore } from "@/store/useUserStore";
 import { useMessengerStore } from "@/store/useMessengerStore";
 import AttendeeGameView from "@/components/Games/AttendeeGameView";
 import { getEventShareUrl } from "@/utils/generateEventSlug";
+import customToast from "@/lib/toast";
 
 interface EventDetailPageProps {
   eventId: string;
@@ -46,6 +47,7 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
         const mappedEvent = {
           id: data.id,
           title: data.title,
+          slug: data.slug || null,
           isLive: (() => {
             const now = new Date();
             const start = new Date(`${data.startDate}T${data.startTime || '00:00'}`);
@@ -99,6 +101,7 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
         setRelatedEvents(relatedData.map((e: any) => ({
           id: e.id,
           title: e.title,
+          slug: e.slug || undefined,
           date: new Date(e.startDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
           time: `${e.startTime} - ${e.endTime}`,
           location: e.venueName || e.city || "Online",
@@ -146,7 +149,7 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
   }
 
   const handleShare = () => {
-    const shareUrl = getEventShareUrl(event.title);
+    const shareUrl = getEventShareUrl({ slug: event.slug, id: event.id });
 
     if (navigator.share) {
       navigator.share({
@@ -155,7 +158,9 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
         url: shareUrl,
       });
     } else {
-      navigator.clipboard.writeText(shareUrl);
+      navigator.clipboard.writeText(shareUrl).then(() => {
+        customToast.success("Link copied to clipboard!");
+      });
     }
   };
 

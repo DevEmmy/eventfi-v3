@@ -1749,7 +1749,7 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                 </label>
                 <div className="flex items-center">
                   <span className="px-4 py-3 bg-foreground/5 border border-r-0 border-foreground/20 rounded-l-xl text-foreground/50 text-sm whitespace-nowrap select-none">
-                    eventfi.com/e/
+                    eventfi.live/
                   </span>
                   <input
                     type="text"
@@ -1771,7 +1771,7 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                 <div className="p-3 bg-primary/5 border border-primary/20 rounded-xl">
                   <p className="text-xs text-foreground/60 mb-1">Preview</p>
                   <p className="text-sm text-primary font-medium break-all">
-                    eventfi.com/e/{slugInput}
+                    eventfi.live/{slugInput}
                   </p>
                 </div>
               )}

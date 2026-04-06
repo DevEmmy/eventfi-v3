@@ -435,7 +435,7 @@ const CreateEventPage = () => {
               </label>
               <div className="flex items-center gap-0">
                 <span className="px-4 py-3 bg-foreground/5 border border-r-0 border-foreground/20 rounded-l-xl text-foreground/50 text-sm whitespace-nowrap select-none">
-                  eventfi.com/e/
+                  eventfi.live/
                 </span>
                 <input
                   type="text"

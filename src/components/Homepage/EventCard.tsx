@@ -9,6 +9,7 @@ import customToast from "@/lib/toast";
 export interface EventCardProps {
   id: string;
   title: string;
+  slug?: string;
   date: string;
   time: string;
   location: string;
@@ -24,6 +25,7 @@ export interface EventCardProps {
 const EventCard: React.FC<EventCardProps> = ({
   id,
   title,
+  slug,
   date,
   time,
   location,
@@ -72,12 +74,12 @@ const EventCard: React.FC<EventCardProps> = ({
     e.preventDefault();
 
     const { getEventShareUrl } = await import("@/utils/generateEventSlug");
-    const shareUrl = getEventShareUrl(title);
+    const shareUrl = getEventShareUrl({ slug, id });
 
     if (navigator.share) {
       try {
         await navigator.share({
-          title: title,
+          title,
           text: `Check out ${title} on EventFi!`,
           url: shareUrl,
         });
