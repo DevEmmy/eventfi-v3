@@ -15,6 +15,8 @@ import {
   Lock,
   TickCircle,
   Link1,
+  Star1,
+  Profile2User,
 } from "iconsax-react";
 import Image from "next/image";
 import { BookingService } from "@/services/booking";
@@ -23,6 +25,162 @@ import customToast from "@/lib/toast";
 import { Event } from "@/types/event";
 import { BookingOrder, AttendeeInput, PaymentMethod } from "@/types/booking";
 import { useUserStore } from "@/store/useUserStore";
+
+// ─── Booking Success Overlay ──────────────────────────────────────────────────
+
+interface BookingSuccessInfo {
+  eventTitle: string;
+  eventDate: string;
+  ticketCount: number;
+  guestEmail?: string;
+}
+
+const BookingSuccessOverlay: React.FC<{
+  info: BookingSuccessInfo;
+  isAuthenticated: boolean;
+}> = ({ info, isAuthenticated }) => {
+  const router = useRouter();
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    // Trigger entrance animation on mount
+    const t = setTimeout(() => setVisible(true), 20);
+    return () => clearTimeout(t);
+  }, []);
+
+  const signupUrl = info.guestEmail
+    ? `/auth/signup?email=${encodeURIComponent(info.guestEmail)}`
+    : "/auth/signup";
+
+  return (
+    <div
+      className={`fixed inset-0 z-[100] flex items-center justify-center p-4 transition-all duration-500 ${
+        visible ? "opacity-100" : "opacity-0"
+      }`}
+    >
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-black/70 backdrop-blur-md" />
+
+      {/* Card */}
+      <div
+        className={`relative w-full max-w-md bg-background rounded-3xl shadow-2xl border border-foreground/10 overflow-hidden transition-all duration-500 ${
+          visible ? "translate-y-0 scale-100" : "translate-y-6 scale-95"
+        }`}
+      >
+        {/* Subtle top gradient accent */}
+        <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-primary/60 via-primary to-primary/60" />
+
+        <div className="px-8 pt-12 pb-10 flex flex-col items-center text-center">
+
+          {/* Animated check mark */}
+          <div className="relative mb-8">
+            <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center ring-8 ring-primary/10 animate-[ping_1.8s_ease-out_1]" />
+            <div className="absolute inset-0 w-24 h-24 rounded-full bg-primary/15 flex items-center justify-center">
+              <div className="w-20 h-20 rounded-full bg-primary flex items-center justify-center shadow-lg shadow-primary/40">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="white"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="w-10 h-10"
+                >
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          {/* Headline */}
+          <h1 className="text-4xl font-bold font-[family-name:var(--font-clash-display)] text-foreground mb-2 tracking-tight">
+            You&rsquo;re in.
+          </h1>
+          <p className="text-foreground/60 text-sm mb-6 leading-relaxed">
+            {info.ticketCount === 1
+              ? "Your ticket has been confirmed."
+              : `${info.ticketCount} tickets have been confirmed.`}
+          </p>
+
+          {/* Event pill */}
+          <div className="w-full bg-foreground/5 border border-foreground/10 rounded-2xl px-5 py-4 mb-8 text-left">
+            <div className="flex items-start gap-3">
+              <div className="w-9 h-9 rounded-xl bg-primary/15 flex items-center justify-center shrink-0 mt-0.5">
+                <Ticket size={18} color="currentColor" variant="Bold" className="text-primary" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-foreground text-sm leading-snug truncate">
+                  {info.eventTitle}
+                </p>
+                <p className="text-xs text-foreground/50 mt-0.5">{info.eventDate}</p>
+                <p className="text-xs text-primary font-medium mt-1">
+                  {info.ticketCount} {info.ticketCount === 1 ? "ticket" : "tickets"} · Confirmed
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* CTAs */}
+          {isAuthenticated ? (
+            <div className="w-full space-y-3">
+              <Button
+                variant="primary"
+                size="lg"
+                fullWidth
+                onClick={() => router.push("/profile?tab=tickets")}
+                leftIcon={Ticket}
+              >
+                View My Tickets
+              </Button>
+              <Button
+                variant="outline"
+                size="lg"
+                fullWidth
+                onClick={() => router.push("/explore-events")}
+                leftIcon={Star1}
+              >
+                Discover More Events
+              </Button>
+            </div>
+          ) : (
+            <div className="w-full space-y-3">
+              <div className="mb-1">
+                <p className="text-xs text-foreground/50 leading-relaxed">
+                  Your ticket is secured. Create a free account to manage your bookings,
+                  get event reminders, and connect with other attendees.
+                </p>
+              </div>
+              <Button
+                variant="primary"
+                size="lg"
+                fullWidth
+                onClick={() => router.push(signupUrl)}
+                leftIcon={Profile2User}
+              >
+                Create Your EventFi Account
+              </Button>
+              <Button
+                variant="outline"
+                size="lg"
+                fullWidth
+                onClick={() => router.push("/explore-events")}
+                leftIcon={Star1}
+              >
+                Explore More Events
+              </Button>
+            </div>
+          )}
+
+          {/* Fine print */}
+          <p className="mt-6 text-xs text-foreground/40 leading-relaxed">
+            A confirmation{info.guestEmail ? ` has been sent to ${info.guestEmail}` : " has been sent to your email"}.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 interface EventCheckoutPageProps {
   eventId: string;
@@ -43,6 +201,7 @@ const EventCheckoutPage: React.FC<EventCheckoutPageProps> = ({ eventId }) => {
   const [loading, setLoading] = useState(true);
   const [event, setEvent] = useState<Event | null>(null);
   const [order, setOrder] = useState<BookingOrder | null>(null);
+  const [bookingSuccess, setBookingSuccess] = useState<BookingSuccessInfo | null>(null);
 
   const [cardDetails, setCardDetails] = useState({
     number: "",
@@ -176,8 +335,17 @@ const EventCheckoutPage: React.FC<EventCheckoutPageProps> = ({ eventId }) => {
       // 3. Process Payment or Confirm Free Order
       if (isFree) {
         await BookingService.confirmFreeOrder(activeOrder.id, attendees);
-        customToast.success("Tickets booked successfully!");
-        router.push(`/profile?purchased=${quantity}&event=${eventId}`);
+        setBookingSuccess({
+          eventTitle: event.title,
+          eventDate: new Date(event.startDate).toLocaleDateString("en-NG", {
+            weekday: "long",
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          }),
+          ticketCount: quantity,
+          guestEmail: !user ? attendees[0]?.email : undefined,
+        });
       } else {
         const payment = await BookingService.initializePayment(
           activeOrder.id,
@@ -206,6 +374,14 @@ const EventCheckoutPage: React.FC<EventCheckoutPageProps> = ({ eventId }) => {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Booking Success Overlay */}
+      {bookingSuccess && (
+        <BookingSuccessOverlay
+          info={bookingSuccess}
+          isAuthenticated={!!user}
+        />
+      )}
+
       {/* Header */}
       <div className="sticky top-0 z-40 bg-background/95 backdrop-blur-sm border-b border-foreground/10">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4">
