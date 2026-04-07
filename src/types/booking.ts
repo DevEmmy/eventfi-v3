@@ -65,6 +65,7 @@ export interface BookingOrder {
 export interface InitiateBookingPayload {
     eventId: string;
     items: { ticketTypeId: string; quantity: number }[];
+    guestEmail?: string;
 }
 
 export interface PaymentInitResponse {
