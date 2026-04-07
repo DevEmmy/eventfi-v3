@@ -394,7 +394,7 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
                 const profilePath = event.organizer.username
                   ? `/profile/${event.organizer.username}`
                   : `/profile/${event.organizer.id}`;
-                router.push(profilePath);
+                router.push(profilePath)
               }}
               className="p-6 bg-foreground/5 rounded-2xl border border-foreground/10 cursor-pointer hover:bg-foreground/10 transition-colors"
             >
