@@ -154,6 +154,14 @@ const EventCheckoutPage: React.FC<EventCheckoutPageProps> = ({ eventId }) => {
       }
       return;
     }
+
+    // Require login only at the point of booking, not before
+    if (!user) {
+      customToast.info("Please sign in to complete your booking");
+      router.push(`/auth/login?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`);
+      return;
+    }
+
     setIsProcessing(true);
 
     try {

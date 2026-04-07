@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 const PROTECTED_ROUTES = [
-    '/profile/edit',
+    '/profile',
     '/organizer',
     '/vendor/create',
     '/vendor/edit',
@@ -16,8 +16,6 @@ const PROTECTED_ROUTES = [
 const PROTECTED_PATTERNS = [
     /^\/events\/[^/]+\/manage/,
     /^\/events\/[^/]+\/edit/,
-    /^\/events\/[^/]+\/checkout/,
-    /^\/events\/[^/]+\/review/,
 ];
 
 export function middleware(request: NextRequest) {
@@ -39,15 +37,13 @@ export function middleware(request: NextRequest) {
 
 export const config = {
     matcher: [
-        '/profile/edit',
+        '/profile/:path*',
         '/organizer/:path*',
         '/vendor/create',
         '/vendor/edit',
         '/events/create',
         '/events/:id/manage/:path*',
         '/events/:id/edit',
-        '/events/:id/checkout',
-        '/events/:id/review',
         '/messages',
         '/notifications',
         '/settings/:path*',
