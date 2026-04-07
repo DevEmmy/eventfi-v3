@@ -31,10 +31,13 @@ axiosInstance.interceptors.response.use(
         if (error.response) {
             if (error.response.status === 401) {
                 if (typeof window !== 'undefined') {
+                    const hadToken = !!localStorage.getItem('token');
                     localStorage.removeItem('token');
                     document.cookie = 'auth-token=; path=/; max-age=0';
-                    // Don't redirect if already on auth pages
-                    if (!window.location.pathname.startsWith('/auth')) {
+                    // Only redirect to login if the user had a token (expired session).
+                    // If there was no token at all, the 401 is expected for optional-auth
+                    // endpoints and we should not force a redirect.
+                    if (hadToken && !window.location.pathname.startsWith('/auth')) {
                         window.location.href = `/auth/login?redirect=${encodeURIComponent(window.location.pathname)}`;
                     }
                 }
