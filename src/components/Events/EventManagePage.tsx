@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Button from "@/components/Button";
@@ -36,10 +36,13 @@ import {
   MessageText1,
   Minus,
   Link2,
+  Scan,
 } from "iconsax-react";
+import { QRCodeCanvas } from "qrcode.react";
 import { ManageEventService } from "@/services/manage";
 import { ChatService } from "@/services/chat";
 import { EventService } from "@/services/events";
+import { getEventShareUrl } from "@/utils/generateEventSlug";
 import OrganizerGamePanel from "@/components/Games/OrganizerGamePanel";
 import customToast from "@/lib/toast";
 import {
@@ -128,6 +131,8 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
   // Slug modal state
   const [showSlugModal, setShowSlugModal] = useState(false);
   const [slugInput, setSlugInput] = useState("");
+  const [showQrModal, setShowQrModal] = useState(false);
+  const qrCanvasRef = useRef<HTMLDivElement>(null);
   const [savingSlug, setSavingSlug] = useState(false);
 
   // Derived data from dashboard
@@ -830,6 +835,15 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                     onClick={() => setShowSlugModal(true)}
                   >
                     Custom URL
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="md"
+                    fullWidth
+                    leftIcon={Scan}
+                    onClick={() => setShowQrModal(true)}
+                  >
+                    QR Code
                   </Button>
                   <Button
                     variant="outline"
@@ -1717,6 +1731,99 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
           </div>
         </div>
       )}
+      {/* QR Code Modal */}
+      {showQrModal && (() => {
+        const shareUrl = getEventShareUrl({ slug: data?.event?.slug, id: eventId });
+        const eventTitle = data?.event?.title || "Event";
+
+        const handleDownload = () => {
+          const canvas = qrCanvasRef.current?.querySelector("canvas");
+          if (!canvas) return;
+          const url = canvas.toDataURL("image/png");
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = `${(data?.event?.slug || eventId)}-qr.png`;
+          a.click();
+        };
+
+        const handleCopyLink = async () => {
+          await navigator.clipboard.writeText(shareUrl);
+          customToast.success("Link copied!");
+        };
+
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div
+              className="absolute inset-0 bg-foreground/50 backdrop-blur-sm"
+              onClick={() => setShowQrModal(false)}
+            />
+            <div className="relative bg-background rounded-2xl shadow-2xl w-full max-w-sm p-6 border border-foreground/10">
+              {/* Header */}
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h3 className="text-xl font-bold font-[family-name:var(--font-clash-display)] text-foreground">
+                    Event QR Code
+                  </h3>
+                  <p className="text-sm text-foreground/60 mt-1">
+                    Scan to open the event page
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowQrModal(false)}
+                  className="p-2 hover:bg-foreground/10 rounded-xl transition-colors"
+                >
+                  <CloseCircle size={22} color="currentColor" variant="Outline" />
+                </button>
+              </div>
+
+              {/* QR Code */}
+              <div
+                ref={qrCanvasRef}
+                className="flex flex-col items-center gap-4"
+              >
+                <div className="p-4 bg-white rounded-2xl shadow-inner border border-foreground/10">
+                  <QRCodeCanvas
+                    value={shareUrl}
+                    size={200}
+                    bgColor="#ffffff"
+                    fgColor="#000000"
+                    level="H"
+                  />
+                </div>
+                <div className="text-center">
+                  <p className="font-semibold text-foreground text-sm truncate max-w-xs">
+                    {eventTitle}
+                  </p>
+                  <p className="text-xs text-primary mt-0.5 break-all">{shareUrl}</p>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-3 mt-6">
+                <Button
+                  variant="outline"
+                  size="md"
+                  fullWidth
+                  leftIcon={Copy}
+                  onClick={handleCopyLink}
+                >
+                  Copy Link
+                </Button>
+                <Button
+                  variant="primary"
+                  size="md"
+                  fullWidth
+                  leftIcon={Export}
+                  onClick={handleDownload}
+                >
+                  Download
+                </Button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
       {/* Slug / Custom URL Modal */}
       {showSlugModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
