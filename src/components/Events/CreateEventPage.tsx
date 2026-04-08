@@ -72,7 +72,6 @@ const CreateEventPage = () => {
     lat: null as number | null,
     lng: null as number | null,
   });
-  const [isGeocodingAddress, setIsGeocodingAddress] = useState(false);
 
   const [ticketTypes, setTicketTypes] = useState<TicketType[]>([
     { id: '1', name: '', price: '', quantity: 0, description: '' }
@@ -83,7 +82,6 @@ const CreateEventPage = () => {
   const geocodeAddress = async (address: string, venue: string) => {
     const query = [venue, address].filter(Boolean).join(', ');
     if (!query.trim()) return;
-    setIsGeocodingAddress(true);
     try {
       const res = await fetch(
         `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`,
@@ -96,13 +94,9 @@ const CreateEventPage = () => {
           lat: parseFloat(results[0].lat),
           lng: parseFloat(results[0].lon),
         }));
-      } else {
-        setFormData(prev => ({ ...prev, lat: null, lng: null }));
       }
     } catch {
-      // silently fail — coordinates stay null
-    } finally {
-      setIsGeocodingAddress(false);
+      // silently fail — coordinates stay null, map falls back to geocoding on detail page
     }
   };
 

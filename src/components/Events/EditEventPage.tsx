@@ -103,12 +103,10 @@ const EditEventPage: React.FC<EditEventPageProps> = ({ eventId }) => {
   const [uploading, setUploading] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [fetchError, setFetchError] = useState<string | null>(null);
-  const [isGeocodingAddress, setIsGeocodingAddress] = useState(false);
 
   const geocodeAddress = async (address: string, venue: string) => {
     const query = [venue, address].filter(Boolean).join(', ');
     if (!query.trim()) return;
-    setIsGeocodingAddress(true);
     try {
       const res = await fetch(
         `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`,
@@ -121,13 +119,9 @@ const EditEventPage: React.FC<EditEventPageProps> = ({ eventId }) => {
           lat: parseFloat(results[0].lat),
           lng: parseFloat(results[0].lon),
         }));
-      } else {
-        setFormData(prev => ({ ...prev, lat: null, lng: null }));
       }
     } catch {
-      // silently fail
-    } finally {
-      setIsGeocodingAddress(false);
+      // silently fail — coordinates stay null, map falls back to geocoding on detail page
     }
   };
 
