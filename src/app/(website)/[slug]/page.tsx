@@ -1,60 +1,71 @@
-"use client";
+import type { Metadata } from "next";
+import SlugRedirectPage from "@/components/SlugRedirectPage";
 
-import { useParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+interface Props {
+  params: Promise<{ slug: string }>;
+}
 
-const ShortUrlPage = () => {
-  const params = useParams();
-  const router = useRouter();
-  const slug = params?.slug as string;
-  const [notFound, setNotFound] = useState(false);
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://eventfi-backend-v2.onrender.com/api/v1";
 
-  useEffect(() => {
-    if (!slug) return;
+async function fetchEventBySlug(slug: string) {
+  try {
+    const res = await fetch(`${API_BASE}/events/slug/${encodeURIComponent(slug.toUpperCase())}`, {
+      next: { revalidate: 60 },
+    });
+    if (!res.ok) return null;
+    const json = await res.json();
+    return json?.data ?? null;
+  } catch {
+    return null;
+  }
+}
 
-    const resolveSlug = async () => {
-      try {
-        const res = await fetch(`/api/events/slug/${encodeURIComponent(slug)}`);
-        const data = await res.json();
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params;
+  const event = await fetchEventBySlug(slug);
 
-        if (res.ok && data.found && data.eventId) {
-          router.replace(`/events/${data.eventId}`);
-        } else {
-          setNotFound(true);
-        }
-      } catch {
-        setNotFound(true);
-      }
+  if (!event) {
+    return {
+      title: "Event | EventFi",
+      description: "Discover and book amazing events on EventFi.",
     };
-
-    resolveSlug();
-  }, [slug, router]);
-
-  if (notFound) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
-        <h1 className="text-4xl font-bold text-foreground">Event Not Found</h1>
-        <p className="text-foreground/60 text-lg">
-          No event matches the link <span className="font-mono text-primary">/{slug}</span>
-        </p>
-        <button
-          onClick={() => router.push("/explore-events")}
-          className="px-6 py-3 bg-primary text-white rounded-full hover:bg-primary/90 transition-colors mt-4"
-        >
-          Explore Events
-        </button>
-      </div>
-    );
   }
 
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="flex flex-col items-center gap-3">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary" />
-        <p className="text-foreground/60 text-sm">Finding your event...</p>
-      </div>
-    </div>
-  );
-};
+  const title = `${event.title} | EventFi`;
+  const description = event.description
+    ? event.description.slice(0, 160)
+    : `Join us at ${event.title}. Book your tickets on EventFi.`;
+  const image = event.coverImage || "https://eventfi.live/ogp.png";
+  const url = `https://eventfi.live/${slug}`;
 
-export default ShortUrlPage;
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      url,
+      siteName: "EventFi",
+      images: [
+        {
+          url: image,
+          width: 1200,
+          height: 630,
+          alt: event.title,
+        },
+      ],
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [image],
+    },
+  };
+}
+
+export default async function Page({ params }: Props) {
+  const { slug } = await params;
+  return <SlugRedirectPage slug={slug} />;
+}
