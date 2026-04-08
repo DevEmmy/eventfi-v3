@@ -29,6 +29,7 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [organizerId, setOrganizerId] = useState<string | null>(null);
+  const [mapCoords, setMapCoords] = useState<{ lat: number; lng: number } | null>(null);
 
   const { user } = useUserStore();
   const { openEventChat } = useMessengerStore();
@@ -88,6 +89,29 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
         setEvent(mappedEvent);
         setOrganizerId(data.organizerId || data.organizer?.id || null);
         setHasTicket(data.hasTicket || data.userHasTicket || false);
+
+        // Resolve map coordinates: use stored lat/lng or geocode the address
+        if (data.lat && data.lng && data.lat !== 0 && data.lng !== 0) {
+          setMapCoords({ lat: data.lat, lng: data.lng });
+        } else if (data.locationType !== 'ONLINE') {
+          const query = data.address || data.venueName || data.city;
+          if (query) {
+            fetch(
+              `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`,
+              { headers: { 'Accept-Language': 'en' } }
+            )
+              .then((r) => r.json())
+              .then((results) => {
+                if (results.length > 0) {
+                  setMapCoords({
+                    lat: parseFloat(results[0].lat),
+                    lng: parseFloat(results[0].lon),
+                  });
+                }
+              })
+              .catch(() => {/* silently fail — map section will be hidden */});
+          }
+        }
 
         // Fetch reviews, stats, and related events in parallel
         const [reviewsData, statsData, relatedData] = await Promise.all([
@@ -476,27 +500,23 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
                     </div>
                   </div>
                   {/* Embedded Map */}
-                  {event.lat && event.lng && event.lat !== 0 && event.lng !== 0 ? (
+                  {mapCoords ? (
                     <iframe
                       className="w-full h-64 rounded-xl border-0"
                       loading="lazy"
                       referrerPolicy="no-referrer-when-downgrade"
-                      src={`https://www.openstreetmap.org/export/embed.html?bbox=${event.lng - 0.01},${event.lat - 0.01},${event.lng + 0.01},${event.lat + 0.01}&layer=mapnik&marker=${event.lat},${event.lng}`}
+                      src={`https://www.openstreetmap.org/export/embed.html?bbox=${mapCoords.lng - 0.01},${mapCoords.lat - 0.01},${mapCoords.lng + 0.01},${mapCoords.lat + 0.01}&layer=mapnik&marker=${mapCoords.lat},${mapCoords.lng}`}
                       title="Event location map"
                     />
                   ) : (
-                    <iframe
-                      className="w-full h-64 rounded-xl border-0"
-                      loading="lazy"
-                      referrerPolicy="no-referrer-when-downgrade"
-                      src={`https://www.openstreetmap.org/export/embed.html?bbox=3.35,6.42,3.45,6.48&layer=mapnik`}
-                      title="Event location map"
-                    />
+                    <div className="w-full h-64 rounded-xl bg-foreground/5 border border-foreground/10 flex items-center justify-center">
+                      <p className="text-sm text-foreground/40">Map unavailable for this location</p>
+                    </div>
                   )}
                   <a
                     href={
-                      event.lat && event.lng && event.lat !== 0 && event.lng !== 0
-                        ? `https://www.google.com/maps/search/?api=1&query=${event.lat},${event.lng}`
+                      mapCoords
+                        ? `https://www.google.com/maps/search/?api=1&query=${mapCoords.lat},${mapCoords.lng}`
                         : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.address || event.location)}`
                     }
                     target="_blank"
