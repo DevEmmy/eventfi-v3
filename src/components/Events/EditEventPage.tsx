@@ -87,6 +87,8 @@ const EditEventPage: React.FC<EditEventPageProps> = ({ eventId }) => {
     onlineLink: "",
     image: null as string | null,
     visibility: "public" as "public" | "private",
+    lat: null as number | null,
+    lng: null as number | null,
   });
 
   const [ticketTypes, setTicketTypes] = useState<TicketType[]>([
@@ -101,6 +103,33 @@ const EditEventPage: React.FC<EditEventPageProps> = ({ eventId }) => {
   const [uploading, setUploading] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [fetchError, setFetchError] = useState<string | null>(null);
+  const [isGeocodingAddress, setIsGeocodingAddress] = useState(false);
+
+  const geocodeAddress = async (address: string, venue: string) => {
+    const query = [venue, address].filter(Boolean).join(', ');
+    if (!query.trim()) return;
+    setIsGeocodingAddress(true);
+    try {
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`,
+        { headers: { 'Accept-Language': 'en' } }
+      );
+      const results = await res.json();
+      if (results.length > 0) {
+        setFormData(prev => ({
+          ...prev,
+          lat: parseFloat(results[0].lat),
+          lng: parseFloat(results[0].lon),
+        }));
+      } else {
+        setFormData(prev => ({ ...prev, lat: null, lng: null }));
+      }
+    } catch {
+      // silently fail
+    } finally {
+      setIsGeocodingAddress(false);
+    }
+  };
 
   const sections = [
     { id: "details", label: "Event Details", icon: DocumentText },
@@ -136,6 +165,8 @@ const EditEventPage: React.FC<EditEventPageProps> = ({ eventId }) => {
           onlineLink: event.onlineUrl || "",
           image: event.coverImage || null,
           visibility: event.privacy === "PRIVATE" ? "private" : "public",
+          lat: event.lat || null,
+          lng: event.lng || null,
         });
 
         if (event.tickets && event.tickets.length > 0) {
@@ -393,7 +424,7 @@ const EditEventPage: React.FC<EditEventPageProps> = ({ eventId }) => {
           country: "Nigeria",
           address: formData.location,
           venueName: formData.venue,
-          coordinates: { lat: 0, lng: 0 },
+          coordinates: { lat: formData.lat ?? 0, lng: formData.lng ?? 0 },
         },
         schedule: {
           startDate: startDateTime.toISOString(),
@@ -771,7 +802,11 @@ const EditEventPage: React.FC<EditEventPageProps> = ({ eventId }) => {
                         type="text"
                         name="location"
                         value={formData.location}
-                        onChange={handleInputChange}
+                        onChange={(e) => {
+                          handleInputChange(e);
+                          setFormData(prev => ({ ...prev, lat: null, lng: null }));
+                        }}
+                        onBlur={() => geocodeAddress(formData.location, formData.venue)}
                         placeholder="e.g., 123 Main Street, Lagos, Nigeria"
                         className="w-full px-4 py-3 bg-background border border-foreground/20 rounded-xl text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200"
                         required={!formData.isOnline}
