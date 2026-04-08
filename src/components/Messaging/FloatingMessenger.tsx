@@ -106,7 +106,7 @@ const FloatingMessenger: React.FC = () => {
 
     chatSocket.on("chat:message", (data) => {
       chatStore.addMessage(data.message);
-      const incomingEventId = data.message.eventId ?? activeEventIdRef.current;
+      const incomingEventId = (data.message as any).eventId ?? activeEventIdRef.current;
       setEventChats((prev) =>
         prev.map((c) => {
           if (c.eventId !== incomingEventId) return c;
