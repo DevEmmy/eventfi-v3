@@ -4,12 +4,11 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { EventService } from "@/services/events";
 import {
-  EventCategory,
   EventPrivacy,
   TicketType as ApiTicketType,
   CreateEventPayload,
 } from "@/types/event";
-import { getApiCategory } from "@/utils/event-utils";
+import { EVENT_CATEGORIES, getApiCategoryFromLabel } from "@/utils/event-categories";
 import Button from "@/components/Button";
 import customToast from "@/lib/toast";
 import {
@@ -23,6 +22,7 @@ import {
   Add,
   Clock,
   Trash,
+  CloseCircle,
 } from "iconsax-react";
 
 interface TicketType {
@@ -44,29 +44,14 @@ interface EditEventPageProps {
   eventId: string;
 }
 
-const categories = Object.values(EventCategory);
-
 const getTodayDate = () => {
   const today = new Date();
   return today.toISOString().split('T')[0];
 };
 
-// Reverse map from API category enum to display label
+// Map API enum back to the display label used in the card grid
 const getCategoryLabel = (apiCategory: string): string => {
-  const reverseMap: Record<string, string> = {
-    TECH: "TECH",
-    MUSIC: "MUSIC",
-    ARTS: "ARTS",
-    BUSINESS: "BUSINESS",
-    COMMUNITY: "COMMUNITY",
-    EDUCATION: "EDUCATION",
-    ENTERTAINMENT: "ENTERTAINMENT",
-    SPORTS: "SPORTS",
-    WELLNESS: "WELLNESS",
-    FOOD_DRINK: "FOOD_DRINK",
-    OTHER: "OTHER",
-  };
-  return reverseMap[apiCategory] || apiCategory;
+  return EVENT_CATEGORIES.find(c => c.apiValue === apiCategory)?.label ?? "Other";
 };
 
 const EditEventPage: React.FC<EditEventPageProps> = ({ eventId }) => {
@@ -90,6 +75,8 @@ const EditEventPage: React.FC<EditEventPageProps> = ({ eventId }) => {
     lat: null as number | null,
     lng: null as number | null,
   });
+  const [tags, setTags] = useState<string[]>([]);
+  const [tagInput, setTagInput] = useState("");
 
   const [ticketTypes, setTicketTypes] = useState<TicketType[]>([
     { id: "1", name: "", price: "", quantity: 0, description: "" },
@@ -162,6 +149,9 @@ const EditEventPage: React.FC<EditEventPageProps> = ({ eventId }) => {
           lat: event.lat || null,
           lng: event.lng || null,
         });
+        if (event.tags && Array.isArray(event.tags)) {
+          setTags(event.tags);
+        }
 
         if (event.tickets && event.tickets.length > 0) {
           setTicketTypes(
@@ -411,7 +401,7 @@ const EditEventPage: React.FC<EditEventPageProps> = ({ eventId }) => {
         title: formData.title,
         ...(formData.slug && { slug: formData.slug.replace(/[^a-zA-Z0-9-_]/g, "").toUpperCase() }),
         description: formData.description,
-        category: getApiCategory(formData.category),
+        category: getApiCategoryFromLabel(formData.category),
         location: {
           type: formData.isOnline ? "ONLINE" : "PHYSICAL",
           city: formData.location.split(",")[0].trim() || "Unknown",
@@ -441,7 +431,7 @@ const EditEventPage: React.FC<EditEventPageProps> = ({ eventId }) => {
           gallery: [],
         },
         privacy: formData.visibility === "public" ? EventPrivacy.PUBLIC : EventPrivacy.PRIVATE,
-        tags: [formData.category],
+        tags: tags.length > 0 ? tags : [formData.category],
         scheduleItems: agendaItems
           .filter(item => item.time && item.activity)
           .map((item, index) => ({
@@ -519,24 +509,112 @@ const EditEventPage: React.FC<EditEventPageProps> = ({ eventId }) => {
               <p className="text-xs text-foreground/50 mt-1.5">Only letters, numbers, hyphens and underscores. Leave blank to keep current.</p>
             </div>
 
+            {/* Category picker */}
             <div>
-              <label className="block text-sm font-semibold text-foreground mb-2">
+              <label className="block text-sm font-semibold text-foreground mb-3">
                 Category <span className="text-primary">*</span>
               </label>
-              <select
-                name="category"
-                value={formData.category}
-                onChange={handleInputChange}
-                className="w-full px-4 py-3 bg-background border border-foreground/20 rounded-xl text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200"
-                required
-              >
-                <option value="">Select a category</option>
-                {categories.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
-                  </option>
-                ))}
-              </select>
+              <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                {EVENT_CATEGORIES.map((cat) => {
+                  const active = formData.category === cat.label;
+                  return (
+                    <button
+                      key={cat.label}
+                      type="button"
+                      onClick={() => {
+                        setFormData(prev => ({ ...prev, category: cat.label }));
+                        setTags([]);
+                      }}
+                      className={`flex flex-col items-center gap-1.5 px-2 py-3 rounded-xl border-2 text-xs font-medium transition-all ${
+                        active
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-foreground/15 hover:border-primary/40 text-foreground/70"
+                      }`}
+                    >
+                      <span className="text-xl">{cat.emoji}</span>
+                      <span className="leading-tight text-center">{cat.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+              {formData.category && (() => {
+                const hint = EVENT_CATEGORIES.find(c => c.label === formData.category)?.hint;
+                return hint ? (
+                  <p className="mt-2 text-xs text-foreground/50 italic">{hint}</p>
+                ) : null;
+              })()}
+            </div>
+
+            {/* Tags */}
+            <div>
+              <label className="block text-sm font-semibold text-foreground mb-2">
+                Tags <span className="text-foreground/40 font-normal">(optional)</span>
+              </label>
+              {formData.category && (() => {
+                const suggested = EVENT_CATEGORIES.find(c => c.label === formData.category)?.suggestedTags ?? [];
+                const available = suggested.filter(t => !tags.includes(t));
+                return available.length > 0 ? (
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    {available.map(t => (
+                      <button
+                        key={t}
+                        type="button"
+                        onClick={() => setTags(prev => [...prev, t])}
+                        className="text-xs px-3 py-1 rounded-full border border-foreground/20 text-foreground/60 hover:border-primary hover:text-primary transition-colors"
+                      >
+                        + {t}
+                      </button>
+                    ))}
+                  </div>
+                ) : null;
+              })()}
+              {tags.length > 0 && (
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {tags.map(t => (
+                    <span
+                      key={t}
+                      className="flex items-center gap-1 text-xs px-3 py-1 rounded-full bg-primary/10 border border-primary/30 text-primary font-medium"
+                    >
+                      {t}
+                      <button
+                        type="button"
+                        onClick={() => setTags(prev => prev.filter(x => x !== t))}
+                        className="ml-0.5 hover:text-primary/60"
+                      >
+                        <CloseCircle size={13} variant="Bold" color="currentColor" />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={tagInput}
+                  onChange={e => setTagInput(e.target.value)}
+                  onKeyDown={e => {
+                    if ((e.key === "Enter" || e.key === ",") && tagInput.trim()) {
+                      e.preventDefault();
+                      const val = tagInput.trim().replace(/,+$/, "");
+                      if (val && !tags.includes(val)) setTags(prev => [...prev, val]);
+                      setTagInput("");
+                    }
+                  }}
+                  placeholder="Add a custom tag, press Enter"
+                  className="flex-1 px-4 py-2.5 bg-background border border-foreground/20 rounded-xl text-sm text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    const val = tagInput.trim().replace(/,+$/, "");
+                    if (val && !tags.includes(val)) setTags(prev => [...prev, val]);
+                    setTagInput("");
+                  }}
+                  className="px-4 py-2.5 rounded-xl bg-primary/10 text-primary text-sm font-semibold hover:bg-primary/20 transition-colors"
+                >
+                  Add
+                </button>
+              </div>
             </div>
 
             <div>
