@@ -66,6 +66,7 @@ const FloatingMessenger: React.FC = () => {
 
   // Stable refs — let handlers always read the latest values without re-registering
   const activeEventIdRef = useRef<string | null>(null);
+  const isOpenRef = useRef<boolean>(false);
   const userIdRef = useRef<string | undefined>(undefined);
   const lastSentAtRef = useRef<number>(0);
   const slowModeIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -85,6 +86,7 @@ const FloatingMessenger: React.FC = () => {
 
   // Keep refs in sync
   useEffect(() => { activeEventIdRef.current = activeEventId; }, [activeEventId]);
+  useEffect(() => { isOpenRef.current = isOpen; }, [isOpen]);
   useEffect(() => { userIdRef.current = user?.id; }, [user?.id]);
 
   // ── Stable socket event handlers (set up once, use refs for current values) ─
@@ -104,17 +106,20 @@ const FloatingMessenger: React.FC = () => {
 
     chatSocket.on("chat:message", (data) => {
       chatStore.addMessage(data.message);
+      const incomingEventId = data.message.eventId ?? activeEventIdRef.current;
       setEventChats((prev) =>
-        prev.map((c) =>
-          c.eventId === activeEventIdRef.current
-            ? {
-                ...c,
-                lastMessage: `${data.message.sender.name}: ${data.message.content}`,
-                lastMessageTime: data.message.createdAt,
-                unreadCount: 0, // already viewing this chat
-              }
-            : c
-        )
+        prev.map((c) => {
+          if (c.eventId !== incomingEventId) return c;
+          // Only mark as read if the messenger is open AND this is the active chat
+          const isActiveAndVisible =
+            isOpenRef.current && c.eventId === activeEventIdRef.current;
+          return {
+            ...c,
+            lastMessage: `${data.message.sender.name}: ${data.message.content}`,
+            lastMessageTime: data.message.createdAt,
+            unreadCount: isActiveAndVisible ? 0 : c.unreadCount + 1,
+          };
+        })
       );
     });
 
