@@ -1733,8 +1733,8 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
       )}
       {/* QR Code Modal */}
       {showQrModal && (() => {
-        const shareUrl = getEventShareUrl({ slug: data?.event?.slug, id: eventId });
-        const eventTitle = data?.event?.title || "Event";
+        const shareUrl = getEventShareUrl({ slug: dashboardData?.event?.slug, id: eventId });
+        const eventTitle = dashboardData?.event?.title || "Event";
 
         const handleDownload = () => {
           const canvas = qrCanvasRef.current?.querySelector("canvas");
@@ -1742,7 +1742,7 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
           const url = canvas.toDataURL("image/png");
           const a = document.createElement("a");
           a.href = url;
-          a.download = `${(data?.event?.slug || eventId)}-qr.png`;
+          a.download = `${(dashboardData?.event?.slug || eventId)}-qr.png`;
           a.click();
         };
 
