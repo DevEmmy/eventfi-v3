@@ -483,50 +483,59 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
               </div>
             </div>
 
-            {/* Location Map - Only for physical events */}
+            {/* Location — Only for physical events */}
             {event.locationType !== "ONLINE" && (
               <div>
                 <h2 className="text-2xl font-bold font-[family-name:var(--font-clash-display)] mb-4 text-foreground">
                   Location
                 </h2>
-                <div className="bg-foreground/5 rounded-2xl border border-foreground/10 p-6">
-                  <div className="flex items-start gap-4 mb-4">
-                    <Map size={24} color="currentColor" variant="Bold" className="text-primary" />
+                {event.address || event.location !== "Online" ? (
+                  <div className="bg-foreground/5 rounded-2xl border border-foreground/10 p-6">
+                    <div className="flex items-start gap-4 mb-4">
+                      <Map size={24} color="currentColor" variant="Bold" className="text-primary" />
+                      <div>
+                        <p className="font-semibold text-foreground mb-1">{event.location}</p>
+                        <p className="text-foreground/70 text-sm">{event.address}</p>
+                      </div>
+                    </div>
+                    {mapCoords ? (
+                      <iframe
+                        className="w-full h-64 rounded-xl border-0"
+                        loading="lazy"
+                        referrerPolicy="no-referrer-when-downgrade"
+                        src={`https://www.openstreetmap.org/export/embed.html?bbox=${mapCoords.lng - 0.01},${mapCoords.lat - 0.01},${mapCoords.lng + 0.01},${mapCoords.lat + 0.01}&layer=mapnik&marker=${mapCoords.lat},${mapCoords.lng}`}
+                        title="Event location map"
+                      />
+                    ) : (
+                      <div className="w-full h-64 rounded-xl bg-foreground/5 border border-foreground/10 flex items-center justify-center">
+                        <p className="text-sm text-foreground/40">Map unavailable for this location</p>
+                      </div>
+                    )}
+                    <a
+                      href={
+                        mapCoords
+                          ? `https://www.google.com/maps/search/?api=1&query=${mapCoords.lat},${mapCoords.lng}`
+                          : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.address || event.location)}`
+                      }
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 mt-3 text-sm text-primary hover:text-primary/80 transition-colors font-medium"
+                    >
+                      <Location size={16} color="currentColor" variant="Outline" />
+                      Open in Google Maps
+                    </a>
+                  </div>
+                ) : (
+                  <div className="bg-foreground/5 rounded-2xl border border-dashed border-foreground/20 p-6 flex items-start gap-4">
+                    <Map size={24} color="currentColor" variant="Outline" className="text-foreground/30 mt-0.5 shrink-0" />
                     <div>
-                      <p className="font-semibold text-foreground mb-1">
-                        {event.location}
+                      <p className="font-semibold text-foreground/60">Venue to be announced</p>
+                      <p className="text-sm text-foreground/40 mt-1">
+                        The organizer hasn&apos;t confirmed the venue yet. Registered attendees will receive an email as soon as it&apos;s set.
                       </p>
-                      <p className="text-foreground/70 text-sm">{event.address}</p>
                     </div>
                   </div>
-                  {/* Embedded Map */}
-                  {mapCoords ? (
-                    <iframe
-                      className="w-full h-64 rounded-xl border-0"
-                      loading="lazy"
-                      referrerPolicy="no-referrer-when-downgrade"
-                      src={`https://www.openstreetmap.org/export/embed.html?bbox=${mapCoords.lng - 0.01},${mapCoords.lat - 0.01},${mapCoords.lng + 0.01},${mapCoords.lat + 0.01}&layer=mapnik&marker=${mapCoords.lat},${mapCoords.lng}`}
-                      title="Event location map"
-                    />
-                  ) : (
-                    <div className="w-full h-64 rounded-xl bg-foreground/5 border border-foreground/10 flex items-center justify-center">
-                      <p className="text-sm text-foreground/40">Map unavailable for this location</p>
-                    </div>
-                  )}
-                  <a
-                    href={
-                      mapCoords
-                        ? `https://www.google.com/maps/search/?api=1&query=${mapCoords.lat},${mapCoords.lng}`
-                        : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.address || event.location)}`
-                    }
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 mt-3 text-sm text-primary hover:text-primary/80 transition-colors font-medium"
-                  >
-                    <Location size={16} color="currentColor" variant="Outline" />
-                    Open in Google Maps
-                  </a>
-                </div>
+                )}
               </div>
             )}
 

@@ -135,6 +135,11 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
   const qrCanvasRef = useRef<HTMLDivElement>(null);
   const [savingSlug, setSavingSlug] = useState(false);
 
+  // Location modal state
+  const [showLocationModal, setShowLocationModal] = useState(false);
+  const [locationForm, setLocationForm] = useState({ venue: "", address: "" });
+  const [savingLocation, setSavingLocation] = useState(false);
+
   // Derived data from dashboard
   const event = dashboardData?.event;
   const stats = dashboardData?.stats || {
@@ -310,6 +315,34 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
       customToast.error(error.response?.data?.message || "Failed to update slug");
     } finally {
       setSavingSlug(false);
+    }
+  };
+
+  const handleSaveLocation = async () => {
+    if (!locationForm.venue.trim() && !locationForm.address.trim()) {
+      customToast.error("Please enter at least a venue name or address");
+      return;
+    }
+    setSavingLocation(true);
+    try {
+      await EventService.updateEvent(eventId, {
+        location: {
+          type: "PHYSICAL",
+          venueName: locationForm.venue || undefined,
+          address: locationForm.address || undefined,
+          city: locationForm.address.split(",")[0]?.trim() || undefined,
+          country: "Nigeria",
+        },
+      } as any);
+      setShowLocationModal(false);
+      customToast.success("Location updated! Registered attendees have been notified.");
+      // Refresh dashboard data
+      const fresh = await ManageEventService.getDashboard(eventId);
+      setDashboardData(fresh);
+    } catch (error: any) {
+      customToast.error(error.response?.data?.message || "Failed to update location");
+    } finally {
+      setSavingLocation(false);
     }
   };
 
@@ -826,6 +859,22 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                     onClick={() => router.push(`/events/${eventId}`)}
                   >
                     View Public
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="md"
+                    fullWidth
+                    leftIcon={Location}
+                    onClick={() => {
+                      setLocationForm({
+                        venue: dashboardData?.event?.venueName || "",
+                        address: dashboardData?.event?.address || "",
+                      });
+                      setShowLocationModal(true);
+                    }}
+                    className={!dashboardData?.event?.address && !dashboardData?.event?.venueName ? "border-amber-500/30 text-amber-600 hover:bg-amber-500/10" : ""}
+                  >
+                    {!dashboardData?.event?.address && !dashboardData?.event?.venueName ? "Set Venue" : "Update Venue"}
                   </Button>
                   <Button
                     variant="outline"
@@ -1823,6 +1872,58 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
           </div>
         );
       })()}
+
+      {/* Location Modal */}
+      {showLocationModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-foreground/50 backdrop-blur-sm" onClick={() => setShowLocationModal(false)} />
+          <div className="relative bg-background rounded-2xl shadow-2xl w-full max-w-md p-6 border border-foreground/10">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h3 className="text-xl font-bold font-[family-name:var(--font-clash-display)] text-foreground">
+                  {!dashboardData?.event?.address && !dashboardData?.event?.venueName ? "Set Event Venue" : "Update Venue"}
+                </h3>
+                <p className="text-sm text-foreground/60 mt-1">
+                  Registered attendees will be notified by email.
+                </p>
+              </div>
+              <button onClick={() => setShowLocationModal(false)} className="p-2 hover:bg-foreground/10 rounded-xl transition-colors">
+                <CloseCircle size={22} color="currentColor" variant="Outline" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-foreground mb-2">Venue Name</label>
+                <input
+                  type="text"
+                  value={locationForm.venue}
+                  onChange={e => setLocationForm(prev => ({ ...prev, venue: e.target.value }))}
+                  placeholder="e.g., Eko Hotel & Suites"
+                  className="w-full px-4 py-3 bg-background border border-foreground/20 rounded-xl text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-foreground mb-2">Full Address</label>
+                <input
+                  type="text"
+                  value={locationForm.address}
+                  onChange={e => setLocationForm(prev => ({ ...prev, address: e.target.value }))}
+                  placeholder="e.g., 1415 Adetokunbo Ademola St, Lagos"
+                  className="w-full px-4 py-3 bg-background border border-foreground/20 rounded-xl text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <Button variant="outline" size="md" fullWidth onClick={() => setShowLocationModal(false)}>Cancel</Button>
+              <Button variant="primary" size="md" fullWidth onClick={handleSaveLocation} disabled={savingLocation || (!locationForm.venue.trim() && !locationForm.address.trim())}>
+                {savingLocation ? "Saving…" : "Save & Notify Attendees"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Slug / Custom URL Modal */}
       {showSlugModal && (

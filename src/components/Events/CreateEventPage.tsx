@@ -313,18 +313,8 @@ const CreateEventPage = () => {
         setActiveSection(1);
         return false;
       }
-    } else {
-      if (!formData.venue.trim()) {
-        customToast.error("Venue name is required");
-        setActiveSection(1);
-        return false;
-      }
-      if (!formData.location.trim()) {
-        customToast.error("Address is required");
-        setActiveSection(1);
-        return false;
-      }
     }
+    // Physical location is optional — organizer can add it later
 
     // 4. Ticket Validation
     if (ticketTypes.length === 0) {
@@ -376,10 +366,10 @@ const CreateEventPage = () => {
 
         location: {
           type: formData.isOnline ? 'ONLINE' : 'PHYSICAL',
-          city: formData.location.split(',')[0].trim() || 'Unknown',
+          city: formData.location.split(',')[0].trim() || undefined,
           country: 'Nigeria',
-          address: formData.location,
-          venueName: formData.venue,
+          address: formData.location || undefined,
+          venueName: formData.venue || undefined,
           coordinates: { lat: formData.lat ?? 0, lng: formData.lng ?? 0 }
         },
         schedule: {
@@ -820,7 +810,7 @@ const CreateEventPage = () => {
                   <>
                     <div>
                       <label className="block text-sm font-semibold text-foreground mb-2">
-                        Venue Name <span className="text-primary">*</span>
+                        Venue Name <span className="text-foreground/40 font-normal">(optional — can be added later)</span>
                       </label>
                       <input
                         type="text"
@@ -829,12 +819,11 @@ const CreateEventPage = () => {
                         onChange={handleInputChange}
                         placeholder="e.g., Lagos Tech Hub"
                         className="w-full px-4 py-3 bg-background border border-foreground/20 rounded-xl text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200"
-                        required={!formData.isOnline}
                       />
                     </div>
                     <div>
                       <label className="block text-sm font-semibold text-foreground mb-2">
-                        Address <span className="text-primary">*</span>
+                        Address <span className="text-foreground/40 font-normal">(optional — attendees will be notified when added)</span>
                       </label>
                       <input
                         type="text"
@@ -847,7 +836,6 @@ const CreateEventPage = () => {
                         onBlur={() => geocodeAddress(formData.location, formData.venue)}
                         placeholder="e.g., 123 Main Street, Lagos, Nigeria"
                         className="w-full px-4 py-3 bg-background border border-foreground/20 rounded-xl text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200"
-                        required={!formData.isOnline}
                       />
                     </div>
                   </>
