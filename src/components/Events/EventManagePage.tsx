@@ -41,8 +41,10 @@ import {
 import { QRCodeCanvas } from "qrcode.react";
 import { ManageEventService } from "@/services/manage";
 import { ChatService } from "@/services/chat";
-import { EventService } from "@/services/events";
+import { EventService, EventSpeaker } from "@/services/events";
+import SpeakerManager, { hasSpeakers } from "@/components/Events/SpeakerManager";
 import { getEventShareUrl } from "@/utils/generateEventSlug";
+import { EVENT_CATEGORIES } from "@/utils/event-categories";
 import OrganizerGamePanel from "@/components/Games/OrganizerGamePanel";
 import customToast from "@/lib/toast";
 import {
@@ -140,6 +142,9 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
   const [locationForm, setLocationForm] = useState({ venue: "", address: "" });
   const [savingLocation, setSavingLocation] = useState(false);
 
+  // Speakers state
+  const [speakers, setSpeakers] = useState<EventSpeaker[]>([]);
+
   // Derived data from dashboard
   const event = dashboardData?.event;
   const stats = dashboardData?.stats || {
@@ -158,6 +163,10 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
   const ticketTypes = dashboardData?.ticketBreakdown || [];
   const userRole = dashboardData?.userRole || "assistant";
   const salesData = analyticsData?.salesOverTime || [];
+  const eventCategoryLabel = (() => {
+    const raw = event?.category || "";
+    return EVENT_CATEGORIES.find(c => c.apiValue === raw || c.label === raw)?.label || raw;
+  })();
 
   // Fetch dashboard data on mount
   useEffect(() => {
@@ -190,6 +199,19 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
     if (dashboardData) {
       fetchTeam();
     }
+  }, [eventId, dashboardData]);
+
+  // Fetch speakers when event data is available and category supports speakers
+  useEffect(() => {
+    if (!dashboardData?.event) return;
+    const raw = dashboardData.event.category || "";
+    // category may be API enum (e.g. "CONFERENCE") or display label — resolve to label
+    const categoryLabel =
+      EVENT_CATEGORIES.find(c => c.apiValue === raw || c.label === raw)?.label || raw;
+    if (!hasSpeakers(categoryLabel)) return;
+    EventService.getSpeakers(eventId)
+      .then(setSpeakers)
+      .catch(() => {/* non-critical */});
   }, [eventId, dashboardData]);
 
   // Fetch attendees when tab changes or filters change
@@ -826,6 +848,31 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                   </div>
                 </div>
               </div>
+
+              {/* Speakers — shown only for speaker-friendly categories */}
+              {hasSpeakers(eventCategoryLabel) && (
+                <div className="bg-background border border-foreground/10 rounded-2xl p-6">
+                  <h3 className="text-xl font-bold font-[family-name:var(--font-clash-display)] mb-1 text-foreground">
+                    Speakers
+                  </h3>
+                  <p className="text-sm text-foreground/50 mb-4">Add speakers so attendees know who to expect</p>
+                  <SpeakerManager
+                    speakers={speakers}
+                    onAdd={async (data) => {
+                      const s = await EventService.addSpeaker(eventId, { ...data, order: speakers.length });
+                      setSpeakers(prev => [...prev, s]);
+                    }}
+                    onUpdate={async (id, data) => {
+                      const s = await EventService.updateSpeaker(eventId, id, data);
+                      setSpeakers(prev => prev.map(x => x.id === id ? s : x));
+                    }}
+                    onRemove={async (id) => {
+                      await EventService.deleteSpeaker(eventId, id);
+                      setSpeakers(prev => prev.filter(x => x.id !== id));
+                    }}
+                  />
+                </div>
+              )}
 
               {/* Management Actions */}
               <div className="bg-background border border-foreground/10 rounded-2xl p-6">

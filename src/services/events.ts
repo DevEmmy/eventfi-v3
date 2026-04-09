@@ -144,6 +144,27 @@ export const EventService = {
         return response.data.data;
     },
 
+    // ─── Speakers ─────────────────────────────────────────────────────────────
+
+    getSpeakers: async (eventId: string): Promise<EventSpeaker[]> => {
+        const response = await axiosInstance.get<ApiResponse<EventSpeaker[]>>(`/events/${eventId}/speakers`);
+        return response.data.data;
+    },
+
+    addSpeaker: async (eventId: string, data: Omit<EventSpeaker, 'id' | 'eventId' | 'createdAt' | 'updatedAt'>): Promise<EventSpeaker> => {
+        const response = await axiosInstance.post<ApiResponse<EventSpeaker>>(`/events/${eventId}/speakers`, data);
+        return response.data.data;
+    },
+
+    updateSpeaker: async (eventId: string, speakerId: string, data: Partial<EventSpeaker>): Promise<EventSpeaker> => {
+        const response = await axiosInstance.patch<ApiResponse<EventSpeaker>>(`/events/${eventId}/speakers/${speakerId}`, data);
+        return response.data.data;
+    },
+
+    deleteSpeaker: async (eventId: string, speakerId: string): Promise<void> => {
+        await axiosInstance.delete(`/events/${eventId}/speakers/${speakerId}`);
+    },
+
     /**
      * Get trending events
      * @param limit Number of events to return
@@ -174,6 +195,21 @@ export const EventService = {
         return response.data.data;
     },
 };
+
+export interface EventSpeaker {
+    id: string;
+    eventId: string;
+    name: string;
+    title?: string;
+    bio?: string;
+    avatar?: string;
+    twitterUrl?: string;
+    linkedinUrl?: string;
+    websiteUrl?: string;
+    order: number;
+    createdAt?: string;
+    updatedAt?: string;
+}
 
 export interface OrganizerDashboardData {
     stats: {

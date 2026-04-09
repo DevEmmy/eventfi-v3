@@ -12,6 +12,8 @@ import Button from "@/components/Button";
 import customToast from "@/lib/toast";
 import { Add, ArrowLeft2, ArrowRight2, CalendarAdd, Camera, Clock, Trash, CloseCircle } from "iconsax-react";
 import { EVENT_CATEGORIES, getApiCategoryFromLabel } from "@/utils/event-categories";
+import SpeakerManager, { hasSpeakers } from "./SpeakerManager";
+import { EventSpeaker } from "@/services/events";
 import AIAssistPanel, { AIEventResult } from "./AIAssistPanel";
 // ... existing imports
 
@@ -71,6 +73,8 @@ const CreateEventPage = () => {
   });
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState("");
+  // Local speaker list — persisted to DB after event creation
+  const [localSpeakers, setLocalSpeakers] = useState<EventSpeaker[]>([]);
 
   const [ticketTypes, setTicketTypes] = useState<TicketType[]>([
     { id: '1', name: '', price: '', quantity: 0, description: '' }
@@ -406,9 +410,22 @@ const CreateEventPage = () => {
         })
       };
 
-      await EventService.createEvent({
+      const createdEvent = await EventService.createEvent({
         ...payload
       } as any);
+
+      // Save local speakers if any
+      if (localSpeakers.length > 0 && createdEvent?.id) {
+        await Promise.allSettled(
+          localSpeakers.map(s =>
+            EventService.addSpeaker(createdEvent.id, {
+              name: s.name, title: s.title, bio: s.bio, avatar: s.avatar,
+              twitterUrl: s.twitterUrl, linkedinUrl: s.linkedinUrl, websiteUrl: s.websiteUrl,
+              order: s.order,
+            })
+          )
+        );
+      }
 
       customToast.success("Event published successfully!");
       router.push('/explore-events');
@@ -587,6 +604,35 @@ const CreateEventPage = () => {
                 required
               />
             </div>
+
+            {/* Speakers — shown for relevant categories */}
+            {hasSpeakers(formData.category) && (
+              <div className="pt-6 border-t border-foreground/10">
+                <div className="mb-4">
+                  <h3 className="text-lg font-semibold text-foreground">Speakers</h3>
+                  <p className="text-sm text-foreground/50 mt-1">
+                    Add speakers so attendees know who will be presenting.
+                  </p>
+                </div>
+                <SpeakerManager
+                  speakers={localSpeakers}
+                  onAdd={async (data) => {
+                    const fake: EventSpeaker = {
+                      id: `local-${Date.now()}`, eventId: "", order: localSpeakers.length,
+                      name: data.name, title: data.title, bio: data.bio, avatar: data.avatar,
+                      twitterUrl: data.twitterUrl, linkedinUrl: data.linkedinUrl, websiteUrl: data.websiteUrl,
+                    };
+                    setLocalSpeakers(prev => [...prev, fake]);
+                  }}
+                  onUpdate={async (id, data) => {
+                    setLocalSpeakers(prev => prev.map(s => s.id === id ? { ...s, ...data } : s));
+                  }}
+                  onRemove={async (id) => {
+                    setLocalSpeakers(prev => prev.filter(s => s.id !== id));
+                  }}
+                />
+              </div>
+            )}
 
             {/* Date & Time */}
             <div className="pt-6 border-t border-foreground/10">

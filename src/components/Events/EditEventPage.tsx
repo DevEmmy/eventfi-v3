@@ -9,6 +9,8 @@ import {
   CreateEventPayload,
 } from "@/types/event";
 import { EVENT_CATEGORIES, getApiCategoryFromLabel } from "@/utils/event-categories";
+import SpeakerManager, { hasSpeakers } from "./SpeakerManager";
+import { EventSpeaker, EventService as ESvc } from "@/services/events";
 import Button from "@/components/Button";
 import customToast from "@/lib/toast";
 import {
@@ -77,6 +79,7 @@ const EditEventPage: React.FC<EditEventPageProps> = ({ eventId }) => {
   });
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState("");
+  const [speakers, setSpeakers] = useState<EventSpeaker[]>([]);
 
   const [ticketTypes, setTicketTypes] = useState<TicketType[]>([
     { id: "1", name: "", price: "", quantity: 0, description: "" },
@@ -152,6 +155,9 @@ const EditEventPage: React.FC<EditEventPageProps> = ({ eventId }) => {
         if (event.tags && Array.isArray(event.tags)) {
           setTags(event.tags);
         }
+        // Load speakers
+        const spkrs = await ESvc.getSpeakers(eventId).catch(() => []);
+        setSpeakers(spkrs);
 
         if (event.tickets && event.tickets.length > 0) {
           setTicketTypes(
@@ -631,6 +637,33 @@ const EditEventPage: React.FC<EditEventPageProps> = ({ eventId }) => {
                 required
               />
             </div>
+
+            {/* Speakers */}
+            {hasSpeakers(formData.category) && (
+              <div className="pt-6 border-t border-foreground/10">
+                <div className="mb-4">
+                  <h3 className="text-lg font-semibold text-foreground">Speakers</h3>
+                  <p className="text-sm text-foreground/50 mt-1">
+                    Add speakers so attendees know who will be presenting.
+                  </p>
+                </div>
+                <SpeakerManager
+                  speakers={speakers}
+                  onAdd={async (data) => {
+                    const s = await ESvc.addSpeaker(eventId, { ...data, order: speakers.length });
+                    setSpeakers(prev => [...prev, s]);
+                  }}
+                  onUpdate={async (id, data) => {
+                    const s = await ESvc.updateSpeaker(eventId, id, data);
+                    setSpeakers(prev => prev.map(x => x.id === id ? s : x));
+                  }}
+                  onRemove={async (id) => {
+                    await ESvc.deleteSpeaker(eventId, id);
+                    setSpeakers(prev => prev.filter(x => x.id !== id));
+                  }}
+                />
+              </div>
+            )}
 
             {/* Date & Time */}
             <div className="pt-6 border-t border-foreground/10">

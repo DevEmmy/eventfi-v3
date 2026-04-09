@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { EventService } from "@/services/events";
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
-import { Calendar, Heart, Share, ArrowLeft2, Chart, Clock, Location, Map, Star1, Ticket, Tag, MessageText1, TickCircle, User, People } from "iconsax-react";
+import { Calendar, Heart, Share, ArrowLeft2, Chart, Clock, Location, Map, Star1, Ticket, Tag, MessageText1, TickCircle, User, People, Global } from "iconsax-react";
 import Button from "../Button";
 import EventCard from "../Homepage/EventCard";
 import { useUserStore } from "@/store/useUserStore";
@@ -30,6 +30,7 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
   const [error, setError] = useState("");
   const [organizerId, setOrganizerId] = useState<string | null>(null);
   const [mapCoords, setMapCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [speakers, setSpeakers] = useState<any[]>([]);
 
   const { user } = useUserStore();
   const { openEventChat } = useMessengerStore();
@@ -87,6 +88,7 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
         };
 
         setEvent(mappedEvent);
+        setSpeakers(data.speakers || []);
         setOrganizerId(data.organizerId || data.organizer?.id || null);
         setHasTicket(data.hasTicket || data.userHasTicket || false);
 
@@ -482,6 +484,51 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
                 ))}
               </div>
             </div>
+
+            {/* Speakers */}
+            {speakers.length > 0 && (
+              <div>
+                <h2 className="text-2xl font-bold font-[family-name:var(--font-clash-display)] mb-4 text-foreground">
+                  Speakers
+                </h2>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  {speakers.map((speaker: any) => (
+                    <div key={speaker.id} className="flex items-start gap-4 p-4 bg-foreground/5 border border-foreground/10 rounded-2xl">
+                      {speaker.avatar ? (
+                        <div className="relative w-14 h-14 rounded-full overflow-hidden shrink-0 border-2 border-foreground/10">
+                          <Image src={speaker.avatar} alt={speaker.name} fill className="object-cover" />
+                        </div>
+                      ) : (
+                        <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center shrink-0 border-2 border-primary/20">
+                          <User size={24} color="currentColor" variant="Bold" className="text-primary" />
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-foreground">{speaker.name}</p>
+                        {speaker.title && <p className="text-sm text-foreground/60">{speaker.title}</p>}
+                        {speaker.bio && <p className="text-xs text-foreground/50 mt-1 line-clamp-3">{speaker.bio}</p>}
+                        <div className="flex items-center gap-3 mt-2">
+                          {speaker.twitterUrl && (
+                            <a href={speaker.twitterUrl} target="_blank" rel="noopener noreferrer"
+                              className="text-xs text-primary hover:underline font-bold">𝕏</a>
+                          )}
+                          {speaker.linkedinUrl && (
+                            <a href={speaker.linkedinUrl} target="_blank" rel="noopener noreferrer"
+                              className="text-xs text-primary hover:underline font-bold">in</a>
+                          )}
+                          {speaker.websiteUrl && (
+                            <a href={speaker.websiteUrl} target="_blank" rel="noopener noreferrer"
+                              className="text-xs text-primary hover:underline">
+                              <Global size={12} color="currentColor" variant="Outline" className="inline" />
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Location — Only for physical events */}
             {event.locationType !== "ONLINE" && (
