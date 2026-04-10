@@ -164,7 +164,7 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
   const userRole = dashboardData?.userRole || "assistant";
   const salesData = analyticsData?.salesOverTime || [];
   const eventCategoryLabel = (() => {
-    const raw = event?.category || "";
+    const raw = (event as any)?.category || "";
     return EVENT_CATEGORIES.find(c => c.apiValue === raw || c.label === raw)?.label || raw;
   })();
 
@@ -204,7 +204,7 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
   // Fetch speakers when event data is available and category supports speakers
   useEffect(() => {
     if (!dashboardData?.event) return;
-    const raw = dashboardData.event.category || "";
+    const raw = (dashboardData.event as any).category || "";
     // category may be API enum (e.g. "CONFERENCE") or display label — resolve to label
     const categoryLabel =
       EVENT_CATEGORIES.find(c => c.apiValue === raw || c.label === raw)?.label || raw;

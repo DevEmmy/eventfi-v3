@@ -108,6 +108,7 @@ export interface ManageDashboardResponse {
         venueName?: string;
         address?: string;
         slug?: string;
+        category?: string;
         createdAt: string;
     };
     stats: EventStats;
