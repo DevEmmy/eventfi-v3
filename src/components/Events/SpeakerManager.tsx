@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import Image from "next/image";
-import { Add, Trash, Edit2, User, Link21, Global, CloseCircle } from "iconsax-react";
+import { Add, Trash, Edit2, User, Link21, Global, CloseCircle, Camera } from "iconsax-react";
 import { EventSpeaker } from "@/services/events";
 
 // Categories that logically have speakers
@@ -96,9 +96,30 @@ const SpeakerFormModal: React.FC<{
 }> = ({ initial = EMPTY_FORM, onSave, onClose }) => {
   const [form, setForm] = useState<SpeakerFormData>(initial);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const set = (field: keyof SpeakerFormData, value: string) =>
     setForm(prev => ({ ...prev, [field]: value }));
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch("/api/upload", { method: "POST", body: fd });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Upload failed");
+      set("avatar", json.url);
+    } catch (err: any) {
+      alert(err.message || "Failed to upload photo");
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
 
   const handleSave = async () => {
     if (!form.name.trim()) return;
@@ -120,15 +141,45 @@ const SpeakerFormModal: React.FC<{
         </div>
 
         <div className="p-6 space-y-4">
-          {/* Avatar preview */}
-          {form.avatar && (
-            <div className="flex justify-center">
-              <div className="relative w-20 h-20 rounded-full overflow-hidden border-2 border-primary/30">
-                <Image src={form.avatar} alt="preview" fill className="object-cover"
-                  onError={() => set("avatar", "")} />
-              </div>
+          {/* Avatar upload */}
+          <div className="flex flex-col items-center gap-3">
+            <div className="relative">
+              {form.avatar ? (
+                <div className="relative w-24 h-24 rounded-full overflow-hidden border-2 border-primary/30">
+                  <Image src={form.avatar} alt="preview" fill className="object-cover" />
+                </div>
+              ) : (
+                <div className="w-24 h-24 rounded-full bg-foreground/5 border-2 border-dashed border-foreground/20 flex items-center justify-center">
+                  <User size={32} color="currentColor" variant="Outline" className="text-foreground/30" />
+                </div>
+              )}
+              {form.avatar && (
+                <button
+                  type="button"
+                  onClick={() => set("avatar", "")}
+                  className="absolute -top-1 -right-1 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center hover:bg-red-600 transition-colors"
+                >
+                  <CloseCircle size={14} color="white" variant="Bold" />
+                </button>
+              )}
             </div>
-          )}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              className="hidden"
+              onChange={handleFileChange}
+            />
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl border border-foreground/20 text-sm font-medium text-foreground/70 hover:bg-foreground/5 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              <Camera size={16} color="currentColor" variant="Outline" />
+              {uploading ? "Uploading…" : form.avatar ? "Change Photo" : "Upload Photo"}
+            </button>
+          </div>
 
           <div>
             <label className="block text-sm font-semibold text-foreground mb-1.5">
@@ -152,17 +203,6 @@ const SpeakerFormModal: React.FC<{
               placeholder="Short bio about the speaker…"
               rows={3}
               className="w-full px-4 py-3 bg-background border border-foreground/20 rounded-xl text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary transition-all resize-none" />
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold text-foreground mb-1.5">
-              <span className="flex items-center gap-1.5">
-                <User size={14} color="currentColor" variant="Outline" /> Photo URL
-              </span>
-            </label>
-            <input value={form.avatar} onChange={e => set("avatar", e.target.value)}
-              placeholder="https://example.com/photo.jpg"
-              className="w-full px-4 py-3 bg-background border border-foreground/20 rounded-xl text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary transition-all" />
           </div>
 
           <div className="pt-2 border-t border-foreground/10">
@@ -195,9 +235,9 @@ const SpeakerFormModal: React.FC<{
             className="flex-1 py-3 rounded-xl border-2 border-foreground/20 text-foreground/70 font-semibold hover:bg-foreground/5 transition-colors">
             Cancel
           </button>
-          <button onClick={handleSave} disabled={saving || !form.name.trim()}
+          <button onClick={handleSave} disabled={saving || uploading || !form.name.trim()}
             className="flex-1 py-3 rounded-xl bg-primary text-white font-semibold hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-            {saving ? "Saving…" : "Save Speaker"}
+            {saving ? "Saving…" : uploading ? "Uploading…" : "Save Speaker"}
           </button>
         </div>
       </div>
