@@ -3,7 +3,6 @@ import {
     BookingOrder,
     InitiateBookingPayload,
     AttendeeInput,
-    PaymentMethod,
     PaymentInitResponse,
     TicketType,
     UserTicket
@@ -46,9 +45,9 @@ export const BookingService = {
         return response.data.data;
     },
 
-    // Initialize payment (paid tickets)
-    initializePayment: async (orderId: string, paymentMethod: PaymentMethod, callbackUrl: string): Promise<PaymentInitResponse> => {
-        const response = await axiosInstance.post<ApiResponse<PaymentInitResponse>>(`/bookings/${orderId}/pay`, { paymentMethod, callbackUrl });
+    // Initialize payment (paid tickets) — always routes through ZendFi hosted checkout
+    initializePayment: async (orderId: string, callbackUrl: string): Promise<PaymentInitResponse> => {
+        const response = await axiosInstance.post<ApiResponse<PaymentInitResponse>>(`/bookings/${orderId}/pay`, { paymentMethod: 'zendfi', callbackUrl });
         return response.data.data;
     },
 

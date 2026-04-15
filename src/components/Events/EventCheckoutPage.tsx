@@ -9,11 +9,7 @@ import {
   Location,
   Clock,
   Ticket,
-  Card,
-  Bank,
-  Mobile,
   Lock,
-  TickCircle,
   Link1,
   Star1,
   Profile2User,
@@ -23,7 +19,7 @@ import { BookingService } from "@/services/booking";
 import { EventService } from "@/services/events";
 import customToast from "@/lib/toast";
 import { Event } from "@/types/event";
-import { BookingOrder, AttendeeInput, PaymentMethod } from "@/types/booking";
+import { BookingOrder, AttendeeInput } from "@/types/booking";
 import { useUserStore } from "@/store/useUserStore";
 
 // ─── Booking Success Overlay ──────────────────────────────────────────────────
@@ -196,19 +192,11 @@ const EventCheckoutPage: React.FC<EventCheckoutPageProps> = ({ eventId }) => {
   const [selectedTicketId, setSelectedTicketId] = useState<string>(initialTicketTypeId);
   const [quantity, setQuantity] = useState<number>(initialQuantity);
   const [attendees, setAttendees] = useState<AttendeeInput[]>([]);
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("card");
   const [isProcessing, setIsProcessing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [event, setEvent] = useState<Event | null>(null);
   const [order, setOrder] = useState<BookingOrder | null>(null);
   const [bookingSuccess, setBookingSuccess] = useState<BookingSuccessInfo | null>(null);
-
-  const [cardDetails, setCardDetails] = useState({
-    number: "",
-    name: "",
-    expiry: "",
-    cvv: "",
-  });
 
   // Fetch event details
   useEffect(() => {
@@ -261,49 +249,8 @@ const EventCheckoutPage: React.FC<EventCheckoutPageProps> = ({ eventId }) => {
     );
   };
 
-  const handleCardChange = (field: keyof typeof cardDetails, value: string) => {
-    setCardDetails((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const formatCardNumber = (value: string) => {
-    const v = value.replace(/\s+/g, "").replace(/[^0-9]/gi, "");
-    const matches = v.match(/\d{4,16}/g);
-    const match = (matches && matches[0]) || "";
-    const parts = [];
-    for (let i = 0, len = match.length; i < len; i += 4) {
-      parts.push(match.substring(i, i + 4));
-    }
-    if (parts.length) {
-      return parts.join(" ");
-    } else {
-      return v;
-    }
-  };
-
-  const formatExpiry = (value: string) => {
-    const v = value.replace(/\D/g, "");
-    if (v.length >= 2) {
-      return v.substring(0, 2) + "/" + v.substring(2, 4);
-    }
-    return v;
-  };
-
   const isFormValid = () => {
-    const allAttendeesValid = attendees.every((a) => a.name.trim() && a.email.trim() && a.phone?.trim());
-
-    if (isFree) return allAttendeesValid;
-
-    if (paymentMethod === "card") {
-      return (
-        allAttendeesValid &&
-        cardDetails.number.replace(/\s/g, "").length >= 16 &&
-        cardDetails.name.trim() &&
-        cardDetails.expiry.length === 5 &&
-        cardDetails.cvv.length >= 3
-      );
-    }
-
-    return allAttendeesValid;
+    return attendees.every((a) => a.name.trim() && a.email.trim() && a.phone?.trim());
   };
 
   const handleCheckout = async () => {
@@ -349,7 +296,6 @@ const EventCheckoutPage: React.FC<EventCheckoutPageProps> = ({ eventId }) => {
       } else {
         const payment = await BookingService.initializePayment(
           activeOrder.id,
-          paymentMethod,
           `${window.location.origin}/profile?payment_success=true`
         );
         // Redirect to payment gateway
@@ -632,196 +578,15 @@ const EventCheckoutPage: React.FC<EventCheckoutPageProps> = ({ eventId }) => {
                 </div>
               </div>
 
-              {/* Payment Method - Only show if not free */}
+              {/* ZendFi payment notice - Only show if not free */}
               {!isFree && (
-                <div>
-                  <h2 className="text-xl font-bold font-[family-name:var(--font-clash-display)] mb-4 text-foreground">
-                    Payment Method
+                <div className="bg-foreground/5 rounded-2xl p-6 border border-foreground/10">
+                  <h2 className="text-xl font-bold font-[family-name:var(--font-clash-display)] mb-2 text-foreground">
+                    Payment
                   </h2>
-                  <div className="space-y-4">
-                    {/* Payment Options */}
-                    <div className="grid sm:grid-cols-3 gap-4">
-                      <button
-                        onClick={() => setPaymentMethod("card")}
-                        className={`p-4 rounded-xl border-2 transition-all ${paymentMethod === "card"
-                          ? "border-primary bg-primary/10"
-                          : "border-foreground/20 hover:border-primary/50"
-                          }`}
-                      >
-                        <Card
-                          size={24}
-                          color="currentColor"
-                          variant={paymentMethod === "card" ? "Bold" : "Outline"}
-                          className={`mx-auto mb-2 ${paymentMethod === "card" ? "text-primary" : "text-foreground/60"
-                            }`}
-                        />
-                        <p
-                          className={`text-sm font-medium ${paymentMethod === "card" ? "text-primary" : "text-foreground/70"
-                            }`}
-                        >
-                          Card
-                        </p>
-                      </button>
-                      <button
-                        onClick={() => setPaymentMethod("bank_transfer")}
-                        className={`p-4 rounded-xl border-2 transition-all ${paymentMethod === "bank_transfer"
-                          ? "border-primary bg-primary/10"
-                          : "border-foreground/20 hover:border-primary/50"
-                          }`}
-                      >
-                        <Bank
-                          size={24}
-                          color="currentColor"
-                          variant={paymentMethod === "bank_transfer" ? "Bold" : "Outline"}
-                          className={`mx-auto mb-2 ${paymentMethod === "bank_transfer" ? "text-primary" : "text-foreground/60"
-                            }`}
-                        />
-                        <p
-                          className={`text-sm font-medium ${paymentMethod === "bank_transfer" ? "text-primary" : "text-foreground/70"
-                            }`}
-                        >
-                          Bank Transfer
-                        </p>
-                      </button>
-                      <button
-                        onClick={() => setPaymentMethod("mobile_money")}
-                        className={`p-4 rounded-xl border-2 transition-all ${paymentMethod === "mobile_money"
-                          ? "border-primary bg-primary/10"
-                          : "border-foreground/20 hover:border-primary/50"
-                          }`}
-                      >
-                        <Mobile
-                          size={24}
-                          color="currentColor"
-                          variant={paymentMethod === "mobile_money" ? "Bold" : "Outline"}
-                          className={`mx-auto mb-2 ${paymentMethod === "mobile_money" ? "text-primary" : "text-foreground/60"
-                            }`}
-                        />
-                        <p
-                          className={`text-sm font-medium ${paymentMethod === "mobile_money" ? "text-primary" : "text-foreground/70"
-                            }`}
-                        >
-                          Mobile Money
-                        </p>
-                      </button>
-                    </div>
-
-                    {/* Card Payment Form */}
-                    {paymentMethod === "card" && (
-                      <div className="bg-foreground/5 rounded-2xl p-6 border border-foreground/10">
-                        <div className="space-y-4">
-                          <div>
-                            <label className="block text-sm font-semibold text-foreground mb-2">
-                              Card Number *
-                            </label>
-                            <input
-                              type="text"
-                              value={cardDetails.number}
-                              onChange={(e) =>
-                                handleCardChange(
-                                  "number",
-                                  formatCardNumber(e.target.value)
-                                )
-                              }
-                              placeholder="1234 5678 9012 3456"
-                              maxLength={19}
-                              className="w-full px-4 py-3 rounded-xl border-2 border-foreground/20 bg-background text-foreground placeholder:text-foreground/40 focus:outline-none focus:border-primary transition-colors"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-sm font-semibold text-foreground mb-2">
-                              Cardholder Name *
-                            </label>
-                            <input
-                              type="text"
-                              value={cardDetails.name}
-                              onChange={(e) =>
-                                handleCardChange("name", e.target.value)
-                              }
-                              placeholder="John Doe"
-                              className="w-full px-4 py-3 rounded-xl border-2 border-foreground/20 bg-background text-foreground placeholder:text-foreground/40 focus:outline-none focus:border-primary transition-colors"
-                            />
-                          </div>
-                          <div className="grid sm:grid-cols-2 gap-4">
-                            <div>
-                              <label className="block text-sm font-semibold text-foreground mb-2">
-                                Expiry Date *
-                              </label>
-                              <input
-                                type="text"
-                                value={cardDetails.expiry}
-                                onChange={(e) =>
-                                  handleCardChange(
-                                    "expiry",
-                                    formatExpiry(e.target.value)
-                                  )
-                                }
-                                placeholder="MM/YY"
-                                maxLength={5}
-                                className="w-full px-4 py-3 rounded-xl border-2 border-foreground/20 bg-background text-foreground placeholder:text-foreground/40 focus:outline-none focus:border-primary transition-colors"
-                              />
-                            </div>
-                            <div>
-                              <label className="block text-sm font-semibold text-foreground mb-2">
-                                CVV *
-                              </label>
-                              <input
-                                type="text"
-                                value={cardDetails.cvv}
-                                onChange={(e) =>
-                                  handleCardChange(
-                                    "cvv",
-                                    e.target.value.replace(/\D/g, "").slice(0, 4)
-                                  )
-                                }
-                                placeholder="123"
-                                maxLength={4}
-                                className="w-full px-4 py-3 rounded-xl border-2 border-foreground/20 bg-background text-foreground placeholder:text-foreground/40 focus:outline-none focus:border-primary transition-colors"
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Bank Transfer Info */}
-                    {paymentMethod === "bank_transfer" && (
-                      <div className="bg-foreground/5 rounded-2xl p-6 border border-foreground/10">
-                        <p className="text-foreground/70 mb-4">
-                          You will receive bank transfer details after completing your order.
-                        </p>
-                        <div className="space-y-2 text-sm">
-                          <div className="flex items-center gap-2 text-foreground/60">
-                            <TickCircle size={16} color="currentColor" variant="Outline" />
-                            <span>Bank: Access Bank</span>
-                          </div>
-                          <div className="flex items-center gap-2 text-foreground/60">
-                            <TickCircle size={16} color="currentColor" variant="Outline" />
-                            <span>Account details will be sent via email</span>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Mobile Money Info */}
-                    {paymentMethod === "mobile_money" && (
-                      <div className="bg-foreground/5 rounded-2xl p-6 border border-foreground/10">
-                        <p className="text-foreground/70 mb-4">
-                          You will receive payment instructions via SMS after completing your order.
-                        </p>
-                        <div className="space-y-2 text-sm">
-                          <div className="flex items-center gap-2 text-foreground/60">
-                            <TickCircle size={16} color="currentColor" variant="Outline" />
-                            <span>Supports: MTN, Airtel, Glo, 9mobile</span>
-                          </div>
-                          <div className="flex items-center gap-2 text-foreground/60">
-                            <TickCircle size={16} color="currentColor" variant="Outline" />
-                            <span>Payment link will be sent to your phone</span>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
+                  <p className="text-sm text-foreground/60">
+                    You&apos;ll be redirected to a secure checkout page to complete your payment. We accept USDC, USDT, and SOL.
+                  </p>
                 </div>
               )}
             </div>
@@ -884,10 +649,10 @@ const EventCheckoutPage: React.FC<EventCheckoutPageProps> = ({ eventId }) => {
                     <Lock size={20} color="currentColor" variant="Bold" className="text-primary" />
                     <div>
                       <p className="text-sm font-semibold text-foreground">
-                        Secure Payment
+                        Secured by ZendFi
                       </p>
                       <p className="text-xs text-foreground/60">
-                        Your payment information is encrypted
+                        Payments processed on Solana — gasless &amp; non-custodial
                       </p>
                     </div>
                   </div>

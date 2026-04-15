@@ -1,7 +1,7 @@
 
 export type OrderStatus = 'pending' | 'confirmed' | 'cancelled' | 'refunded' | 'expired';
 export type PaymentStatus = 'pending' | 'processing' | 'completed' | 'failed' | 'refunded';
-export type PaymentMethod = 'card' | 'bank_transfer' | 'mobile_money' | 'free';
+export type PaymentMethod = 'zendfi' | 'free';
 
 export interface TicketType {
     id: string;
