@@ -128,6 +128,30 @@ export const ManageEventService = {
     },
 
     /**
+     * Export revenue / orders as CSV
+     */
+    exportRevenue: async (eventId: string): Promise<Blob> => {
+        try {
+            const response = await axiosInstance.get(`/events/${eventId}/revenue/export`, {
+                responseType: "blob",
+            });
+            return response.data;
+        } catch (error: any) {
+            const blob: Blob | undefined = error?.response?.data;
+            if (blob instanceof Blob && blob.type.includes("json")) {
+                try {
+                    const text = await blob.text();
+                    const json = JSON.parse(text);
+                    throw new Error(json?.message || "Export failed");
+                } catch {
+                    // fall through
+                }
+            }
+            throw error;
+        }
+    },
+
+    /**
      * Get team members
      */
     getTeamMembers: async (eventId: string): Promise<TeamMembersResponse> => {

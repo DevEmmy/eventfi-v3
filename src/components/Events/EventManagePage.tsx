@@ -208,23 +208,29 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
     }
   }, [activeTab, dashboardData, fetchAttendees]);
 
-  // Fetch analytics when tab changes
+  // Analytics period selector
+  const [analyticsPeriod, setAnalyticsPeriod] = useState<"7d" | "30d" | "90d" | "all">("30d");
+  const [analyticsError, setAnalyticsError] = useState<string | null>(null);
+
+  // Fetch analytics when tab changes or period changes
   useEffect(() => {
     const fetchAnalytics = async () => {
       try {
         setAnalyticsLoading(true);
-        const data = await ManageEventService.getAnalytics(eventId, "30d");
+        setAnalyticsError(null);
+        const data = await ManageEventService.getAnalytics(eventId, analyticsPeriod);
         setAnalyticsData(data);
-      } catch (error) {
+      } catch (error: any) {
         console.error("Failed to fetch analytics:", error);
+        setAnalyticsError(error?.response?.data?.message || error?.message || "Failed to load analytics");
       } finally {
         setAnalyticsLoading(false);
       }
     };
-    if (activeTab === "analytics" && dashboardData && !analyticsData) {
+    if (activeTab === "analytics" && dashboardData) {
       fetchAnalytics();
     }
-  }, [activeTab, eventId, dashboardData, analyticsData]);
+  }, [activeTab, eventId, dashboardData, analyticsPeriod]);
 
   // Get unique ticket types for filter
   const attendeeTicketTypes = Array.from(new Set(attendeesList.map(a => a.ticketTypeName)));
@@ -747,10 +753,14 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                         ₦{stats.totalRevenue.toLocaleString()}
                       </div>
                       <div className="text-sm text-foreground/60">Total Revenue</div>
-                      <div className="flex items-center gap-1 text-green-500 text-sm mt-2">
-                        <CaretUp size={16} color="currentColor" weight="fill" />
-                        <span>+{stats.revenueChange}% vs last event</span>
-                      </div>
+                      {stats.revenueChange !== 0 && (
+                        <div className={`flex items-center gap-1 text-sm mt-2 ${stats.revenueChange > 0 ? "text-green-500" : "text-red-500"}`}>
+                          {stats.revenueChange > 0
+                            ? <CaretUp size={16} color="currentColor" weight="fill" />
+                            : <CaretDown size={16} color="currentColor" weight="fill" />}
+                          <span>{stats.revenueChange > 0 ? "+" : ""}{stats.revenueChange}% vs last event</span>
+                        </div>
+                      )}
                     </div>
                     <div className="pt-4 border-t border-foreground/10 space-y-3">
                       <div className="flex items-center justify-between">
@@ -1164,12 +1174,69 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
 
           {activeTab === "analytics" && (
             <div className="space-y-8">
-              {/* Sales ChartBar */}
-              <div className="bg-background border border-foreground/10 rounded-2xl p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-xl font-bold font-[family-name:var(--font-clash-display)] text-foreground">
-                    Sales Over Time
-                  </h3>
+              {/* Error banner */}
+              {analyticsError && (
+                <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-4 flex items-center justify-between gap-4">
+                  <span className="text-sm text-red-500">{analyticsError}</span>
+                  <button
+                    onClick={() => {
+                      setAnalyticsError(null);
+                      setAnalyticsData(null);
+                    }}
+                    className="text-sm font-medium text-red-500 hover:text-red-400 underline underline-offset-2 shrink-0"
+                  >
+                    Retry
+                  </button>
+                </div>
+              )}
+
+              {/* Analytics header: title + export + period */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <h3 className="text-xl font-bold font-[family-name:var(--font-clash-display)] text-foreground">
+                  Analytics
+                </h3>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <select
+                    value={analyticsPeriod}
+                    onChange={(e) => setAnalyticsPeriod(e.target.value as "7d" | "30d" | "90d" | "all")}
+                    className="text-sm bg-foreground/5 border border-foreground/10 rounded-lg px-3 py-1.5 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
+                  >
+                    <option value="7d">Last 7 days</option>
+                    <option value="30d">Last 30 days</option>
+                    <option value="90d">Last 90 days</option>
+                    <option value="all">All time</option>
+                  </select>
+                  <button
+                    onClick={async () => {
+                      try {
+                        const blob = await ManageEventService.exportRevenue(eventId);
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement("a");
+                        a.href = url;
+                        a.download = `revenue-${eventId}.csv`;
+                        a.click();
+                        URL.revokeObjectURL(url);
+                      } catch (err: any) {
+                        customToast.error(err?.message || "Export failed");
+                      }
+                    }}
+                    className="flex items-center gap-2 text-sm font-medium px-4 py-1.5 rounded-lg bg-foreground/5 border border-foreground/10 hover:bg-foreground/10 transition-colors text-foreground"
+                  >
+                    Export Revenue
+                  </button>
+                </div>
+              </div>
+
+              {/* Sales Chart */}
+              <div className="relative bg-background border border-foreground/10 rounded-2xl p-6">
+                {/* Stale-data loading overlay */}
+                {analyticsLoading && analyticsData && (
+                  <div className="absolute inset-0 rounded-2xl bg-background/60 flex items-center justify-center z-10">
+                    <span className="text-sm text-foreground/50">Updating…</span>
+                  </div>
+                )}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                  <h4 className="text-base font-semibold text-foreground">Sales Over Time</h4>
                   <div className="flex items-center gap-4 text-sm">
                     <div className="flex items-center gap-2">
                       <div className="w-3 h-3 rounded-full bg-primary"></div>
@@ -1181,62 +1248,139 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                     </div>
                   </div>
                 </div>
-                {/* Simple bar chart representation */}
-                <div className="h-64 flex items-end justify-between gap-2">
-                  {salesData.map((data, index) => (
-                    <div key={index} className="flex-1 flex flex-col items-center gap-2">
-                      <div className="w-full flex flex-col items-center gap-1">
-                        <div
-                          className="w-full bg-primary rounded-t"
-                          style={{
-                            height: `${(data.ticketsSold / 800) * 200}px`,
-                          }}
-                        />
-                        <div
-                          className="w-full bg-secondary/50 rounded-t"
-                          style={{
-                            height: `${(data.revenue / 4000000) * 200}px`,
-                          }}
-                        />
-                      </div>
-                      <span className="text-xs text-foreground/60 rotate-45 origin-top-left">
-                        {data.date}
-                      </span>
+
+                {analyticsLoading && !analyticsData ? (
+                  <div className="h-64 flex items-center justify-center text-foreground/40">
+                    Loading chart…
+                  </div>
+                ) : salesData.length === 0 ? (
+                  <div className="h-64 flex items-center justify-center text-foreground/40">
+                    No sales data for this period
+                  </div>
+                ) : (() => {
+                  const maxTickets = Math.max(...salesData.map(d => d.ticketsSold), 1);
+                  const maxRevenue = Math.max(...salesData.map(d => d.revenue), 1);
+                  const chartHeight = 200;
+                  return (
+                    <div className="h-64 flex items-end justify-between gap-2 overflow-x-auto">
+                      {salesData.map((data, index) => (
+                        <div key={index} className="flex-1 min-w-8 flex flex-col items-center gap-2">
+                          <div className="w-full flex flex-col items-center gap-1">
+                            <div
+                              className="w-full bg-primary rounded-t"
+                              style={{ height: `${(data.ticketsSold / maxTickets) * chartHeight}px` }}
+                              title={`${data.ticketsSold} tickets`}
+                            />
+                            <div
+                              className="w-full bg-secondary/50 rounded-t"
+                              style={{ height: `${(data.revenue / maxRevenue) * chartHeight}px` }}
+                              title={`₦${data.revenue.toLocaleString()}`}
+                            />
+                          </div>
+                          <span className="text-xs text-foreground/60 rotate-45 origin-top-left whitespace-nowrap">
+                            {data.date}
+                          </span>
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
+                  );
+                })()}
               </div>
 
               {/* Analytics Grid */}
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {/* Peak Sales Day */}
                 <div className="bg-background border border-foreground/10 rounded-2xl p-6">
                   <div className="text-sm text-foreground/60 mb-2">Peak Sales Day</div>
-                  <div className="text-2xl font-bold text-foreground mb-1">Mar 10</div>
-                  <div className="text-sm text-foreground/60">120 tickets sold</div>
+                  {analyticsLoading && !analyticsData ? (
+                    <div className="text-2xl font-bold text-foreground/30 mb-1">—</div>
+                  ) : analyticsData?.peakSalesDay ? (
+                    <>
+                      <div className="text-2xl font-bold text-foreground mb-1">
+                        {new Date(analyticsData.peakSalesDay.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                      </div>
+                      <div className="text-sm text-foreground/60">
+                        {analyticsData.peakSalesDay.ticketsSold} ticket{analyticsData.peakSalesDay.ticketsSold !== 1 ? "s" : ""} sold
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="text-2xl font-bold text-foreground mb-1">—</div>
+                      <div className="text-sm text-foreground/60">No sales yet</div>
+                    </>
+                  )}
                 </div>
+
+                {/* Avg. Order Value */}
                 <div className="bg-background border border-foreground/10 rounded-2xl p-6">
-                  <div className="text-sm text-foreground/60 mb-2">Conversion Rate</div>
-                  <div className="text-2xl font-bold text-foreground mb-1">12.5%</div>
-                  <div className="text-sm text-foreground/60">Page views to sales</div>
+                  <div className="text-sm text-foreground/60 mb-2">Avg. Order Value</div>
+                  {analyticsLoading && !analyticsData ? (
+                    <div className="text-2xl font-bold text-foreground/30 mb-1">—</div>
+                  ) : (
+                    <>
+                      <div className="text-2xl font-bold text-foreground mb-1">
+                        {analyticsData?.avgOrderValue
+                          ? `₦${analyticsData.avgOrderValue.toLocaleString()}`
+                          : "—"}
+                      </div>
+                      <div className="text-sm text-foreground/60">Per confirmed order</div>
+                    </>
+                  )}
                 </div>
+
+                {/* Avg. Ticket Price */}
                 <div className="bg-background border border-foreground/10 rounded-2xl p-6">
-                  <div className="text-sm text-foreground/60 mb-2">Avg. Time to Purchase</div>
-                  <div className="text-2xl font-bold text-foreground mb-1">3.2 days</div>
-                  <div className="text-sm text-foreground/60">From first view</div>
+                  <div className="text-sm text-foreground/60 mb-2">Avg. Ticket Price</div>
+                  <div className="text-2xl font-bold text-foreground mb-1">
+                    {stats.averageTicketPrice > 0
+                      ? `₦${Math.round(stats.averageTicketPrice).toLocaleString()}`
+                      : "—"}
+                  </div>
+                  <div className="text-sm text-foreground/60">Across all ticket types</div>
                 </div>
+
+                {/* Top Ticket Type */}
                 <div className="bg-background border border-foreground/10 rounded-2xl p-6">
-                  <div className="text-sm text-foreground/60 mb-2">Top Referral Source</div>
-                  <div className="text-2xl font-bold text-foreground mb-1">Social Media</div>
-                  <div className="text-sm text-foreground/60">45% of sales</div>
+                  <div className="text-sm text-foreground/60 mb-2">Top Ticket Type</div>
+                  {(() => {
+                    const top = ticketTypes.slice().sort((a, b) => b.sold - a.sold)[0];
+                    return top && top.sold > 0 ? (
+                      <>
+                        <div className="text-2xl font-bold text-foreground mb-1 truncate">{top.name}</div>
+                        <div className="text-sm text-foreground/60">{top.sold} sold of {top.total}</div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="text-2xl font-bold text-foreground mb-1">—</div>
+                        <div className="text-sm text-foreground/60">No sales yet</div>
+                      </>
+                    );
+                  })()}
                 </div>
+
+                {/* Repeat Attendees */}
                 <div className="bg-background border border-foreground/10 rounded-2xl p-6">
                   <div className="text-sm text-foreground/60 mb-2">Repeat Attendees</div>
-                  <div className="text-2xl font-bold text-foreground mb-1">34%</div>
-                  <div className="text-sm text-foreground/60">From previous events</div>
+                  {analyticsLoading && !analyticsData ? (
+                    <div className="text-2xl font-bold text-foreground/30 mb-1">—</div>
+                  ) : (
+                    <>
+                      <div className="text-2xl font-bold text-foreground mb-1">
+                        {analyticsData?.repeatAttendeesRate ?? 0}%
+                      </div>
+                      <div className="text-sm text-foreground/60">Attended a previous event</div>
+                    </>
+                  )}
                 </div>
+
+                {/* Check-in Rate */}
                 <div className="bg-background border border-foreground/10 rounded-2xl p-6">
                   <div className="text-sm text-foreground/60 mb-2">Check-in Rate</div>
-                  <div className="text-2xl font-bold text-foreground mb-1">87%</div>
+                  <div className="text-2xl font-bold text-foreground mb-1">
+                    {stats.ticketsSold > 0
+                      ? `${Math.round((stats.checkIns / stats.ticketsSold) * 100)}%`
+                      : "—"}
+                  </div>
                   <div className="text-sm text-foreground/60">
                     {stats.checkIns} of {stats.ticketsSold} checked in
                   </div>

@@ -49,11 +49,6 @@ export interface SalesDataPoint {
     revenue: number;
 }
 
-// Referrer Data
-export interface ReferrerData {
-    source: string;
-    count: number;
-}
 
 // Attendee
 export interface EventAttendee {
@@ -121,7 +116,9 @@ export interface AnalyticsResponse {
     stats: EventStats;
     ticketBreakdown: TicketSalesBreakdown[];
     salesOverTime: SalesDataPoint[];
-    topReferrers: ReferrerData[];
+    peakSalesDay: { date: string; ticketsSold: number } | null;
+    avgOrderValue: number;
+    repeatAttendeesRate: number;
 }
 
 // Attendees List Response
