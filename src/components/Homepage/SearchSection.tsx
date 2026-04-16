@@ -2,7 +2,7 @@
 
 import React from "react";
 import SearchBar from "../SearchBar";
-import { Location, Calendar, Filter } from "iconsax-react";
+import { MapPin, CalendarBlank, Funnel } from '@phosphor-icons/react';
 
 const SearchSection = () => {
   return (
@@ -33,21 +33,21 @@ const SearchSection = () => {
               onClick={() => window.location.href = "/explore-events"}
               className="flex items-center gap-2 px-4 py-2 rounded-full border border-foreground/20 text-foreground/70 hover:border-primary hover:text-primary transition-all duration-200 text-sm font-medium"
             >
-              <Location size={18} color="currentColor" variant="Outline" />
+              <MapPin size={18} color="currentColor" weight="regular" />
               <span>Near Me</span>
             </button>
             <button
               onClick={() => window.location.href = "/explore-events"}
               className="flex items-center gap-2 px-4 py-2 rounded-full border border-foreground/20 text-foreground/70 hover:border-primary hover:text-primary transition-all duration-200 text-sm font-medium"
             >
-              <Calendar size={18} color="currentColor" variant="Outline" />
+              <CalendarBlank size={18} color="currentColor" weight="regular" />
               <span>This Week</span>
             </button>
             <button
               onClick={() => window.location.href = "/explore-events"}
               className="flex items-center gap-2 px-4 py-2 rounded-full border border-foreground/20 text-foreground/70 hover:border-primary hover:text-primary transition-all duration-200 text-sm font-medium"
             >
-              <Filter size={18} color="currentColor" variant="Outline" />
+              <Funnel size={18} color="currentColor" weight="regular" />
               <span>All Filters</span>
             </button>
           </div>

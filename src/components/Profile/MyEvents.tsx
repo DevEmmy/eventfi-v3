@@ -3,7 +3,7 @@
 import React from "react";
 import EventCard, { EventCardProps } from "@/components/Homepage/EventCard";
 import Button from "@/components/Button";
-import { CalendarAdd, Document, Chart, Eye } from "iconsax-react";
+import { CalendarPlus, FileText, ChartBar, Eye } from '@phosphor-icons/react';
 
 interface MyEventsProps {
   events: EventCardProps[];
@@ -15,10 +15,10 @@ const MyEvents: React.FC<MyEventsProps> = ({ events, onCreateEvent }) => {
     return (
       <div className="bg-background border border-foreground/10 rounded-2xl p-12 text-center">
         <div className="w-20 h-20 rounded-full bg-foreground/5 flex items-center justify-center mx-auto mb-4">
-          <Document
+          <FileText
             size={40}
             color="currentColor"
-            variant="Outline"
+            weight="regular"
             className="text-foreground/40"
           />
         </div>
@@ -31,7 +31,7 @@ const MyEvents: React.FC<MyEventsProps> = ({ events, onCreateEvent }) => {
         <Button
           variant="primary"
           size="lg"
-          leftIcon={CalendarAdd}
+          leftIcon={CalendarPlus}
           onClick={onCreateEvent}
         >
           Create Your First Event
@@ -55,7 +55,7 @@ const MyEvents: React.FC<MyEventsProps> = ({ events, onCreateEvent }) => {
         <Button
           variant="primary"
           size="md"
-          leftIcon={CalendarAdd}
+          leftIcon={CalendarPlus}
           onClick={onCreateEvent}
         >
           Create Event
@@ -84,7 +84,7 @@ const MyEvents: React.FC<MyEventsProps> = ({ events, onCreateEvent }) => {
                 className="p-2 bg-background/90 backdrop-blur-sm rounded-lg hover:bg-background transition-colors shadow-lg"
                 title="Manage Event"
               >
-                <Chart size={18} color="currentColor" variant="Bold" className="text-primary" />
+                <ChartBar size={18} color="currentColor" weight="fill" className="text-primary" />
               </button>
               <button
                 onClick={(e) => {
@@ -94,7 +94,7 @@ const MyEvents: React.FC<MyEventsProps> = ({ events, onCreateEvent }) => {
                 className="p-2 bg-background/90 backdrop-blur-sm rounded-lg hover:bg-background transition-colors shadow-lg"
                 title="View Public Page"
               >
-                <Eye size={18} color="currentColor" variant="Outline" />
+                <Eye size={18} color="currentColor" weight="regular" />
               </button>
             </div>
           </div>

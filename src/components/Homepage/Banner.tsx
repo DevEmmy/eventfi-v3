@@ -2,15 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Button from "../Button";
-import {
-  CalendarAdd,
-  Shop,
-  Location,
-  PlayCircle,
-  MusicPlaylist,
-  Code,
-  Game,
-} from "iconsax-react";
+import { CalendarPlus, Storefront, MapPin, PlayCircle, Playlist, Code, GameController } from '@phosphor-icons/react';
 
 const Banner = () => {
   const [activeSlide, setActiveSlide] = useState(0);
@@ -42,12 +34,12 @@ const Banner = () => {
       "The complete toolkit for organizers: Ticketing, logistics, vendor bookings, and live engagement—all in one place.",
     primaryCTA: {
       label: "Create Event",
-      icon: CalendarAdd,
+      icon: CalendarPlus,
       href: "/events/create",
     },
     secondaryCTA: {
       label: "Explore Marketplace",
-      icon: Shop,
+      icon: Storefront,
       href: "/marketplace",
     },
     trustSignal: (
@@ -75,7 +67,7 @@ const Banner = () => {
       "Discover premier local events, book tickets instantly, and unlock exclusive in-event games and rewards.",
     primaryCTA: {
       label: "Explore",
-      icon: Location,
+      icon: MapPin,
       href: "/explore-events",
     },
     secondaryCTA: {
@@ -102,7 +94,7 @@ const Banner = () => {
     "Tech Fest Lagos",
     "Afro Nation",
     "DevFest",
-    "Music Festival 2024",
+    "MusicNote Festival 2024",
     "Startup Summit",
     "Gaming Night",
   ];
@@ -145,7 +137,7 @@ const Banner = () => {
                 variant="primary"
                 size="md"
                 leftIcon={currentContent.primaryCTA.icon}
-                iconVariant="Bold"
+                iconWeight="bold"
                 onClick={() => {
                   window.location.href = currentContent.primaryCTA.href;
                 }}
@@ -257,10 +249,10 @@ const Banner = () => {
                 <div className="absolute inset-0 grid grid-cols-3 grid-rows-3 gap-1.5 sm:gap-2 p-1.5 sm:p-2">
                   {/* Concert Scene */}
                   <div className="col-span-2 row-span-2 bg-gradient-to-br from-primary/20 to-primary/5 rounded-lg flex items-center justify-center relative overflow-hidden">
-                    <MusicPlaylist
+                    <Playlist
                       size={24}
                       color="currentColor"
-                      variant="Bold"
+                      weight="fill"
                       className="text-primary/40"
                     />
                     <div className="absolute bottom-1 sm:bottom-2 left-1 sm:left-2 right-1 sm:right-2">
@@ -275,7 +267,7 @@ const Banner = () => {
                     <Code
                       size={16}
                       color="currentColor"
-                      variant="Bold"
+                      weight="fill"
                       className="text-secondary/40 sm:w-6 sm:h-6 md:w-8 md:h-8"
                     />
                     <div className="absolute bottom-0.5 sm:bottom-1 left-0.5 sm:left-1 right-0.5 sm:right-1">
@@ -287,10 +279,10 @@ const Banner = () => {
 
                   {/* Gaming Night */}
                   <div className="col-span-1 row-span-1 bg-gradient-to-br from-accent/20 to-accent/5 rounded-lg flex items-center justify-center relative overflow-hidden">
-                    <Game
+                    <GameController
                       size={16}
                       color="currentColor"
-                      variant="Bold"
+                      weight="fill"
                       className="text-accent/40 sm:w-6 sm:h-6 md:w-8 md:h-8"
                     />
                     <div className="absolute bottom-0.5 sm:bottom-1 left-0.5 sm:left-1 right-0.5 sm:right-1">
@@ -300,7 +292,7 @@ const Banner = () => {
                     </div>
                   </div>
 
-                  {/* People Icons - Multiple Event Types */}
+                  {/* Users Icons - Multiple Event Types */}
                   <div className="col-span-1 row-span-2 bg-gradient-to-br from-primary/15 to-accent/10 rounded-lg flex flex-col items-center justify-center gap-1 sm:gap-2 p-2 sm:p-3">
                     <div className="flex gap-0.5 sm:gap-1">
                       <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-primary/30"></div>
@@ -315,7 +307,7 @@ const Banner = () => {
                     </div>
                   </div>
 
-                  {/* More Event Types */}
+                  {/* DotsThree Event Types */}
                   <div className="col-span-2 row-span-1 bg-gradient-to-br from-secondary/15 to-primary/10 rounded-lg flex items-center justify-center gap-2 sm:gap-3 p-1.5 sm:p-2">
                     <div className="flex gap-0.5 sm:gap-1">
                       <div className="w-4 h-4 sm:w-6 sm:h-6 rounded-full bg-primary/20"></div>
@@ -323,7 +315,7 @@ const Banner = () => {
                       <div className="w-4 h-4 sm:w-6 sm:h-6 rounded-full bg-secondary/20"></div>
                     </div>
                     <span className="text-[9px] sm:text-xs font-medium text-foreground/60">
-                      And More...
+                      And DotsThree...
                     </span>
                   </div>
                 </div>

@@ -2,19 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import {
-  MessageText1,
-  CloseCircle,
-  Send,
-  SearchNormal1,
-  ArrowLeft2,
-  User,
-  Calendar,
-  Location,
-  People,
-  Refresh,
-  WifiSquare,
-} from "iconsax-react";
+import { ChatText, XCircle, PaperPlaneRight, MagnifyingGlass, CaretLeft, User, CalendarBlank, MapPin, Users, ArrowsClockwise, WifiHigh } from '@phosphor-icons/react';
 import { ChatService } from "@/services/chat";
 import { chatSocket } from "@/services/chatSocket";
 import { useChatStore } from "@/store/useChatStore";
@@ -470,10 +458,10 @@ const FloatingMessenger: React.FC = () => {
         aria-label="Open messages"
       >
         {isOpen ? (
-          <CloseCircle size={24} color="currentColor" variant="Bold" />
+          <XCircle size={24} color="currentColor" weight="fill" />
         ) : (
           <>
-            <MessageText1 size={24} color="currentColor" variant="Bold" />
+            <ChatText size={24} color="currentColor" weight="fill" />
             {totalUnreadCount > 0 && (
               <span className="absolute -top-1 -right-1 w-6 h-6 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center border-2 border-background">
                 {totalUnreadCount > 9 ? "9+" : totalUnreadCount}
@@ -506,7 +494,7 @@ const FloatingMessenger: React.FC = () => {
                 className="p-2 hover:bg-foreground/10 rounded-lg transition-colors cursor-pointer"
                 aria-label="Back to chat list"
               >
-                <ArrowLeft2 size={20} color="currentColor" variant="Outline" />
+                <CaretLeft size={20} color="currentColor" weight="regular" />
               </button>
               <div className="flex items-center gap-3 flex-1 min-w-0 ml-1">
                 {activeEventChat?.eventImage ? (
@@ -517,7 +505,7 @@ const FloatingMessenger: React.FC = () => {
                   />
                 ) : (
                   <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                    <Calendar size={20} color="currentColor" variant="Bold" className="text-primary" />
+                    <CalendarBlank size={20} color="currentColor" weight="fill" className="text-primary" />
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
@@ -525,7 +513,7 @@ const FloatingMessenger: React.FC = () => {
                     {activeEventChat?.eventName}
                   </h3>
                   <div className="flex items-center gap-2 text-xs text-foreground/60">
-                    <People size={12} color="currentColor" variant="Outline" />
+                    <Users size={12} color="currentColor" weight="regular" />
                     <span>
                       {onlineCount} online
                       {chatStore.typingUsers.length > 0 && (
@@ -550,13 +538,13 @@ const FloatingMessenger: React.FC = () => {
                   className="p-2 hover:bg-foreground/10 rounded-lg transition-colors cursor-pointer"
                   title="View Event"
                 >
-                  <Calendar size={18} color="currentColor" variant="Outline" />
+                  <CalendarBlank size={18} color="currentColor" weight="regular" />
                 </button>
                 <button
                   className="p-2 hover:bg-foreground/10 rounded-lg transition-colors cursor-pointer"
                   onClick={handleClose}
                 >
-                  <CloseCircle size={20} color="currentColor" variant="Outline" />
+                  <XCircle size={20} color="currentColor" weight="regular" />
                 </button>
               </div>
             </>
@@ -574,12 +562,12 @@ const FloatingMessenger: React.FC = () => {
                   className="p-2 hover:bg-foreground/10 rounded-lg transition-colors cursor-pointer"
                   onClick={loadEventChats}
                   disabled={loadingChats}
-                  title="Refresh"
+                  title="ArrowsClockwise"
                 >
-                  <Refresh
+                  <ArrowsClockwise
                     size={20}
                     color="currentColor"
-                    variant="Outline"
+                    weight="regular"
                     className={loadingChats ? "animate-spin" : ""}
                   />
                 </button>
@@ -587,7 +575,7 @@ const FloatingMessenger: React.FC = () => {
                   className="p-2 hover:bg-foreground/10 rounded-lg transition-colors cursor-pointer"
                   onClick={handleClose}
                 >
-                  <CloseCircle size={20} color="currentColor" variant="Outline" />
+                  <XCircle size={20} color="currentColor" weight="regular" />
                 </button>
               </div>
             </>
@@ -603,10 +591,10 @@ const FloatingMessenger: React.FC = () => {
               {activeEventChat && (
                 <div className="px-4 py-2 bg-primary/5 border-b border-foreground/10 shrink-0">
                   <div className="flex items-center gap-2 text-xs text-foreground/70">
-                    <Calendar size={13} color="currentColor" variant="Outline" />
+                    <CalendarBlank size={13} color="currentColor" weight="regular" />
                     <span>{activeEventChat.eventDate}</span>
                     <span>•</span>
-                    <Location size={13} color="currentColor" variant="Outline" />
+                    <MapPin size={13} color="currentColor" weight="regular" />
                     <span className="truncate">{activeEventChat.eventLocation}</span>
                   </div>
                 </div>
@@ -625,7 +613,7 @@ const FloatingMessenger: React.FC = () => {
               {/* Disconnected banner */}
               {!isSocketConnected && activeEventId && (
                 <div className="px-4 py-2 bg-foreground/5 border-b border-foreground/10 flex items-center gap-2 shrink-0">
-                  <WifiSquare size={14} color="currentColor" className="text-amber-500 animate-pulse" variant="Outline" />
+                  <WifiHigh size={14} color="currentColor" className="text-amber-500 animate-pulse" weight="regular" />
                   <span className="text-xs text-foreground/60">Reconnecting…</span>
                 </div>
               )}
@@ -667,7 +655,7 @@ const FloatingMessenger: React.FC = () => {
 
                     {chatStore.messages.length === 0 && (
                       <div className="flex flex-col items-center justify-center h-full py-12 text-center">
-                        <MessageText1 size={40} color="currentColor" variant="Outline" className="text-foreground/20 mb-3" />
+                        <ChatText size={40} color="currentColor" weight="regular" className="text-foreground/20 mb-3" />
                         <p className="text-foreground/50 text-sm">No messages yet. Say hi!</p>
                       </div>
                     )}
@@ -688,7 +676,7 @@ const FloatingMessenger: React.FC = () => {
                                   className="w-full h-full rounded-full object-cover"
                                 />
                               ) : (
-                                <User size={16} color="currentColor" variant="Bold" className="text-foreground/60" />
+                                <User size={16} color="currentColor" weight="fill" className="text-foreground/60" />
                               )}
                             </div>
                           )}
@@ -778,7 +766,7 @@ const FloatingMessenger: React.FC = () => {
                           disabled={!canSend}
                           className="w-11 h-11 bg-primary text-white rounded-xl hover:bg-primary/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center cursor-pointer"
                         >
-                          <Send size={20} color="currentColor" variant="Bold" />
+                          <PaperPlaneRight size={20} color="currentColor" weight="fill" />
                         </button>
                       </div>
                     )}
@@ -791,10 +779,10 @@ const FloatingMessenger: React.FC = () => {
             <>
               <div className="p-4 border-b border-foreground/10 shrink-0">
                 <div className="relative">
-                  <SearchNormal1
+                  <MagnifyingGlass
                     size={18}
                     color="currentColor"
-                    variant="Outline"
+                    weight="regular"
                     className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground/40"
                   />
                   <input
@@ -814,7 +802,7 @@ const FloatingMessenger: React.FC = () => {
                   </div>
                 ) : filteredChats.length === 0 ? (
                   <div className="p-8 text-center">
-                    <Calendar size={48} color="currentColor" variant="Outline" className="text-foreground/30 mx-auto mb-3" />
+                    <CalendarBlank size={48} color="currentColor" weight="regular" className="text-foreground/30 mx-auto mb-3" />
                     <p className="text-foreground/60">
                       {searchQuery ? "No events found" : "No event chats yet"}
                     </p>
@@ -839,7 +827,7 @@ const FloatingMessenger: React.FC = () => {
                             />
                           ) : (
                             <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                              <Calendar size={24} color="currentColor" variant="Bold" className="text-primary" />
+                              <CalendarBlank size={24} color="currentColor" weight="fill" className="text-primary" />
                             </div>
                           )}
                           <div className="flex-1 min-w-0">
@@ -852,7 +840,7 @@ const FloatingMessenger: React.FC = () => {
                               </span>
                             </div>
                             <div className="flex items-center gap-2 mb-1 text-xs text-foreground/60">
-                              <People size={12} color="currentColor" variant="Outline" />
+                              <Users size={12} color="currentColor" weight="regular" />
                               <span>{chat.participantCount.toLocaleString()}</span>
                               {chat.userRole === "ORGANIZER" && (
                                 <><span>•</span><span className="text-primary font-medium">Organizer</span></>

@@ -3,14 +3,7 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import Button from "@/components/Button";
-import {
-  ArrowLeft2,
-  Lock,
-  Eye,
-  EyeSlash,
-  TickCircle,
-  Warning2,
-} from "iconsax-react";
+import { CaretLeft, Lock, Eye, EyeSlash, CheckCircle, Warning } from '@phosphor-icons/react';
 import { SettingsService } from "@/services/settings";
 import customToast from "@/lib/toast";
 
@@ -181,10 +174,10 @@ const ChangePasswordPage = () => {
         <div className="max-w-md w-full">
           <div className="bg-background border border-foreground/10 rounded-2xl p-8 text-center">
             <div className="w-16 h-16 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
-              <TickCircle
+              <CheckCircle
                 size={32}
                 color="currentColor"
-                variant="Bold"
+                weight="fill"
                 className="text-green-500"
               />
             </div>
@@ -210,7 +203,7 @@ const ChangePasswordPage = () => {
               onClick={() => router.back()}
               className="flex items-center gap-2 text-foreground/60 hover:text-foreground mb-4 transition-colors"
             >
-              <ArrowLeft2 size={20} color="currentColor" variant="Outline" />
+              <CaretLeft size={20} color="currentColor" weight="regular" />
               <span>Back to Settings</span>
             </button>
             <h1 className="text-3xl lg:text-4xl font-bold font-[family-name:var(--font-clash-display)] text-foreground mb-2">
@@ -233,7 +226,7 @@ const ChangePasswordPage = () => {
                   <Lock
                     size={20}
                     color="currentColor"
-                    variant="Outline"
+                    weight="regular"
                     className="absolute left-4 top-1/2 -translate-y-1/2 text-foreground/40"
                   />
                   <input
@@ -254,15 +247,15 @@ const ChangePasswordPage = () => {
                     className="absolute right-4 top-1/2 -translate-y-1/2 text-foreground/40 hover:text-foreground transition-colors"
                   >
                     {showPasswords.current ? (
-                      <EyeSlash size={20} color="currentColor" variant="Outline" />
+                      <EyeSlash size={20} color="currentColor" weight="regular" />
                     ) : (
-                      <Eye size={20} color="currentColor" variant="Outline" />
+                      <Eye size={20} color="currentColor" weight="regular" />
                     )}
                   </button>
                 </div>
                 {errors.currentPassword && (
                   <p className="text-sm text-red-500 mt-2 flex items-center gap-1">
-                    <Warning2 size={16} color="currentColor" variant="Outline" />
+                    <Warning size={16} color="currentColor" weight="regular" />
                     {errors.currentPassword}
                   </p>
                 )}
@@ -277,7 +270,7 @@ const ChangePasswordPage = () => {
                   <Lock
                     size={20}
                     color="currentColor"
-                    variant="Outline"
+                    weight="regular"
                     className="absolute left-4 top-1/2 -translate-y-1/2 text-foreground/40"
                   />
                   <input
@@ -300,9 +293,9 @@ const ChangePasswordPage = () => {
                     className="absolute right-4 top-1/2 -translate-y-1/2 text-foreground/40 hover:text-foreground transition-colors"
                   >
                     {showPasswords.new ? (
-                      <EyeSlash size={20} color="currentColor" variant="Outline" />
+                      <EyeSlash size={20} color="currentColor" weight="regular" />
                     ) : (
-                      <Eye size={20} color="currentColor" variant="Outline" />
+                      <Eye size={20} color="currentColor" weight="regular" />
                     )}
                   </button>
                 </div>
@@ -360,10 +353,10 @@ const ChangePasswordPage = () => {
                       ].map((req, index) => (
                         <div key={index} className="flex items-center gap-2">
                           {req.met ? (
-                            <TickCircle
+                            <CheckCircle
                               size={16}
                               color="currentColor"
-                              variant="Bold"
+                              weight="fill"
                               className="text-green-500"
                             />
                           ) : (
@@ -383,7 +376,7 @@ const ChangePasswordPage = () => {
 
                 {errors.newPassword && (
                   <p className="text-sm text-red-500 mt-2 flex items-center gap-1">
-                    <Warning2 size={16} color="currentColor" variant="Outline" />
+                    <Warning size={16} color="currentColor" weight="regular" />
                     {errors.newPassword}
                   </p>
                 )}
@@ -398,7 +391,7 @@ const ChangePasswordPage = () => {
                   <Lock
                     size={20}
                     color="currentColor"
-                    variant="Outline"
+                    weight="regular"
                     className="absolute left-4 top-1/2 -translate-y-1/2 text-foreground/40"
                   />
                   <input
@@ -422,15 +415,15 @@ const ChangePasswordPage = () => {
                     className="absolute right-4 top-1/2 -translate-y-1/2 text-foreground/40 hover:text-foreground transition-colors"
                   >
                     {showPasswords.confirm ? (
-                      <EyeSlash size={20} color="currentColor" variant="Outline" />
+                      <EyeSlash size={20} color="currentColor" weight="regular" />
                     ) : (
-                      <Eye size={20} color="currentColor" variant="Outline" />
+                      <Eye size={20} color="currentColor" weight="regular" />
                     )}
                   </button>
                 </div>
                 {errors.confirmPassword && (
                   <p className="text-sm text-red-500 mt-2 flex items-center gap-1">
-                    <Warning2 size={16} color="currentColor" variant="Outline" />
+                    <Warning size={16} color="currentColor" weight="regular" />
                     {errors.confirmPassword}
                   </p>
                 )}
@@ -438,7 +431,7 @@ const ChangePasswordPage = () => {
                   formData.confirmPassword === formData.newPassword &&
                   !errors.confirmPassword && (
                     <p className="text-sm text-green-500 mt-2 flex items-center gap-1">
-                      <TickCircle size={16} color="currentColor" variant="Bold" />
+                      <CheckCircle size={16} color="currentColor" weight="fill" />
                       Passwords match
                     </p>
                   )}
@@ -450,7 +443,7 @@ const ChangePasswordPage = () => {
                   <Lock
                     size={20}
                     color="currentColor"
-                    variant="Bold"
+                    weight="fill"
                     className="text-primary shrink-0 mt-0.5"
                   />
                   <div>

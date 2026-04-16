@@ -1,13 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import {
-  Instagram,
-  MessageText1,
-  ArrowRight2,
-  Share,
-  Link,
-} from "iconsax-react";
+import { InstagramLogo, ChatText, CaretRight, ShareNetwork, Link } from '@phosphor-icons/react';
 import Button from "./Button";
 
 const Footer = () => {
@@ -47,16 +41,16 @@ const Footer = () => {
                 className="w-10 h-10 rounded-full border border-foreground/20 flex items-center justify-center hover:border-primary hover:text-primary transition-all duration-200"
                 aria-label="Twitter"
               >
-                <Share size={20} color="currentColor" variant="Outline" />
+                <ShareNetwork size={20} color="currentColor" weight="regular" />
               </a>
               {/* <a
                 href="https://instagram.com/eventfi"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-10 h-10 rounded-full border border-foreground/20 flex items-center justify-center hover:border-primary hover:text-primary transition-all duration-200"
-                aria-label="Instagram"
+                aria-label="InstagramLogo"
               >
-                <Instagram size={20} color="currentColor" variant="Outline" />
+                <InstagramLogo size={20} color="currentColor" weight="regular" />
               </a> */}
               {/* <a
                 href="https://linkedin.com/company/eventfi"
@@ -65,7 +59,7 @@ const Footer = () => {
                 className="w-10 h-10 rounded-full border border-foreground/20 flex items-center justify-center hover:border-primary hover:text-primary transition-all duration-200"
                 aria-label="LinkedIn"
               >
-                <Link size={20} color="currentColor" variant="Outline" />
+                <Link size={20} color="currentColor" weight="regular" />
               </a> */}
               {/* <a
                 href="https://discord.gg/eventfi"
@@ -74,7 +68,7 @@ const Footer = () => {
                 className="w-10 h-10 rounded-full border border-foreground/20 flex items-center justify-center hover:border-primary hover:text-primary transition-all duration-200"
                 aria-label="Discord"
               >
-                <MessageText1 size={20} color="currentColor" variant="Outline" />
+                <ChatText size={20} color="currentColor" weight="regular" />
               </a> */}
             </div>
           </div>
@@ -235,8 +229,8 @@ const Footer = () => {
                 variant="primary"
                 size="md"
                 fullWidth
-                rightIcon={ArrowRight2}
-                iconVariant="Bold"
+                rightIcon={CaretRight}
+                iconWeight="bold"
               >
                 Subscribe
               </Button>

@@ -2,7 +2,7 @@
 
 import React from "react";
 import VendorCard, { VendorCardProps } from "./VendorCard";
-import { Grid3, RowVertical } from "iconsax-react";
+import { GridFour, List } from '@phosphor-icons/react';
 
 interface VendorsListProps {
   vendors: VendorCardProps[];
@@ -44,7 +44,7 @@ const VendorsList: React.FC<VendorsListProps> = ({
               }`}
               aria-label="Grid view"
             >
-              <Grid3 size={20} color="currentColor" variant="Outline" />
+              <GridFour size={20} color="currentColor" weight="regular" />
             </button>
             <button
               onClick={() => onViewModeChange("list")}
@@ -55,7 +55,7 @@ const VendorsList: React.FC<VendorsListProps> = ({
               }`}
               aria-label="List view"
             >
-              <RowVertical size={20} color="currentColor" variant="Outline" />
+              <List size={20} color="currentColor" weight="regular" />
             </button>
           </div>
         </div>

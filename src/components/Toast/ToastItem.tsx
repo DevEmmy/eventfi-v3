@@ -1,6 +1,6 @@
 "use client";
 
-import { TickCircle, CloseCircle, InfoCircle, Warning2, CloseSquare } from "iconsax-react";
+import { CheckCircle, XCircle, Info, Warning, XSquare } from '@phosphor-icons/react';
 import { toast as hotToast, Toast } from "react-hot-toast";
 import { useEffect, useState } from "react";
 
@@ -25,17 +25,17 @@ export default function ToastItem({ t, title, message, type = "custom" }: ToastI
     const getIcon = () => {
         switch (type) {
             case "success":
-                return <TickCircle size={24} variant="Bold" color="#22c55e" />;
+                return <CheckCircle size={24} weight="fill" color="#22c55e" />;
             case "error":
-                return <CloseCircle size={24} variant="Bold" color="#ef4444" />;
+                return <XCircle size={24} weight="fill" color="#ef4444" />;
             case "loading":
                 return (
                     <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
                 );
             case "info":
-                return <InfoCircle size={24} variant="Bold" color="#3b82f6" />;
+                return <Info size={24} weight="fill" color="#3b82f6" />;
             default:
-                return <InfoCircle size={24} variant="Bold" color="currentColor" className="text-primary" />;
+                return <Info size={24} weight="fill" color="currentColor" className="text-primary" />;
         }
     };
 
@@ -79,7 +79,7 @@ export default function ToastItem({ t, title, message, type = "custom" }: ToastI
                     onClick={() => hotToast.dismiss(t.id)}
                     className="w-full border border-transparent rounded-none rounded-r-lg p-4 flex items-center justify-center text-sm font-medium text-foreground/50 hover:text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                 >
-                    <CloseSquare size={20} variant="Outline" />
+                    <XSquare size={20} weight="regular" />
                 </button>
             </div>
         </div>

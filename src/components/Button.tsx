@@ -7,15 +7,15 @@ export interface ButtonProps
   leftIcon?: React.ComponentType<{
     size?: number;
     color?: string;
-    variant?: "Linear" | "Outline" | "Bold" | "Broken" | "Bulk" | "TwoTone";
+    weight?: "thin" | "light" | "regular" | "bold" | "fill" | "duotone";
   }>;
   rightIcon?: React.ComponentType<{
     size?: number;
     color?: string;
-    variant?: "Linear" | "Outline" | "Bold" | "Broken" | "Bulk" | "TwoTone";
+    weight?: "thin" | "light" | "regular" | "bold" | "fill" | "duotone";
   }>;
   iconSize?: number;
-  iconVariant?: "Linear" | "Outline" | "Bold" | "Broken" | "Bulk" | "TwoTone";
+  iconWeight?: "thin" | "light" | "regular" | "bold" | "fill" | "duotone";
   fullWidth?: boolean;
   isLoading?: boolean;
   children: React.ReactNode;
@@ -29,7 +29,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       leftIcon: LeftIcon,
       rightIcon: RightIcon,
       iconSize,
-      iconVariant = "Outline",
+      iconWeight = "regular",
       fullWidth = false,
       isLoading = false,
       children,
@@ -135,7 +135,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
               <LeftIcon
                 size={currentSize.icon}
                 color="currentColor"
-                variant={iconVariant}
+                weight={iconWeight}
               />
             )}
             {children}
@@ -143,7 +143,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
               <RightIcon
                 size={currentSize.icon}
                 color="currentColor"
-                variant={iconVariant}
+                weight={iconWeight}
               />
             )}
           </>

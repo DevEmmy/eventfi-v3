@@ -3,7 +3,7 @@
 import React from "react";
 import EventCard, { EventCardProps } from "@/components/Homepage/EventCard";
 import Button from "@/components/Button";
-import { Ticket, Document, Star1 } from "iconsax-react";
+import { Ticket, FileText, Star } from '@phosphor-icons/react';
 
 interface MyTicketsProps {
   tickets: (EventCardProps & {
@@ -24,7 +24,7 @@ const MyTickets: React.FC<MyTicketsProps> = ({ tickets }) => {
           <Ticket
             size={40}
             color="currentColor"
-            variant="Outline"
+            weight="regular"
             className="text-foreground/40"
           />
         </div>
@@ -55,7 +55,7 @@ const MyTickets: React.FC<MyTicketsProps> = ({ tickets }) => {
             <Ticket
               size={24}
               color="currentColor"
-              variant="Bold"
+              weight="fill"
               className="text-primary"
             />
             <h3 className="text-2xl font-bold font-[family-name:var(--font-clash-display)] text-foreground">
@@ -87,7 +87,7 @@ const MyTickets: React.FC<MyTicketsProps> = ({ tickets }) => {
             <Ticket
               size={24}
               color="currentColor"
-              variant="Outline"
+              weight="regular"
               className="text-foreground/60"
             />
             <h3 className="text-2xl font-bold font-[family-name:var(--font-clash-display)] text-foreground/60">
@@ -114,7 +114,7 @@ const MyTickets: React.FC<MyTicketsProps> = ({ tickets }) => {
                     variant="primary"
                     size="sm"
                     fullWidth
-                    leftIcon={Star1}
+                    leftIcon={Star}
                     onClick={(e) => {
                       e.stopPropagation();
                       window.location.href = `/events/${ticket.id}/review`;

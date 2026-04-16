@@ -3,7 +3,7 @@
 import React, { useEffect, useRef } from "react";
 import confetti from "canvas-confetti";
 import { useActivity } from "@/hooks/useActivity";
-import { Gift, Crown, CloseCircle, Music, Timer } from "iconsax-react";
+import { Gift, Crown, XCircle, MusicNote, Timer } from '@phosphor-icons/react';
 import Image from "next/image";
 import { LeaderboardEntry } from "@/store/useActivityStore";
 
@@ -67,13 +67,13 @@ function ApplausePodium({
           onClick={onClose}
           className="absolute top-3 right-3 text-foreground/40 hover:text-foreground/70 transition-colors cursor-pointer z-10"
         >
-          <CloseCircle size={20} color="currentColor" variant="Bold" />
+          <XCircle size={20} color="currentColor" weight="fill" />
         </button>
 
         {/* Header */}
         <div className="pt-8 pb-4 px-6 text-center">
           <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3">
-            <Music size={24} color="currentColor" variant="Bold" className="text-primary" />
+            <MusicNote size={24} color="currentColor" weight="fill" className="text-primary" />
           </div>
           <h3 className="text-xl font-bold font-[family-name:var(--font-clash-display)] text-foreground">
             Applause Results!
@@ -223,7 +223,7 @@ const AttendeeGameView: React.FC<AttendeeGameViewProps> = ({ eventId }) => {
                 </span>
               </div>
             </div>
-            <Gift size={28} color="#f59e0b" variant="Bold" className="mx-auto mb-3" />
+            <Gift size={28} color="#f59e0b" weight="fill" className="mx-auto mb-3" />
             <p className="text-white text-xl font-bold font-[family-name:var(--font-clash-display)]">Drawing a winner…</p>
             <p className="text-white/50 text-sm mt-1">Get ready!</p>
           </div>
@@ -236,9 +236,9 @@ const AttendeeGameView: React.FC<AttendeeGameViewProps> = ({ eventId }) => {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
           <div className="bg-background border border-yellow-500/30 rounded-2xl shadow-2xl p-8 w-full max-w-sm text-center relative">
             <button onClick={hideReveal} className="absolute top-3 right-3 text-foreground/40 hover:text-foreground/70 transition-colors cursor-pointer">
-              <CloseCircle size={20} color="currentColor" variant="Bold" />
+              <XCircle size={20} color="currentColor" weight="fill" />
             </button>
-            <Crown size={40} color="#f59e0b" variant="Bold" className="mx-auto mb-3" />
+            <Crown size={40} color="#f59e0b" weight="fill" className="mx-auto mb-3" />
             <h3 className="text-2xl font-bold font-[family-name:var(--font-clash-display)] text-foreground mb-1">
               {drawWinners.length === 1 ? "🎉 Winner!" : `🎉 ${drawWinners.length} Winners!`}
             </h3>
@@ -272,7 +272,7 @@ const AttendeeGameView: React.FC<AttendeeGameViewProps> = ({ eventId }) => {
       <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] max-w-md">
         <div className="bg-background border border-yellow-500/30 shadow-2xl rounded-2xl p-5 flex items-center gap-4">
           <div className="w-12 h-12 rounded-xl bg-yellow-500/10 flex items-center justify-center shrink-0 animate-pulse">
-            <Gift size={24} color="#f59e0b" variant="Bold" />
+            <Gift size={24} color="#f59e0b" weight="fill" />
           </div>
           <div className="flex-1">
             <p className="font-bold text-foreground text-sm">Lucky Draw is Live!</p>
@@ -298,7 +298,7 @@ const AttendeeGameView: React.FC<AttendeeGameViewProps> = ({ eventId }) => {
         <div className="bg-background border border-primary/30 shadow-2xl rounded-2xl p-5">
           <div className="flex items-center gap-3 mb-3">
             <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-              <Music size={16} color="currentColor" variant="Bold" className="text-primary" />
+              <MusicNote size={16} color="currentColor" weight="fill" className="text-primary" />
             </div>
             <div className="flex-1">
               <p className="font-bold text-foreground text-sm">Applause Meter</p>

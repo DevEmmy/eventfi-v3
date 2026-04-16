@@ -1,15 +1,7 @@
 "use client";
 
 import React from "react";
-import {
-  Monitor,
-  Shop,
-  Game,
-  Ticket,
-  TickCircle,
-  Star1,
-  Award,
-} from "iconsax-react";
+import { Monitor, Storefront, GameController, Ticket, CheckCircle, Star, Medal } from '@phosphor-icons/react';
 
 const EcosystemSection = () => {
   const features = [
@@ -29,7 +21,7 @@ const EcosystemSection = () => {
       title: "Verified Vendor Marketplace",
       description:
         "Struggling to find reliable vendors? Browse, book, and pay verified photographers, caterers, and venues directly within the platform.",
-      icon: Shop,
+      icon: Storefront,
       visual: "marketplace",
       gradient: "from-secondary/10 via-secondary/5 to-background",
       borderColor: "border-secondary/20",
@@ -41,7 +33,7 @@ const EcosystemSection = () => {
       title: "In-Event Gamification",
       description:
         "Keep your attendees glued to the experience. Host live quizzes, polls, and scavenger hunts with instant digital rewards.",
-      icon: Game,
+      icon: GameController,
       visual: "gamification",
       gradient: "from-accent/10 via-accent/5 to-background",
       borderColor: "border-accent/20",
@@ -83,7 +75,7 @@ const EcosystemSection = () => {
                   <feature.icon
                     size={32}
                     color="currentColor"
-                    variant="Bold"
+                    weight="fill"
                     className={feature.iconColor}
                   />
                 </div>
@@ -119,7 +111,7 @@ const EcosystemSection = () => {
                       <Ticket
                         size={24}
                         color="currentColor"
-                        variant="Bold"
+                        weight="fill"
                         className="text-primary/40"
                       />
                     </div>
@@ -131,28 +123,28 @@ const EcosystemSection = () => {
                     {/* Vendor Badges */}
                     <div className="flex gap-2 flex-wrap">
                       <div className="px-3 py-1.5 bg-secondary/20 rounded-lg flex items-center gap-2">
-                        <Star1
+                        <Star
                           size={14}
                           color="currentColor"
-                          variant="Bold"
+                          weight="fill"
                           className="text-secondary"
                         />
                         <div className="h-1.5 bg-secondary/40 rounded w-12"></div>
                       </div>
                       <div className="px-3 py-1.5 bg-secondary/20 rounded-lg flex items-center gap-2">
-                        <TickCircle
+                        <CheckCircle
                           size={14}
                           color="currentColor"
-                          variant="Bold"
+                          weight="fill"
                           className="text-secondary"
                         />
                         <div className="h-1.5 bg-secondary/40 rounded w-16"></div>
                       </div>
                       <div className="px-3 py-1.5 bg-secondary/20 rounded-lg flex items-center gap-2">
-                        <Star1
+                        <Star
                           size={14}
                           color="currentColor"
-                          variant="Bold"
+                          weight="fill"
                           className="text-secondary"
                         />
                         <div className="h-1.5 bg-secondary/40 rounded w-14"></div>
@@ -165,10 +157,10 @@ const EcosystemSection = () => {
                           key={i}
                           className="bg-secondary/10 rounded-lg flex items-center justify-center"
                         >
-                          <Shop
+                          <Storefront
                             size={20}
                             color="currentColor"
-                            variant="Outline"
+                            weight="regular"
                             className="text-secondary/40"
                           />
                         </div>
@@ -182,10 +174,10 @@ const EcosystemSection = () => {
                     {/* Leaderboard Header */}
                     <div className="flex items-center justify-between">
                       <div className="h-3 bg-accent/30 rounded w-20"></div>
-                      <Award
+                      <Medal
                         size={20}
                         color="currentColor"
-                        variant="Bold"
+                        weight="fill"
                         className="text-accent/60"
                       />
                     </div>
@@ -212,10 +204,10 @@ const EcosystemSection = () => {
                     {/* Winner Badge */}
                     <div className="absolute top-4 right-4">
                       <div className="bg-accent/20 rounded-full px-2 py-1 flex items-center gap-1">
-                        <Award
+                        <Medal
                           size={16}
                           color="currentColor"
-                          variant="Bold"
+                          weight="fill"
                           className="text-accent"
                         />
                         <span className="text-xs font-bold text-accent">Winner</span>

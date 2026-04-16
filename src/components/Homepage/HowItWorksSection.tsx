@@ -1,12 +1,7 @@
 "use client";
 
 import React from "react";
-import {
-  DocumentText,
-  Shop,
-  PlayCircle,
-  ArrowRight2,
-} from "iconsax-react";
+import { FileText, Storefront, PlayCircle, CaretRight } from '@phosphor-icons/react';
 import Button from "../Button";
 
 const HowItWorksSection = () => {
@@ -16,7 +11,7 @@ const HowItWorksSection = () => {
       title: "Create & Customize",
       description:
         "Set up your event page, define ticket tiers, and add your brand colors—no coding needed.",
-      icon: DocumentText,
+      icon: FileText,
       color: "primary",
     },
     {
@@ -24,7 +19,7 @@ const HowItWorksSection = () => {
       title: "Connect Vendors (Optional)",
       description:
         "Need a DJ or a photographer? Browse our vetted marketplace and book them in one click.",
-      icon: Shop,
+      icon: Storefront,
       color: "secondary",
     },
     {
@@ -95,7 +90,7 @@ const HowItWorksSection = () => {
                       <IconComponent
                         size={40}
                         color="currentColor"
-                        variant="Bold"
+                        weight="fill"
                         className={colors.icon}
                       />
                     </div>
@@ -120,10 +115,10 @@ const HowItWorksSection = () => {
                   {/* Arrow Connector - Desktop Only */}
                   {index < steps.length - 1 && (
                     <div className="hidden md:block absolute top-16 -right-6 lg:-right-12 z-0">
-                      <ArrowRight2
+                      <CaretRight
                         size={24}
                         color="currentColor"
-                        variant="Outline"
+                        weight="regular"
                         className="text-foreground/20"
                       />
                     </div>
@@ -138,8 +133,8 @@ const HowItWorksSection = () => {
             <Button
               variant="primary"
               size="lg"
-              rightIcon={ArrowRight2}
-              iconVariant="Bold"
+              rightIcon={CaretRight}
+              iconWeight="bold"
               onClick={() => {
                 window.location.href = "/events/create";
               }}

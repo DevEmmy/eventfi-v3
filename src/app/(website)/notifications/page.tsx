@@ -2,17 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import {
-  Notification,
-  Check,
-  Calendar,
-  Ticket,
-  Shop,
-  Star1,
-  MoneyRecive,
-  Clock,
-  Trash,
-} from "iconsax-react";
+import { Bell, Check, CalendarBlank, Ticket, Storefront, Star, Coins, Clock, Trash } from '@phosphor-icons/react';
 import { NotificationService, NotificationItem } from "@/services/notifications";
 import toast from "@/lib/toast";
 
@@ -105,18 +95,18 @@ const NotificationsPage = () => {
       case "event_nearby":
       case "event_updated":
       case "event_cancelled":
-        return <Calendar {...iconProps} className="text-primary" />;
+        return <CalendarBlank {...iconProps} className="text-primary" />;
       case "booking_request":
       case "booking_accepted":
       case "booking_declined":
       case "vendor_booked":
-        return <Shop {...iconProps} className="text-secondary" />;
+        return <Storefront {...iconProps} className="text-secondary" />;
       case "review_received":
-        return <Star1 {...iconProps} className="text-accent" />;
+        return <Star {...iconProps} className="text-accent" />;
       case "payment_received":
-        return <MoneyRecive {...iconProps} className="text-green-500" />;
+        return <Coins {...iconProps} className="text-green-500" />;
       default:
-        return <Notification {...iconProps} className="text-foreground/60" />;
+        return <Bell {...iconProps} className="text-foreground/60" />;
     }
   };
 
@@ -136,12 +126,12 @@ const NotificationsPage = () => {
   };
 
   const filterOptions = [
-    { value: "all", label: "All", icon: Notification },
+    { value: "all", label: "All", icon: Bell },
     { value: "unread", label: "Unread", icon: Check },
     { value: "ticket_sale", label: "Tickets", icon: Ticket },
-    { value: "booking_request", label: "Bookings", icon: Shop },
-    { value: "event_nearby", label: "Events", icon: Calendar },
-    { value: "review_received", label: "Reviews", icon: Star1 },
+    { value: "booking_request", label: "Bookings", icon: Storefront },
+    { value: "event_nearby", label: "Events", icon: CalendarBlank },
+    { value: "review_received", label: "Reviews", icon: Star },
   ];
 
   return (
@@ -165,7 +155,7 @@ const NotificationsPage = () => {
                 onClick={handleMarkAllAsRead}
                 className="px-4 py-2 bg-primary text-white rounded-xl hover:bg-primary/90 transition-colors flex items-center gap-2"
               >
-                <Check size={20} color="currentColor" variant="Bold" />
+                <Check size={20} color="currentColor" weight="fill" />
                 Mark all as read
               </button>
             )}
@@ -185,7 +175,7 @@ const NotificationsPage = () => {
                       : "bg-foreground/5 text-foreground/70 hover:bg-foreground/10"
                   }`}
                 >
-                  <Icon size={18} color="currentColor" variant="Outline" />
+                  <Icon size={18} color="currentColor" weight="regular" />
                   {option.label}
                 </button>
               );
@@ -202,10 +192,10 @@ const NotificationsPage = () => {
             </div>
           ) : notifications.length === 0 ? (
             <div className="bg-background border border-foreground/10 rounded-2xl p-12 text-center">
-              <Notification
+              <Bell
                 size={64}
                 color="currentColor"
-                variant="Outline"
+                weight="regular"
                 className="text-foreground/30 mx-auto mb-4"
               />
               <h3 className="text-xl font-bold text-foreground mb-2">
@@ -246,7 +236,7 @@ const NotificationsPage = () => {
                       </p>
                       <div className="flex items-center gap-4">
                         <div className="flex items-center gap-2 text-sm text-foreground/50">
-                          <Clock size={16} color="currentColor" variant="Outline" />
+                          <Clock size={16} color="currentColor" weight="regular" />
                           <span>{formatTimestamp(notification.createdAt)}</span>
                         </div>
                         {notification.metadata?.amount && (
@@ -256,7 +246,7 @@ const NotificationsPage = () => {
                         )}
                         {notification.metadata?.rating && (
                           <div className="flex items-center gap-1 text-sm text-accent">
-                            <Star1 size={16} color="currentColor" variant="Bold" />
+                            <Star size={16} color="currentColor" weight="fill" />
                             <span>{notification.metadata.rating}</span>
                           </div>
                         )}
@@ -269,7 +259,7 @@ const NotificationsPage = () => {
                           className="p-2 hover:bg-foreground/10 rounded-lg transition-colors"
                           title="Mark as read"
                         >
-                          <Check size={20} color="currentColor" variant="Outline" />
+                          <Check size={20} color="currentColor" weight="regular" />
                         </button>
                       )}
                       <button
@@ -277,7 +267,7 @@ const NotificationsPage = () => {
                         className="p-2 hover:bg-foreground/10 rounded-lg transition-colors"
                         title="Delete"
                       >
-                        <Trash size={20} color="currentColor" variant="Outline" />
+                        <Trash size={20} color="currentColor" weight="regular" />
                       </button>
                     </div>
                   </div>

@@ -4,40 +4,7 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Button from "@/components/Button";
-import {
-  ArrowLeft2,
-  Calendar,
-  Location,
-  Clock,
-  People,
-  Ticket,
-  MoneyRecive,
-  Chart,
-  Edit2,
-  Trash,
-  Share,
-  Copy,
-  More,
-  ArrowUp2,
-  ArrowDown2,
-  User,
-  Sms,
-  Call,
-  Export,
-  Eye,
-  Add,
-  SearchNormal,
-  CloseCircle,
-  Profile2User,
-  Send2,
-  DocumentText,
-  TickCircle,
-  Gift,
-  MessageText1,
-  Minus,
-  Link2,
-  Scan,
-} from "iconsax-react";
+import { CaretLeft, CalendarBlank, MapPin, Clock, Users, Ticket, Coins, ChartBar, PencilSimple, Trash, ShareNetwork, Copy, DotsThree, CaretUp, CaretDown, User, Envelope, Phone, Export, Eye, Plus, MagnifyingGlass, XCircle, PaperPlaneRight, FileText, CheckCircle, Gift, ChatText, Minus, Link, QrCode } from '@phosphor-icons/react';
 import { QRCodeCanvas } from "qrcode.react";
 import { ManageEventService } from "@/services/manage";
 import { ChatService } from "@/services/chat";
@@ -262,14 +229,14 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
   // Get unique ticket types for filter
   const attendeeTicketTypes = Array.from(new Set(attendeesList.map(a => a.ticketTypeName)));
 
-  // Filter attendees (client-side additional filtering if needed)
+  // Funnel attendees (client-side additional filtering if needed)
   const filteredAttendees = attendeesList;
 
   const tabs = [
     { id: "overview" as const, label: "Overview", icon: Eye },
-    { id: "attendees" as const, label: "Attendees", icon: People, count: attendeesTotal },
-    { id: "analytics" as const, label: "Analytics", icon: Chart },
-    { id: "team" as const, label: "Team", icon: Profile2User, count: teamMembers.length },
+    { id: "attendees" as const, label: "Attendees", icon: Users, count: attendeesTotal },
+    { id: "analytics" as const, label: "Analytics", icon: ChartBar },
+    { id: "team" as const, label: "Team", icon: Users, count: teamMembers.length },
     { id: "games" as const, label: "Games", icon: Gift },
   ];
 
@@ -358,7 +325,7 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
       } as any);
       setShowLocationModal(false);
       customToast.success("Location updated! Registered attendees have been notified.");
-      // Refresh dashboard data
+      // ArrowsClockwise dashboard data
       const fresh = await ManageEventService.getDashboard(eventId);
       setDashboardData(fresh);
     } catch (error: any) {
@@ -559,14 +526,14 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
               onClick={() => router.back()}
               className="flex items-center gap-2 text-foreground/70 hover:text-primary transition-colors"
             >
-              <ArrowLeft2 size={20} color="currentColor" variant="Outline" />
+              <CaretLeft size={20} color="currentColor" weight="regular" />
               <span>Back</span>
             </button>
             <div className="flex items-center gap-3">
               <Button
                 variant="outline"
                 size="sm"
-                leftIcon={Share}
+                leftIcon={ShareNetwork}
                 onClick={() => router.push(`/events/${eventId}`)}
               >
                 View Public Page
@@ -574,7 +541,7 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
               <Button
                 variant="primary"
                 size="sm"
-                leftIcon={Edit2}
+                leftIcon={PencilSimple}
                 onClick={handleEdit}
               >
                 Edit Event
@@ -599,7 +566,7 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
               </div>
             ) : (
               <div className="w-32 h-32 rounded-2xl bg-primary/20 flex items-center justify-center shrink-0">
-                <Calendar size={48} color="currentColor" variant="Bold" className="text-primary" />
+                <CalendarBlank size={48} color="currentColor" weight="fill" className="text-primary" />
               </div>
             )}
             <div className="flex-1 min-w-0">
@@ -622,15 +589,15 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
               </div>
               <div className="flex flex-wrap items-center gap-4 text-sm text-foreground/70 mb-4">
                 <div className="flex items-center gap-2">
-                  <Calendar size={16} color="currentColor" variant="Outline" />
+                  <CalendarBlank size={16} color="currentColor" weight="regular" />
                   <span>{new Date(event.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Clock size={16} color="currentColor" variant="Outline" />
+                  <Clock size={16} color="currentColor" weight="regular" />
                   <span>{event.startTime} - {event.endTime}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Location size={16} color="currentColor" variant="Outline" />
+                  <MapPin size={16} color="currentColor" weight="regular" />
                   <span>{event.venueName || event.address || 'Online Event'}</span>
                 </div>
               </div>
@@ -686,7 +653,7 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                   <TabIcon
                     size={18}
                     color="currentColor"
-                    variant={activeTab === tab.id ? "Bold" : "Outline"}
+                    
                   />
                   <span>{tab.label}</span>
                   {tab.count !== undefined && (
@@ -781,7 +748,7 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                       </div>
                       <div className="text-sm text-foreground/60">Total Revenue</div>
                       <div className="flex items-center gap-1 text-green-500 text-sm mt-2">
-                        <ArrowUp2 size={16} color="currentColor" variant="Bold" />
+                        <CaretUp size={16} color="currentColor" weight="fill" />
                         <span>+{stats.revenueChange}% vs last event</span>
                       </div>
                     </div>
@@ -806,7 +773,7 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                 <div className="bg-background border border-foreground/10 rounded-2xl p-6">
                   <div className="flex items-center gap-3 mb-4">
                     <div className="w-12 h-12 rounded-xl bg-green-500/10 flex items-center justify-center">
-                      <People size={24} color="currentColor" variant="Bold" className="text-green-500" />
+                      <Users size={24} color="currentColor" weight="fill" className="text-green-500" />
                     </div>
                     <div>
                       <div className="text-2xl font-bold text-foreground">{stats.checkIns}</div>
@@ -821,7 +788,7 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                 <div className="bg-background border border-foreground/10 rounded-2xl p-6">
                   <div className="flex items-center gap-3 mb-4">
                     <div className="w-12 h-12 rounded-xl bg-yellow-500/10 flex items-center justify-center">
-                      <User size={24} color="currentColor" variant="Bold" className="text-yellow-500" />
+                      <User size={24} color="currentColor" weight="fill" className="text-yellow-500" />
                     </div>
                     <div>
                       <div className="text-2xl font-bold text-foreground">{stats.noShows}</div>
@@ -836,7 +803,7 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                 <div className="bg-background border border-foreground/10 rounded-2xl p-6">
                   <div className="flex items-center gap-3 mb-4">
                     <div className="w-12 h-12 rounded-xl bg-red-500/10 flex items-center justify-center">
-                      <MoneyRecive size={24} color="currentColor" variant="Bold" className="text-red-500" />
+                      <Coins size={24} color="currentColor" weight="fill" className="text-red-500" />
                     </div>
                     <div>
                       <div className="text-2xl font-bold text-foreground">{stats.refunds}</div>
@@ -884,7 +851,7 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                     variant="outline"
                     size="md"
                     fullWidth
-                    leftIcon={Edit2}
+                    leftIcon={PencilSimple}
                     onClick={handleEdit}
                   >
                     Edit Event
@@ -902,7 +869,7 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                     variant="outline"
                     size="md"
                     fullWidth
-                    leftIcon={Share}
+                    leftIcon={ShareNetwork}
                     onClick={() => router.push(`/events/${eventId}`)}
                   >
                     View Public
@@ -911,7 +878,7 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                     variant="outline"
                     size="md"
                     fullWidth
-                    leftIcon={Location}
+                    leftIcon={MapPin}
                     onClick={() => {
                       setLocationForm({
                         venue: dashboardData?.event?.venueName || "",
@@ -927,7 +894,7 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                     variant="outline"
                     size="md"
                     fullWidth
-                    leftIcon={Link2}
+                    leftIcon={Link}
                     onClick={() => setShowSlugModal(true)}
                   >
                     Custom URL
@@ -936,7 +903,7 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                     variant="outline"
                     size="md"
                     fullWidth
-                    leftIcon={Scan}
+                    leftIcon={QrCode}
                     onClick={() => setShowQrModal(true)}
                   >
                     QR Code
@@ -945,7 +912,7 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                     variant="outline"
                     size="md"
                     fullWidth
-                    leftIcon={chatActive ? Minus : MessageText1}
+                    leftIcon={chatActive ? Minus : ChatText}
                     onClick={handleToggleChat}
                     disabled={togglingChat}
                     className={chatActive ? "border-amber-500/20 text-amber-600 hover:bg-amber-500/10" : "border-green-500/20 text-green-600 hover:bg-green-500/10"}
@@ -983,7 +950,7 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                   <Button
                     variant="primary"
                     size="sm"
-                    leftIcon={Sms}
+                    leftIcon={Envelope}
                     onClick={() => setShowBulkEmailModal(true)}
                   >
                     Send Bulk Email
@@ -1014,12 +981,12 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                     <User
                       size={18}
                       color="currentColor"
-                      variant="Outline"
+                      weight="regular"
                       className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground/40"
                     />
                   </div>
 
-                  {/* Status Filter */}
+                  {/* Status Funnel */}
                   <div className="flex items-center gap-2">
                     <label className="text-sm font-semibold text-foreground whitespace-nowrap">Status:</label>
                     <div className="flex gap-2">
@@ -1042,7 +1009,7 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                     </div>
                   </div>
 
-                  {/* Ticket Type Filter */}
+                  {/* Ticket Type Funnel */}
                   {attendeeTicketTypes.length > 0 && (
                     <div className="flex items-center gap-2">
                       <label className="text-sm font-semibold text-foreground whitespace-nowrap">Ticket:</label>
@@ -1105,7 +1072,7 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                         <tr>
                           <td colSpan={5} className="px-6 py-12 text-center">
                             <div className="flex flex-col items-center gap-3">
-                              <User size={48} color="currentColor" variant="Outline" className="text-foreground/30" />
+                              <User size={48} color="currentColor" weight="regular" className="text-foreground/30" />
                               <div>
                                 <p className="text-foreground/70 font-medium">No attendees found</p>
                                 <p className="text-sm text-foreground/50 mt-1">
@@ -1160,12 +1127,12 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                                     className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors font-medium text-sm flex items-center gap-2"
                                     title="Check In"
                                   >
-                                    <TickCircle size={18} color="currentColor" variant="Bold" />
+                                    <CheckCircle size={18} color="currentColor" weight="fill" />
                                     Check In
                                   </button>
                                 ) : (
                                   <span className="px-3 py-1.5 bg-green-500/10 text-green-500 rounded-lg text-sm font-medium flex items-center gap-2">
-                                    <TickCircle size={16} color="currentColor" variant="Bold" />
+                                    <CheckCircle size={16} color="currentColor" weight="fill" />
                                     Checked In
                                   </span>
                                 )}
@@ -1174,14 +1141,14 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                                   className="p-2 hover:bg-foreground/10 rounded-lg transition-colors"
                                   title="Send Email"
                                 >
-                                  <Sms size={18} color="currentColor" variant="Outline" />
+                                  <Envelope size={18} color="currentColor" weight="regular" />
                                 </a>
                                 <a
                                   href={`tel:${attendee.phone}`}
                                   className="p-2 hover:bg-foreground/10 rounded-lg transition-colors"
-                                  title="Call"
+                                  title="Phone"
                                 >
-                                  <Call size={18} color="currentColor" variant="Outline" />
+                                  <Phone size={18} color="currentColor" weight="regular" />
                                 </a>
                               </div>
                             </td>
@@ -1197,7 +1164,7 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
 
           {activeTab === "analytics" && (
             <div className="space-y-8">
-              {/* Sales Chart */}
+              {/* Sales ChartBar */}
               <div className="bg-background border border-foreground/10 rounded-2xl p-6">
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-xl font-bold font-[family-name:var(--font-clash-display)] text-foreground">
@@ -1293,7 +1260,7 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                 <Button
                   variant="primary"
                   size="sm"
-                  leftIcon={Add}
+                  leftIcon={Plus}
                   onClick={() => setShowAddMemberModal(true)}
                 >
                   Add Member
@@ -1321,7 +1288,7 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                                 className="rounded-full"
                               />
                             ) : (
-                              <User size={24} color="currentColor" variant="Bold" className="text-primary" />
+                              <User size={24} color="currentColor" weight="fill" className="text-primary" />
                             )}
                           </div>
 
@@ -1403,7 +1370,7 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                                 className="p-2 hover:bg-red-500/10 text-red-500 rounded-lg transition-colors"
                                 title="Remove member"
                               >
-                                <Trash size={18} color="currentColor" variant="Outline" />
+                                <Trash size={18} color="currentColor" weight="regular" />
                               </button>
                             </>
                           )}
@@ -1486,7 +1453,7 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                   }}
                   className="p-2 hover:bg-foreground/10 rounded-lg transition-colors"
                 >
-                  <CloseCircle size={24} color="currentColor" variant="Outline" />
+                  <XCircle size={24} color="currentColor" weight="regular" />
                 </button>
               </div>
 
@@ -1524,10 +1491,10 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                     placeholder="Search by name or enter email address..."
                     className="w-full pl-12 pr-4 py-4 bg-background border-2 border-foreground/20 rounded-xl text-base text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200"
                   />
-                  <SearchNormal
+                  <MagnifyingGlass
                     size={24}
                     color="currentColor"
-                    variant="Outline"
+                    weight="regular"
                     className="absolute left-4 top-1/2 -translate-y-1/2 text-foreground/40"
                   />
                 </div>
@@ -1547,7 +1514,7 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                       >
                         <div className="flex items-center gap-4">
                           <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
-                            <User size={24} color="currentColor" variant="Bold" className="text-primary" />
+                            <User size={24} color="currentColor" weight="fill" className="text-primary" />
                           </div>
                           <div>
                             <div className="font-semibold text-lg text-foreground">{user.name}</div>
@@ -1557,7 +1524,7 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                         <Button
                           variant="primary"
                           size="md"
-                          leftIcon={Add}
+                          leftIcon={Plus}
                           onClick={() => handleAddMember(user.id, user.name, user.email)}
                         >
                           Add
@@ -1580,7 +1547,7 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                     variant="primary"
                     size="lg"
                     fullWidth
-                    leftIcon={Add}
+                    leftIcon={Plus}
                     onClick={handleInviteByEmail}
                   >
                     Invite {searchQuery} by Email
@@ -1590,10 +1557,10 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
 
               {searchQuery.length === 0 && (
                 <div className="text-center py-16 text-foreground/60">
-                  <SearchNormal
+                  <MagnifyingGlass
                     size={64}
                     color="currentColor"
-                    variant="Outline"
+                    weight="regular"
                     className="mx-auto mb-4 opacity-30"
                   />
                   <p className="text-lg">Start typing to search for users</p>
@@ -1628,7 +1595,7 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                   }}
                   className="p-2 hover:bg-foreground/10 rounded-lg transition-colors"
                 >
-                  <CloseCircle size={24} color="currentColor" variant="Outline" />
+                  <XCircle size={24} color="currentColor" weight="regular" />
                 </button>
               </div>
 
@@ -1733,7 +1700,7 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
               {(emailSubject || emailBody) && (
                 <div className="mb-8 p-6 bg-foreground/5 rounded-xl border border-foreground/10">
                   <div className="flex items-center gap-2 mb-4">
-                    <DocumentText size={20} color="currentColor" variant="Outline" />
+                    <FileText size={20} color="currentColor" weight="regular" />
                     <h4 className="font-semibold text-foreground">Preview</h4>
                   </div>
                   <div className="space-y-3">
@@ -1780,7 +1747,7 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                 <Button
                   variant="primary"
                   size="lg"
-                  leftIcon={Send2}
+                  leftIcon={PaperPlaneRight}
                   onClick={async () => {
                     if (!emailSubject.trim()) {
                       alert("Please enter an email subject");
@@ -1861,14 +1828,14 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                     Event QR Code
                   </h3>
                   <p className="text-sm text-foreground/60 mt-1">
-                    Scan to open the event page
+                    QrCode to open the event page
                   </p>
                 </div>
                 <button
                   onClick={() => setShowQrModal(false)}
                   className="p-2 hover:bg-foreground/10 rounded-xl transition-colors"
                 >
-                  <CloseCircle size={22} color="currentColor" variant="Outline" />
+                  <XCircle size={22} color="currentColor" weight="regular" />
                 </button>
               </div>
 
@@ -1935,7 +1902,7 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                 </p>
               </div>
               <button onClick={() => setShowLocationModal(false)} className="p-2 hover:bg-foreground/10 rounded-xl transition-colors">
-                <CloseCircle size={22} color="currentColor" variant="Outline" />
+                <XCircle size={22} color="currentColor" weight="regular" />
               </button>
             </div>
 
@@ -1993,7 +1960,7 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                 onClick={() => setShowSlugModal(false)}
                 className="p-2 hover:bg-foreground/10 rounded-xl transition-colors"
               >
-                <CloseCircle size={22} color="currentColor" variant="Outline" />
+                <XCircle size={22} color="currentColor" weight="regular" />
               </button>
             </div>
 

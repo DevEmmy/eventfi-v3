@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Award, Star1, Ticket, Medal } from "iconsax-react";
+import { Medal, Star, Ticket } from '@phosphor-icons/react';
 
 interface LeaderboardProps {
   type: "attendees" | "trivia";
@@ -26,7 +26,7 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ type }) => {
 
   const currentLeaderboard = type === "attendees" ? attendeesLeaderboard : triviaLeaderboard;
   const title = type === "attendees" ? "Top Event Goers" : "Trivia Masters";
-  const icon = type === "attendees" ? Ticket : Award;
+  const icon = type === "attendees" ? Ticket : Medal;
   const scoreLabel = type === "attendees" ? "Events" : "Points";
 
   const IconComponent = icon;
@@ -39,7 +39,7 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ type }) => {
           <div className="text-center mb-10">
             <div className="inline-flex items-center justify-center gap-3 mb-4">
               <div className="w-16 h-16 rounded-2xl bg-foreground/5 flex items-center justify-center">
-                <IconComponent size={32} color="currentColor" variant="Bold" className="text-primary" />
+                <IconComponent size={32} color="currentColor" weight="fill" className="text-primary" />
               </div>
               <h2 className="text-3xl lg:text-4xl font-bold font-[family-name:var(--font-clash-display)] text-foreground">
                 {title}
@@ -74,7 +74,7 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ type }) => {
                     <h3 className="font-bold text-lg text-foreground truncate">{entry.name}</h3>
                     {entry.rank <= 3 && (
                       <div className="flex items-center gap-1 mt-1">
-                        <Star1 size={14} color="currentColor" variant="Bold" className="text-primary" />
+                        <Star size={14} color="currentColor" weight="fill" className="text-primary" />
                         <span className="text-xs text-primary font-semibold">Top Performer</span>
                       </div>
                     )}
@@ -90,13 +90,13 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ type }) => {
             </div>
           </div>
 
-          {/* Rewards Shop Teaser */}
+          {/* Rewards Storefront Teaser */}
           <div className="bg-foreground/5 border border-foreground/10 rounded-2xl p-8 text-center">
             <div className="w-16 h-16 rounded-2xl bg-foreground/5 flex items-center justify-center mx-auto mb-4">
-              <Medal size={32} color="currentColor" variant="Bold" className="text-primary" />
+              <Medal size={32} color="currentColor" weight="fill" className="text-primary" />
             </div>
             <h3 className="text-2xl font-bold font-[family-name:var(--font-clash-display)] mb-2 text-foreground">
-              Rewards Shop
+              Rewards Storefront
             </h3>
             <p className="text-foreground/70 mb-6 max-w-md mx-auto">
               Redeem your points for exclusive perks and discounts

@@ -2,16 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import {
-  SearchNormal1,
-  ArrowLeft2,
-  Send,
-  User,
-  Clock,
-  Calendar,
-  Location,
-  People,
-} from "iconsax-react";
+import { MagnifyingGlass, CaretLeft, PaperPlaneRight, User, Clock, CalendarBlank, MapPin, Users } from '@phosphor-icons/react';
 import { ChatService } from "@/services/chat";
 import { chatSocket } from "@/services/chatSocket";
 import { useUserStore } from "@/store/useUserStore";
@@ -199,7 +190,7 @@ const MessagesPage = () => {
               onClick={() => router.back()}
               className="flex items-center gap-2 text-foreground/70 hover:text-primary transition-colors mb-4"
             >
-              <ArrowLeft2 size={20} color="currentColor" variant="Outline" />
+              <CaretLeft size={20} color="currentColor" weight="regular" />
               <span>Back</span>
             </button>
             <h1 className="text-3xl lg:text-4xl font-bold font-[family-name:var(--font-clash-display)] text-foreground">
@@ -213,10 +204,10 @@ const MessagesPage = () => {
               {/* Search */}
               <div className="p-4 border-b border-foreground/10">
                 <div className="relative">
-                  <SearchNormal1
+                  <MagnifyingGlass
                     size={20}
                     color="currentColor"
-                    variant="Outline"
+                    weight="regular"
                     className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground/40"
                   />
                   <input
@@ -238,10 +229,10 @@ const MessagesPage = () => {
                   </div>
                 ) : filteredChats.length === 0 ? (
                   <div className="p-8 text-center">
-                    <Calendar
+                    <CalendarBlank
                       size={48}
                       color="currentColor"
-                      variant="Outline"
+                      weight="regular"
                       className="text-foreground/30 mx-auto mb-3"
                     />
                     <p className="text-foreground/60">
@@ -270,7 +261,7 @@ const MessagesPage = () => {
                             />
                           ) : (
                             <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                              <Calendar size={24} color="currentColor" variant="Bold" className="text-primary" />
+                              <CalendarBlank size={24} color="currentColor" weight="fill" className="text-primary" />
                             </div>
                           )}
                           <div className="flex-1 min-w-0">
@@ -283,7 +274,7 @@ const MessagesPage = () => {
                               </span>
                             </div>
                             <div className="flex items-center gap-2 mb-1 text-xs text-foreground/60">
-                              <People size={12} color="currentColor" variant="Outline" />
+                              <Users size={12} color="currentColor" weight="regular" />
                               <span>{chat.participantCount.toLocaleString()}</span>
                               {chat.userRole === "ORGANIZER" && (
                                 <>
@@ -331,16 +322,16 @@ const MessagesPage = () => {
                       />
                     ) : (
                       <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-                        <Calendar size={24} color="currentColor" variant="Bold" className="text-primary" />
+                        <CalendarBlank size={24} color="currentColor" weight="fill" className="text-primary" />
                       </div>
                     )}
                     <div className="flex-1 min-w-0">
                       <h3 className="font-semibold text-foreground truncate">{activeChat.eventName}</h3>
                       <div className="flex items-center gap-2 text-xs text-foreground/60">
-                        <People size={12} color="currentColor" variant="Outline" />
+                        <Users size={12} color="currentColor" weight="regular" />
                         <span>{activeChat.participantCount.toLocaleString()} participants</span>
                         <span>·</span>
-                        <Calendar size={12} color="currentColor" variant="Outline" />
+                        <CalendarBlank size={12} color="currentColor" weight="regular" />
                         <span>{activeChat.eventDate}</span>
                       </div>
                     </div>
@@ -355,7 +346,7 @@ const MessagesPage = () => {
                   {/* Event Info Banner */}
                   <div className="p-3 bg-primary/5 border-b border-foreground/10">
                     <div className="flex items-center gap-2 text-xs text-foreground/70">
-                      <Location size={14} color="currentColor" variant="Outline" />
+                      <MapPin size={14} color="currentColor" weight="regular" />
                       <span className="truncate">{activeChat.eventLocation}</span>
                     </div>
                   </div>
@@ -398,7 +389,7 @@ const MessagesPage = () => {
                                     className="w-full h-full rounded-full object-cover"
                                   />
                                 ) : (
-                                  <User size={16} color="currentColor" variant="Bold" className="text-foreground/60" />
+                                  <User size={16} color="currentColor" weight="fill" className="text-foreground/60" />
                                 )}
                               </div>
                             )}
@@ -484,7 +475,7 @@ const MessagesPage = () => {
                         disabled={!messageInput.trim()}
                         className="w-11 h-11 bg-primary text-white rounded-xl hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                       >
-                        <Send size={20} color="currentColor" variant="Bold" />
+                        <PaperPlaneRight size={20} color="currentColor" weight="fill" />
                       </button>
                     </div>
                   </div>
@@ -492,10 +483,10 @@ const MessagesPage = () => {
               ) : (
                 <div className="flex-1 flex items-center justify-center">
                   <div className="text-center">
-                    <Calendar
+                    <CalendarBlank
                       size={64}
                       color="currentColor"
-                      variant="Outline"
+                      weight="regular"
                       className="text-foreground/30 mx-auto mb-4"
                     />
                     <h3 className="text-xl font-bold text-foreground mb-2">

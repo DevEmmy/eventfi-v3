@@ -2,7 +2,7 @@
 
 import React from "react";
 import Button from "../Button";
-import { CalendarAdd, Location, ArrowRight } from "iconsax-react";
+import { CalendarPlus, MapPin, ArrowRight } from '@phosphor-icons/react';
 
 const DualValueSection = () => {
   return (
@@ -23,10 +23,10 @@ const DualValueSection = () => {
             {/* Icon */}
             <div className="mb-6">
               <div className="w-16 h-16 rounded-2xl bg-primary/20 flex items-center justify-center group-hover:bg-primary/30 transition-colors duration-300">
-                <CalendarAdd
+                <CalendarPlus
                   size={32}
                   color="currentColor"
-                  variant="Bold"
+                  weight="fill"
                   className="text-primary"
                 />
               </div>
@@ -75,10 +75,10 @@ const DualValueSection = () => {
             {/* Icon */}
             <div className="mb-6">
               <div className="w-16 h-16 rounded-2xl bg-secondary/20 flex items-center justify-center group-hover:bg-secondary/30 transition-colors duration-300">
-                <Location
+                <MapPin
                   size={32}
                   color="currentColor"
-                  variant="Bold"
+                  weight="fill"
                   className="text-secondary"
                 />
               </div>

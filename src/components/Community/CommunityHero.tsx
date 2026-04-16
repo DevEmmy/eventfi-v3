@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { ArrowRight2, Star1, Flash } from "iconsax-react";
+import { CaretRight, Star, Lightning } from '@phosphor-icons/react';
 import Button from "@/components/Button";
 
 interface CommunityHeroProps {
@@ -26,7 +26,7 @@ const CommunityHero: React.FC<CommunityHeroProps> = ({ trendingActivities }) => 
           {/* Header */}
           <div className="text-center mb-12">
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-foreground/5 rounded-full mb-6">
-              <Flash size={20} color="currentColor" variant="Bold" className="text-primary" />
+              <Lightning size={20} color="currentColor" weight="fill" className="text-primary" />
               <span className="text-sm font-semibold text-primary">Live Community</span>
             </div>
             <h1 className="text-5xl lg:text-6xl xl:text-7xl font-bold font-[family-name:var(--font-clash-display)] mb-6 text-foreground">
@@ -55,7 +55,7 @@ const CommunityHero: React.FC<CommunityHeroProps> = ({ trendingActivities }) => 
             {/* Featured Post */}
             <div className="group bg-background border border-foreground/10 rounded-2xl p-8 hover:border-primary/30 transition-all duration-300 cursor-pointer">
               <div className="flex items-center gap-2 mb-4">
-                <Star1 size={20} color="currentColor" variant="Bold" className="text-primary" />
+                <Star size={20} color="currentColor" weight="fill" className="text-primary" />
                 <span className="text-sm font-bold text-primary uppercase tracking-wide">Featured Post</span>
               </div>
               <h3 className="text-2xl font-bold font-[family-name:var(--font-clash-display)] mb-3 text-foreground group-hover:text-primary transition-colors">
@@ -64,15 +64,15 @@ const CommunityHero: React.FC<CommunityHeroProps> = ({ trendingActivities }) => 
               <p className="text-foreground/70 mb-6 line-clamp-2 leading-relaxed">
                 Learn how to capture stunning moments at your events with tips from professional photographers...
               </p>
-              <Button variant="ghost" size="md" rightIcon={ArrowRight2} className="group-hover:text-primary">
-                Read More
+              <Button variant="ghost" size="md" rightIcon={CaretRight} className="group-hover:text-primary">
+                Read DotsThree
               </Button>
             </div>
 
             {/* Host of the Month */}
             <div className="group bg-background border border-foreground/10 rounded-2xl p-8 hover:border-secondary/30 transition-all duration-300 cursor-pointer">
               <div className="flex items-center gap-2 mb-4">
-                <Star1 size={20} color="currentColor" variant="Bold" className="text-secondary" />
+                <Star size={20} color="currentColor" weight="fill" className="text-secondary" />
                 <span className="text-sm font-bold text-secondary uppercase tracking-wide">Host of the Month</span>
               </div>
               <div className="flex items-center gap-4 mb-4">
@@ -86,7 +86,7 @@ const CommunityHero: React.FC<CommunityHeroProps> = ({ trendingActivities }) => 
                   <p className="text-sm text-foreground/60">15 events hosted this month</p>
                 </div>
               </div>
-              <Button variant="ghost" size="md" rightIcon={ArrowRight2} className="group-hover:text-secondary">
+              <Button variant="ghost" size="md" rightIcon={CaretRight} className="group-hover:text-secondary">
                 View Profile
               </Button>
             </div>

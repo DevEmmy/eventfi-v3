@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import EventCard from "./EventCard";
-import { ArrowRight } from "iconsax-react";
+import { ArrowRight } from '@phosphor-icons/react';
 import { EventService } from "@/services/events";
 
 const TrendingEventsSection = () => {
@@ -15,7 +15,7 @@ const TrendingEventsSection = () => {
         setLoading(true);
         const data = await EventService.getTrendingEvents(8);
 
-        // Map API response to component format
+        // MapTrifold API response to component format
         const mappedEvents = data.map((event: any) => ({
           id: event.id,
           title: event.title,
@@ -65,7 +65,7 @@ const TrendingEventsSection = () => {
             }}
           >
             View All
-            <ArrowRight size={20} color="currentColor" variant="Outline" />
+            <ArrowRight size={20} color="currentColor" weight="regular" />
           </button>
         </div>
 
@@ -119,7 +119,7 @@ const TrendingEventsSection = () => {
             }}
           >
             View All Events
-            <ArrowRight size={20} color="currentColor" variant="Outline" />
+            <ArrowRight size={20} color="currentColor" weight="regular" />
           </button>
         </div>
       </div>

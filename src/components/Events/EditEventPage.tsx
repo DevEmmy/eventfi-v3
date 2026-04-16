@@ -13,19 +13,7 @@ import SpeakerManager, { hasSpeakers } from "./SpeakerManager";
 import { EventSpeaker, EventService as ESvc } from "@/services/events";
 import Button from "@/components/Button";
 import customToast from "@/lib/toast";
-import {
-  CalendarAdd,
-  DocumentText,
-  Location,
-  Image as ImageIcon,
-  Setting2,
-  ArrowLeft2,
-  ArrowRight2,
-  Add,
-  Clock,
-  Trash,
-  CloseCircle,
-} from "iconsax-react";
+import { CalendarPlus, FileText, MapPin, Image as ImageIcon, Gear, CaretLeft, CaretRight, Plus, Clock, Trash, XCircle } from '@phosphor-icons/react';
 
 interface TicketType {
   id: string;
@@ -51,7 +39,7 @@ const getTodayDate = () => {
   return today.toISOString().split('T')[0];
 };
 
-// Map API enum back to the display label used in the card grid
+// MapTrifold API enum back to the display label used in the card grid
 const getCategoryLabel = (apiCategory: string): string => {
   return EVENT_CATEGORIES.find(c => c.apiValue === apiCategory)?.label ?? "Other";
 };
@@ -116,9 +104,9 @@ const EditEventPage: React.FC<EditEventPageProps> = ({ eventId }) => {
   };
 
   const sections = [
-    { id: "details", label: "Event Details", icon: DocumentText },
-    { id: "logistics", label: "Tickets & Location", icon: Location },
-    { id: "settings", label: "Settings", icon: Setting2 },
+    { id: "details", label: "Event Details", icon: FileText },
+    { id: "logistics", label: "Tickets & Location", icon: MapPin },
+    { id: "settings", label: "Settings", icon: Gear },
   ];
 
   // Load existing event data from API
@@ -587,7 +575,7 @@ const EditEventPage: React.FC<EditEventPageProps> = ({ eventId }) => {
                         onClick={() => setTags(prev => prev.filter(x => x !== t))}
                         className="ml-0.5 hover:text-primary/60"
                       >
-                        <CloseCircle size={13} variant="Bold" color="currentColor" />
+                        <XCircle size={13} weight="fill" color="currentColor" />
                       </button>
                     </span>
                   ))}
@@ -749,7 +737,7 @@ const EditEventPage: React.FC<EditEventPageProps> = ({ eventId }) => {
                       onClick={() => setFormData((prev) => ({ ...prev, image: null }))}
                       className="absolute top-4 right-4 p-2 bg-background/90 backdrop-blur-sm rounded-full text-foreground/60 hover:text-primary transition-colors"
                     >
-                      <Trash size={20} color="currentColor" variant="Outline" />
+                      <Trash size={20} color="currentColor" weight="regular" />
                     </button>
                   )}
                 </div>
@@ -759,7 +747,7 @@ const EditEventPage: React.FC<EditEventPageProps> = ({ eventId }) => {
                     <ImageIcon
                       size={48}
                       color="currentColor"
-                      variant="Outline"
+                      weight="regular"
                       className="text-foreground/40 mb-3"
                     />
                     <span className="text-foreground/60 font-medium">
@@ -795,14 +783,14 @@ const EditEventPage: React.FC<EditEventPageProps> = ({ eventId }) => {
                   >
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center gap-2">
-                        <Clock size={16} color="currentColor" variant="Outline" className="text-primary" />
+                        <Clock size={16} color="currentColor" weight="regular" className="text-primary" />
                         <span className="text-sm font-medium text-foreground/60">Item {index + 1}</span>
                       </div>
                       <button
                         onClick={() => removeAgendaItem(item.id)}
                         className="p-1.5 text-foreground/40 hover:text-primary transition-colors"
                       >
-                        <Trash size={16} color="currentColor" variant="Outline" />
+                        <Trash size={16} color="currentColor" weight="regular" />
                       </button>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-[140px_1fr] gap-3">
@@ -840,7 +828,7 @@ const EditEventPage: React.FC<EditEventPageProps> = ({ eventId }) => {
                   onClick={addAgendaItem}
                   className="w-full py-3 border-2 border-dashed border-foreground/20 rounded-xl text-foreground/60 hover:text-primary hover:border-primary transition-all duration-200 flex items-center justify-center gap-2"
                 >
-                  <Add size={20} color="currentColor" variant="Outline" />
+                  <Plus size={20} color="currentColor" weight="regular" />
                   <span className="font-medium">Add Agenda Item</span>
                 </button>
               </div>
@@ -955,7 +943,7 @@ const EditEventPage: React.FC<EditEventPageProps> = ({ eventId }) => {
                           onClick={() => removeTicketType(ticket.id)}
                           className="p-2 text-foreground/60 hover:text-primary transition-colors"
                         >
-                          <Trash size={20} color="currentColor" variant="Outline" />
+                          <Trash size={20} color="currentColor" weight="regular" />
                         </button>
                       )}
                     </div>
@@ -1033,7 +1021,7 @@ const EditEventPage: React.FC<EditEventPageProps> = ({ eventId }) => {
                   onClick={addTicketType}
                   className="w-full py-3 border-2 border-dashed border-foreground/20 rounded-xl text-foreground/60 hover:text-primary hover:border-primary transition-all duration-200 flex items-center justify-center gap-2"
                 >
-                  <Add size={20} color="currentColor" variant="Outline" />
+                  <Plus size={20} color="currentColor" weight="regular" />
                   <span className="font-medium">Add Another Ticket Type</span>
                 </button>
               </div>
@@ -1124,7 +1112,7 @@ const EditEventPage: React.FC<EditEventPageProps> = ({ eventId }) => {
               onClick={() => router.back()}
               className="flex items-center gap-2 text-foreground/60 hover:text-foreground mb-4 transition-colors"
             >
-              <ArrowLeft2 size={20} color="currentColor" variant="Outline" />
+              <CaretLeft size={20} color="currentColor" weight="regular" />
               <span>Back</span>
             </button>
             <h1 className="text-sm lg:text-[16px] xl:text-[20px] font-bold font-[family-name:var(--font-clash-display)] text-foreground mb-2">
@@ -1182,7 +1170,7 @@ const EditEventPage: React.FC<EditEventPageProps> = ({ eventId }) => {
             <Button
               variant="ghost"
               size="md"
-              leftIcon={ArrowLeft2}
+              leftIcon={CaretLeft}
               onClick={() => setActiveSection(Math.max(0, activeSection - 1))}
               disabled={activeSection === 0}
             >
@@ -1201,7 +1189,7 @@ const EditEventPage: React.FC<EditEventPageProps> = ({ eventId }) => {
                 <Button
                   variant="primary"
                   size="md"
-                  rightIcon={CalendarAdd}
+                  rightIcon={CalendarPlus}
                   onClick={handleUpdate}
                   isLoading={isUpdating}
                 >
@@ -1211,7 +1199,7 @@ const EditEventPage: React.FC<EditEventPageProps> = ({ eventId }) => {
                 <Button
                   variant="primary"
                   size="md"
-                  rightIcon={ArrowRight2}
+                  rightIcon={CaretRight}
                   onClick={() =>
                     setActiveSection(Math.min(sections.length - 1, activeSection + 1))
                   }

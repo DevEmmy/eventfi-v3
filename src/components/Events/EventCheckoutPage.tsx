@@ -3,17 +3,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Button from "@/components/Button";
-import {
-  ArrowLeft2,
-  Calendar,
-  Location,
-  Clock,
-  Ticket,
-  Lock,
-  Link1,
-  Star1,
-  Profile2User,
-} from "iconsax-react";
+import { CaretLeft, CalendarBlank, MapPin, Clock, Ticket, Lock, Link, Star, Users } from '@phosphor-icons/react';
 import Image from "next/image";
 import { BookingService } from "@/services/booking";
 import { EventService } from "@/services/events";
@@ -103,7 +93,7 @@ const BookingSuccessOverlay: React.FC<{
           <div className="w-full bg-foreground/5 border border-foreground/10 rounded-2xl px-5 py-4 mb-8 text-left">
             <div className="flex items-start gap-3">
               <div className="w-9 h-9 rounded-xl bg-primary/15 flex items-center justify-center shrink-0 mt-0.5">
-                <Ticket size={18} color="currentColor" variant="Bold" className="text-primary" />
+                <Ticket size={18} color="currentColor" weight="fill" className="text-primary" />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="font-semibold text-foreground text-sm leading-snug truncate">
@@ -134,9 +124,9 @@ const BookingSuccessOverlay: React.FC<{
                 size="lg"
                 fullWidth
                 onClick={() => router.push("/explore-events")}
-                leftIcon={Star1}
+                leftIcon={Star}
               >
-                Discover More Events
+                Discover DotsThree Events
               </Button>
             </div>
           ) : (
@@ -152,7 +142,7 @@ const BookingSuccessOverlay: React.FC<{
                 size="lg"
                 fullWidth
                 onClick={() => router.push(signupUrl)}
-                leftIcon={Profile2User}
+                leftIcon={Users}
               >
                 Create Your EventFi Account
               </Button>
@@ -161,9 +151,9 @@ const BookingSuccessOverlay: React.FC<{
                 size="lg"
                 fullWidth
                 onClick={() => router.push("/explore-events")}
-                leftIcon={Star1}
+                leftIcon={Star}
               >
-                Explore More Events
+                Explore DotsThree Events
               </Button>
             </div>
           )}
@@ -335,7 +325,7 @@ const EventCheckoutPage: React.FC<EventCheckoutPageProps> = ({ eventId }) => {
             onClick={() => router.back()}
             className="flex items-center gap-2 text-foreground/70 hover:text-primary transition-colors"
           >
-            <ArrowLeft2 size={20} color="currentColor" variant="Outline" />
+            <CaretLeft size={20} color="currentColor" weight="regular" />
             <span>Back to Event</span>
           </button>
         </div>
@@ -373,7 +363,7 @@ const EventCheckoutPage: React.FC<EventCheckoutPageProps> = ({ eventId }) => {
                     </div>
                   ) : (
                     <div className="w-24 h-24 rounded-xl bg-primary/20 flex items-center justify-center shrink-0">
-                      <Calendar size={32} color="currentColor" variant="Bold" className="text-primary" />
+                      <CalendarBlank size={32} color="currentColor" weight="fill" className="text-primary" />
                     </div>
                   )}
                   <div className="flex-1 min-w-0">
@@ -382,23 +372,23 @@ const EventCheckoutPage: React.FC<EventCheckoutPageProps> = ({ eventId }) => {
                     </h3>
                     <div className="space-y-1 text-sm text-foreground/70">
                       <div className="flex items-center gap-2">
-                        <Calendar size={16} color="currentColor" variant="Outline" />
+                        <CalendarBlank size={16} color="currentColor" weight="regular" />
                         <span>{new Date(event.startDate).toLocaleDateString()}</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Clock size={16} color="currentColor" variant="Outline" />
+                        <Clock size={16} color="currentColor" weight="regular" />
                         <span>{event.startTime}</span>
                       </div>
                       
                       {
                         event.locationType === "PHYSICAL" ? (
                           <div className="flex items-center gap-2">
-                            <Location size={16} color="currentColor" variant="Outline" />
+                            <MapPin size={16} color="currentColor" weight="regular" />
                             <span className="truncate">{event.venueName || event.address}</span>
                           </div>
                         ) : (
                           <div className="flex items-center gap-2">
-                            <Link1 size={16} color="currentColor" variant="Outline" />
+                            <Link size={16} color="currentColor" weight="regular" />
                             <span className="line-clamp-1">Virtual (Online)</span>
                           </div>
                         )
@@ -493,7 +483,7 @@ const EventCheckoutPage: React.FC<EventCheckoutPageProps> = ({ eventId }) => {
                       className="bg-foreground/5 rounded-2xl p-6 border border-foreground/10"
                     >
                       <div className="flex items-center gap-2 mb-4">
-                        <Ticket size={20} color="currentColor" variant="Bold" className="text-primary" />
+                        <Ticket size={20} color="currentColor" weight="fill" className="text-primary" />
                         <h3 className="font-semibold text-foreground">
                           Ticket {index + 1}
                         </h3>
@@ -603,7 +593,7 @@ const EventCheckoutPage: React.FC<EventCheckoutPageProps> = ({ eventId }) => {
                   <div className="mb-6 space-y-3">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <Ticket size={20} color="currentColor" variant="Bold" className="text-primary" />
+                        <Ticket size={20} color="currentColor" weight="fill" className="text-primary" />
                         <span className="text-foreground/70">
                           {quantity} {quantity === 1 ? "Ticket" : "Tickets"}
                         </span>
@@ -646,7 +636,7 @@ const EventCheckoutPage: React.FC<EventCheckoutPageProps> = ({ eventId }) => {
 
                   {/* Security Badge */}
                   <div className="mb-6 p-4 bg-primary/10 rounded-xl flex items-center gap-3">
-                    <Lock size={20} color="currentColor" variant="Bold" className="text-primary" />
+                    <Lock size={20} color="currentColor" weight="fill" className="text-primary" />
                     <div>
                       <p className="text-sm font-semibold text-foreground">
                         Secured by ZendFi

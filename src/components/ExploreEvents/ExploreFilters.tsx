@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Location } from "iconsax-react";
+import { MapPin } from '@phosphor-icons/react';
 
 interface ExploreFiltersProps {
   selectedCategory: string;
@@ -23,7 +23,7 @@ const ExploreFilters: React.FC<ExploreFiltersProps> = ({
   const categories = [
     "All",
     "Technology",
-    "Music",
+    "MusicNote",
     "Business",
     "Gaming",
     "Arts",
@@ -39,7 +39,7 @@ const ExploreFilters: React.FC<ExploreFiltersProps> = ({
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Category Filter */}
+            {/* Category Funnel */}
             <div>
               <label className="block text-sm font-semibold text-foreground mb-3">
                 Category
@@ -63,7 +63,7 @@ const ExploreFilters: React.FC<ExploreFiltersProps> = ({
               </div>
             </div>
 
-            {/* Date Filter */}
+            {/* Date Funnel */}
             <div>
               <label className="block text-sm font-semibold text-foreground mb-3">
                 Date
@@ -87,7 +87,7 @@ const ExploreFilters: React.FC<ExploreFiltersProps> = ({
               </div>
             </div>
 
-            {/* Location Filter */}
+            {/* Location Funnel */}
             <div>
               <label className="block text-sm font-semibold text-foreground mb-3">
                 Location
@@ -113,7 +113,7 @@ const ExploreFilters: React.FC<ExploreFiltersProps> = ({
                   }}
                   className="w-full px-4 py-2.5 rounded-xl bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-colors text-sm font-medium flex items-center justify-center gap-2"
                 >
-                  <Location size={18} color="currentColor" variant="Bold" />
+                  <MapPin size={18} color="currentColor" weight="fill" />
                   Use My Location
                 </button>
 

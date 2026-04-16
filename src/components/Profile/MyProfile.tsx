@@ -12,7 +12,7 @@ import SettingsSection from "./SettingsSection";
 import DashboardContent from "./DashboardContent";
 import VendorDashboardContent from "./VendorDashboardContent";
 import SavedEvents from "./SavedEvents";
-import { Calendar, Ticket, Shop, Setting2, Home2, Chart, Heart } from "iconsax-react";
+import { CalendarBlank, Ticket, Storefront, Gear, House, ChartBar, Heart } from '@phosphor-icons/react';
 import EventCard, { EventCardProps } from "@/components/Homepage/EventCard";
 import { useUserStore } from "@/store/useUserStore";
 
@@ -204,7 +204,7 @@ const MyProfile: React.FC<MyProfileProps> = ({ userData }) => {
       {
         id: "overview",
         label: "Overview",
-        icon: Home2,
+        icon: House,
       },
     ];
 
@@ -213,7 +213,7 @@ const MyProfile: React.FC<MyProfileProps> = ({ userData }) => {
     tabs.push({
       id: "dashboard",
       label: "Organizer Dashboard",
-      icon: Chart,
+      icon: ChartBar,
     });
   }
 
@@ -222,7 +222,7 @@ const MyProfile: React.FC<MyProfileProps> = ({ userData }) => {
     tabs.push({
       id: "vendor-dashboard",
       label: "Vendor Dashboard",
-      icon: Shop,
+      icon: Storefront,
     });
   }
 
@@ -230,7 +230,7 @@ const MyProfile: React.FC<MyProfileProps> = ({ userData }) => {
     {
       id: "events",
       label: "My Events",
-      icon: Calendar,
+      icon: CalendarBlank,
       count: myEvents.length,
     },
     {
@@ -251,7 +251,7 @@ const MyProfile: React.FC<MyProfileProps> = ({ userData }) => {
     tabs.push({
       id: "vendor",
       label: "Vendor Profile",
-      icon: Shop,
+      icon: Storefront,
     });
   }
 
@@ -259,7 +259,7 @@ const MyProfile: React.FC<MyProfileProps> = ({ userData }) => {
   tabs.push({
     id: "settings",
     label: "Settings",
-    icon: Setting2,
+    icon: Gear,
   });
 
   const handleCreateEvent = () => {
@@ -309,8 +309,8 @@ const MyProfile: React.FC<MyProfileProps> = ({ userData }) => {
                 <div className="flex items-center gap-4 mb-4">
                   <div className="w-16 h-16 rounded-xl bg-background/50 backdrop-blur-sm flex items-center justify-center">
                     <div className="flex items-center gap-2">
-                      <Chart size={24} color="currentColor" variant="Bold" className="text-primary" />
-                      <Shop size={24} color="currentColor" variant="Bold" className="text-secondary" />
+                      <ChartBar size={24} color="currentColor" weight="fill" className="text-primary" />
+                      <Storefront size={24} color="currentColor" weight="fill" className="text-secondary" />
                     </div>
                   </div>
                   <div className="flex-1">
@@ -328,7 +328,7 @@ const MyProfile: React.FC<MyProfileProps> = ({ userData }) => {
                     className="p-4 bg-background/50 backdrop-blur-sm rounded-xl border border-foreground/10 hover:border-primary transition-all text-left group"
                   >
                     <div className="flex items-center gap-2 mb-2">
-                      <Chart size={20} color="currentColor" variant="Bold" className="text-primary" />
+                      <ChartBar size={20} color="currentColor" weight="fill" className="text-primary" />
                       <span className="font-semibold text-foreground group-hover:text-primary transition-colors">
                         Organizer Dashboard
                       </span>
@@ -342,7 +342,7 @@ const MyProfile: React.FC<MyProfileProps> = ({ userData }) => {
                     className="p-4 bg-background/50 backdrop-blur-sm rounded-xl border border-foreground/10 hover:border-secondary transition-all text-left group"
                   >
                     <div className="flex items-center gap-2 mb-2">
-                      <Shop size={20} color="currentColor" variant="Bold" className="text-secondary" />
+                      <Storefront size={20} color="currentColor" weight="fill" className="text-secondary" />
                       <span className="font-semibold text-foreground group-hover:text-secondary transition-colors">
                         Vendor Dashboard
                       </span>

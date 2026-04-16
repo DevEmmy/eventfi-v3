@@ -2,7 +2,7 @@
 
 import React, { useState, useRef } from "react";
 import Image from "next/image";
-import { Add, Trash, Edit2, User, Link21, Global, CloseCircle, Camera } from "iconsax-react";
+import { Plus, Trash, PencilSimple, User, Link, Globe, XCircle, Camera } from '@phosphor-icons/react';
 import { EventSpeaker } from "@/services/events";
 
 // Categories that logically have speakers
@@ -52,7 +52,7 @@ const SpeakerCard: React.FC<{
       </div>
     ) : (
       <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center shrink-0 border-2 border-primary/20">
-        <User size={24} color="currentColor" variant="Bold" className="text-primary" />
+        <User size={24} color="currentColor" weight="fill" className="text-primary" />
       </div>
     )}
     <div className="flex-1 min-w-0">
@@ -71,7 +71,7 @@ const SpeakerCard: React.FC<{
         {speaker.websiteUrl && (
           <a href={speaker.websiteUrl} target="_blank" rel="noopener noreferrer"
             className="text-xs text-primary hover:underline">
-            <Global size={12} color="currentColor" variant="Outline" className="inline" />
+            <Globe size={12} color="currentColor" weight="regular" className="inline" />
           </a>
         )}
       </div>
@@ -79,11 +79,11 @@ const SpeakerCard: React.FC<{
     <div className="flex flex-col gap-2 shrink-0">
       <button onClick={onEdit}
         className="p-2 hover:bg-foreground/10 rounded-xl transition-colors text-foreground/60 hover:text-primary">
-        <Edit2 size={16} color="currentColor" variant="Outline" />
+        <PencilSimple size={16} color="currentColor" weight="regular" />
       </button>
       <button onClick={onRemove}
         className="p-2 hover:bg-red-500/10 rounded-xl transition-colors text-foreground/60 hover:text-red-500">
-        <Trash size={16} color="currentColor" variant="Outline" />
+        <Trash size={16} color="currentColor" weight="regular" />
       </button>
     </div>
   </div>
@@ -136,7 +136,7 @@ const SpeakerFormModal: React.FC<{
             {initial.name ? "Edit Speaker" : "Add Speaker"}
           </h3>
           <button onClick={onClose} className="p-2 hover:bg-foreground/10 rounded-xl transition-colors">
-            <CloseCircle size={22} color="currentColor" variant="Outline" />
+            <XCircle size={22} color="currentColor" weight="regular" />
           </button>
         </div>
 
@@ -150,7 +150,7 @@ const SpeakerFormModal: React.FC<{
                 </div>
               ) : (
                 <div className="w-24 h-24 rounded-full bg-foreground/5 border-2 border-dashed border-foreground/20 flex items-center justify-center">
-                  <User size={32} color="currentColor" variant="Outline" className="text-foreground/30" />
+                  <User size={32} color="currentColor" weight="regular" className="text-foreground/30" />
                 </div>
               )}
               {form.avatar && (
@@ -159,7 +159,7 @@ const SpeakerFormModal: React.FC<{
                   onClick={() => set("avatar", "")}
                   className="absolute -top-1 -right-1 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center hover:bg-red-600 transition-colors"
                 >
-                  <CloseCircle size={14} color="white" variant="Bold" />
+                  <XCircle size={14} color="white" weight="fill" />
                 </button>
               )}
             </div>
@@ -176,7 +176,7 @@ const SpeakerFormModal: React.FC<{
               disabled={uploading}
               className="flex items-center gap-2 px-4 py-2 rounded-xl border border-foreground/20 text-sm font-medium text-foreground/70 hover:bg-foreground/5 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              <Camera size={16} color="currentColor" variant="Outline" />
+              <Camera size={16} color="currentColor" weight="regular" />
               {uploading ? "Uploading…" : form.avatar ? "Change Photo" : "Upload Photo"}
             </button>
           </div>
@@ -221,7 +221,7 @@ const SpeakerFormModal: React.FC<{
                   className="flex-1 px-4 py-2.5 bg-background border border-foreground/20 rounded-xl text-sm text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary transition-all" />
               </div>
               <div className="flex items-center gap-3">
-                <Link21 size={16} color="currentColor" variant="Outline" className="text-foreground/50 w-6" />
+                <Link size={16} color="currentColor" weight="regular" className="text-foreground/50 w-6" />
                 <input value={form.websiteUrl} onChange={e => set("websiteUrl", e.target.value)}
                   placeholder="https://speaker.com"
                   className="flex-1 px-4 py-2.5 bg-background border border-foreground/20 rounded-xl text-sm text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary transition-all" />
@@ -267,7 +267,7 @@ const SpeakerManager: React.FC<SpeakerManagerProps> = ({
       <div className="space-y-3 mb-4">
         {speakers.length === 0 && (
           <div className="flex flex-col items-center justify-center py-8 rounded-2xl border-2 border-dashed border-foreground/15 text-center">
-            <User size={32} color="currentColor" variant="Outline" className="text-foreground/30 mb-2" />
+            <User size={32} color="currentColor" weight="regular" className="text-foreground/30 mb-2" />
             <p className="text-sm text-foreground/50">No speakers added yet</p>
             <p className="text-xs text-foreground/35">Add speakers to help attendees know who to expect</p>
           </div>
@@ -287,7 +287,7 @@ const SpeakerManager: React.FC<SpeakerManagerProps> = ({
         onClick={() => setShowForm(true)}
         className="flex items-center gap-2 w-full justify-center py-3 rounded-xl border-2 border-dashed border-primary/30 text-primary text-sm font-semibold hover:bg-primary/5 transition-colors"
       >
-        <Add size={18} color="currentColor" variant="Outline" />
+        <Plus size={18} color="currentColor" weight="regular" />
         Add Speaker
       </button>
 

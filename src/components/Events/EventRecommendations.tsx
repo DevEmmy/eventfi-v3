@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import EventCard, { EventCardProps } from "@/components/Homepage/EventCard";
-import { Star1, TrendUp, Map, Calendar } from "iconsax-react";
+import { Star, TrendUp, MapTrifold, CalendarBlank } from '@phosphor-icons/react';
 import { EventService } from "@/services/events";
 
 interface EventRecommendationsProps {
@@ -85,7 +85,7 @@ const EventRecommendations: React.FC<EventRecommendationsProps> = ({
             break;
         }
 
-        // Map API response to EventCardProps
+        // MapTrifold API response to EventCardProps
         const mappedEvents: EventCardProps[] = events.map(event => ({
           id: event.id,
           title: event.title,
@@ -121,7 +121,7 @@ const EventRecommendations: React.FC<EventRecommendationsProps> = ({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-            <Star1 size={24} color="currentColor" variant="Bold" className="text-primary" />
+            <Star size={24} color="currentColor" weight="fill" className="text-primary" />
           </div>
           <div>
             <h2 className="text-2xl font-bold font-(family-name:--font-clash-display) text-foreground">
@@ -144,7 +144,7 @@ const EventRecommendations: React.FC<EventRecommendationsProps> = ({
             }`}
         >
           <div className="flex items-center gap-2">
-            <Star1 size={16} color="currentColor" variant="Outline" />
+            <Star size={16} color="currentColor" weight="regular" />
             <span>Based on Interests</span>
           </div>
         </button>
@@ -156,7 +156,7 @@ const EventRecommendations: React.FC<EventRecommendationsProps> = ({
             }`}
         >
           <div className="flex items-center gap-2">
-            <Map size={16} color="currentColor" variant="Outline" />
+            <MapTrifold size={16} color="currentColor" weight="regular" />
             <span>Near You</span>
           </div>
         </button>
@@ -168,7 +168,7 @@ const EventRecommendations: React.FC<EventRecommendationsProps> = ({
             }`}
         >
           <div className="flex items-center gap-2">
-            <TrendUp size={16} color="currentColor" variant="Outline" />
+            <TrendUp size={16} color="currentColor" weight="regular" />
             <span>Trending</span>
           </div>
         </button>

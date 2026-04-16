@@ -1,35 +1,30 @@
 "use client";
 
 import React from "react";
-import {
-  MusicPlaylist,
-  Microphone2,
-  People,
-  Game,
-} from "iconsax-react";
+import { Playlist, Microphone, Users, GameController } from '@phosphor-icons/react';
 
 const PerfectForSection = () => {
   const eventTypes = [
     {
-      icon: MusicPlaylist,
+      icon: Playlist,
       title: "Concerts & Parties",
-      description: "Music festivals, nightlife events, and celebrations",
+      description: "MusicNote festivals, nightlife events, and celebrations",
       color: "primary",
     },
     {
-      icon: Microphone2,
+      icon: Microphone,
       title: "Conferences & Seminars",
       description: "Professional gatherings and educational events",
       color: "secondary",
     },
     {
-      icon: People,
+      icon: Users,
       title: "Meetups & Workshops",
       description: "Community gatherings and skill-building sessions",
       color: "accent",
     },
     {
-      icon: Game,
+      icon: GameController,
       title: "Gaming Tournaments",
       description: "Competitive gaming events and esports",
       color: "primary",
@@ -86,7 +81,7 @@ const PerfectForSection = () => {
                   <IconComponent
                     size={40}
                     color="currentColor"
-                    variant="Bold"
+                    weight="fill"
                     className={colors.icon}
                   />
                 </div>

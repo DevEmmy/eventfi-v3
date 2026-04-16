@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import EventCard, { EventCardProps } from "@/components/Homepage/EventCard";
-import { Heart, Trash } from "iconsax-react";
+import { Heart, Trash } from '@phosphor-icons/react';
 import Button from "@/components/Button";
 import { UserService } from "@/services/user";
 
@@ -17,7 +17,7 @@ const SavedEvents: React.FC = () => {
         setLoading(true);
         const response = await UserService.getFavorites(1, 20);
 
-        // Map API data to EventCardProps
+        // MapTrifold API data to EventCardProps
         const mappedEvents = response.data.map((event: any) => {
           // Parse date and time from startDate
           const eventDate = new Date(event.startDate);
@@ -83,7 +83,7 @@ const SavedEvents: React.FC = () => {
           <Heart
             size={40}
             color="currentColor"
-            variant="Outline"
+            weight="regular"
             className="text-foreground/40"
           />
         </div>
@@ -138,7 +138,7 @@ const SavedEvents: React.FC = () => {
                 className="p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors shadow-lg"
                 aria-label="Remove from saved"
               >
-                <Trash size={18} color="currentColor" variant="Bold" />
+                <Trash size={18} color="currentColor" weight="fill" />
               </button>
             </div>
           </div>

@@ -3,23 +3,7 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import Button from "@/components/Button";
-import {
-  Shop,
-  Calendar,
-  MoneyRecive,
-  People,
-  Star1,
-  ArrowUp2,
-  ArrowDown2,
-  MessageText1,
-  Eye,
-  TickCircle,
-  Clock,
-  Chart,
-  Edit2,
-  Share,
-  Game,
-} from "iconsax-react";
+import { Storefront, CalendarBlank, Coins, Users, Star, CaretUp, CaretDown, ChatText, Eye, CheckCircle, Clock, ChartBar, PencilSimple, ShareNetwork, GameController } from '@phosphor-icons/react';
 import customToast from "@/lib/toast";
 
 interface VendorDashboardContentProps {
@@ -103,10 +87,10 @@ const VendorDashboardContent: React.FC<VendorDashboardContentProps> = () => {
     },
     {
       id: "3",
-      eventName: "Music Festival",
+      eventName: "MusicNote Festival",
       eventDate: "Mar 5, 2025",
       eventTime: "4:00 PM",
-      organizer: "Music Events Co",
+      organizer: "MusicNote Events Co",
       serviceType: "Full Coverage",
       amount: "₦250,000",
       status: "confirmed",
@@ -153,21 +137,21 @@ const VendorDashboardContent: React.FC<VendorDashboardContentProps> = () => {
     },
     {
       label: "Edit Profile",
-      icon: Edit2,
+      icon: PencilSimple,
       bgColor: "bg-secondary/10",
       iconColor: "text-secondary",
       onClick: () => router.push("/vendor/edit"),
     },
     {
       label: "Browse Events",
-      icon: Calendar,
+      icon: CalendarBlank,
       bgColor: "bg-accent/10",
       iconColor: "text-accent",
       onClick: () => router.push("/explore-events"),
     },
     {
       label: "View Analytics",
-      icon: Chart,
+      icon: ChartBar,
       bgColor: "bg-primary/10",
       iconColor: "text-primary",
       onClick: () => customToast.info("Analytics coming soon"),
@@ -216,10 +200,10 @@ const VendorDashboardContent: React.FC<VendorDashboardContentProps> = () => {
         <div className="bg-background border border-foreground/10 rounded-2xl p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-              <Calendar size={24} color="currentColor" variant="Bold" className="text-primary" />
+              <CalendarBlank size={24} color="currentColor" weight="fill" className="text-primary" />
             </div>
             <div className="flex items-center gap-1 text-green-500 text-sm">
-              <ArrowUp2 size={16} color="currentColor" variant="Bold" />
+              <CaretUp size={16} color="currentColor" weight="fill" />
               <span>+{stats.bookingsChange}%</span>
             </div>
           </div>
@@ -236,15 +220,15 @@ const VendorDashboardContent: React.FC<VendorDashboardContentProps> = () => {
         <div className="bg-background border border-foreground/10 rounded-2xl p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="w-12 h-12 rounded-xl bg-secondary/10 flex items-center justify-center">
-              <MoneyRecive
+              <Coins
                 size={24}
                 color="currentColor"
-                variant="Bold"
+                weight="fill"
                 className="text-secondary"
               />
             </div>
             <div className="flex items-center gap-1 text-green-500 text-sm">
-              <ArrowUp2 size={16} color="currentColor" variant="Bold" />
+              <CaretUp size={16} color="currentColor" weight="fill" />
               <span>+{stats.revenueChange}%</span>
             </div>
           </div>
@@ -261,7 +245,7 @@ const VendorDashboardContent: React.FC<VendorDashboardContentProps> = () => {
         <div className="bg-background border border-foreground/10 rounded-2xl p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center">
-              <Star1 size={24} color="currentColor" variant="Bold" className="text-accent" />
+              <Star size={24} color="currentColor" weight="fill" className="text-accent" />
             </div>
           </div>
           <div className="text-3xl font-bold text-foreground mb-1">
@@ -277,10 +261,10 @@ const VendorDashboardContent: React.FC<VendorDashboardContentProps> = () => {
         <div className="bg-background border border-foreground/10 rounded-2xl p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-              <MessageText1
+              <ChatText
                 size={24}
                 color="currentColor"
-                variant="Bold"
+                weight="fill"
                 className="text-primary"
               />
             </div>
@@ -318,7 +302,7 @@ const VendorDashboardContent: React.FC<VendorDashboardContentProps> = () => {
                       <ActionIcon
                         size={24}
                         color="currentColor"
-                        variant="Bold"
+                        weight="fill"
                         className={action.iconColor}
                       />
                     </div>
@@ -477,13 +461,13 @@ const VendorDashboardContent: React.FC<VendorDashboardContentProps> = () => {
                 >
                   <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
                     {activity.type === "booking_accepted" ? (
-                      <TickCircle size={16} color="currentColor" variant="Bold" className="text-primary" />
+                      <CheckCircle size={16} color="currentColor" weight="fill" className="text-primary" />
                     ) : activity.type === "review_received" ? (
-                      <Star1 size={16} color="currentColor" variant="Bold" className="text-primary" />
+                      <Star size={16} color="currentColor" weight="fill" className="text-primary" />
                     ) : activity.type === "booking_request" ? (
-                      <Calendar size={16} color="currentColor" variant="Bold" className="text-primary" />
+                      <CalendarBlank size={16} color="currentColor" weight="fill" className="text-primary" />
                     ) : (
-                      <MoneyRecive size={16} color="currentColor" variant="Bold" className="text-primary" />
+                      <Coins size={16} color="currentColor" weight="fill" className="text-primary" />
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -531,7 +515,7 @@ const VendorDashboardContent: React.FC<VendorDashboardContentProps> = () => {
                   variant="outline"
                   size="sm"
                   fullWidth
-                  leftIcon={Chart}
+                  leftIcon={ChartBar}
                   onClick={() => customToast.info("Detailed analytics coming soon")}
                 >
                   View Analytics

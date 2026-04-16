@@ -3,19 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Button from "@/components/Button";
-import {
-  ArrowLeft2,
-  Calendar,
-  Clock,
-  Location,
-  Shop,
-  User,
-  Sms,
-  Call,
-  DocumentText,
-  TickCircle,
-  Lock,
-} from "iconsax-react";
+import { CaretLeft, CalendarBlank, Clock, MapPin, Storefront, User, Envelope, Phone, FileText, CheckCircle, Lock } from '@phosphor-icons/react';
 import Image from "next/image";
 import { VendorService, VendorProfile } from "@/services/vendor";
 import customToast from "@/lib/toast";
@@ -23,7 +11,7 @@ import customToast from "@/lib/toast";
 const categoryDisplayMap: Record<string, string> = {
   PHOTOGRAPHY: "Photography",
   VIDEOGRAPHY: "Videography",
-  DJ_MUSIC: "DJ & Music",
+  DJ_MUSIC: "DJ & MusicNote",
   CATERING: "Catering",
   VENUES: "Venues",
   DECORATIONS: "Decorations",
@@ -216,7 +204,7 @@ const VendorBookingPage: React.FC<VendorBookingPageProps> = ({ vendorId }) => {
             onClick={() => router.back()}
             className="flex items-center gap-2 text-foreground/70 hover:text-primary transition-colors"
           >
-            <ArrowLeft2 size={20} color="currentColor" variant="Outline" />
+            <CaretLeft size={20} color="currentColor" weight="regular" />
             <span>Back to Vendor</span>
           </button>
         </div>
@@ -253,7 +241,7 @@ const VendorBookingPage: React.FC<VendorBookingPageProps> = ({ vendorId }) => {
                         </div>
                       ) : (
                         <div className="w-16 h-16 rounded-xl bg-primary/20 flex items-center justify-center shrink-0">
-                          <Shop size={32} color="currentColor" variant="Bold" className="text-primary" />
+                          <Storefront size={32} color="currentColor" weight="fill" className="text-primary" />
                         </div>
                       )}
                       <div className="flex-1 min-w-0">
@@ -305,10 +293,10 @@ const VendorBookingPage: React.FC<VendorBookingPageProps> = ({ vendorId }) => {
                             Event Date <span className="text-primary">*</span>
                           </label>
                           <div className="relative">
-                            <Calendar
+                            <CalendarBlank
                               size={20}
                               color="currentColor"
-                              variant="Outline"
+                              weight="regular"
                               className="absolute left-4 top-1/2 -translate-y-1/2 text-foreground/40"
                             />
                             <input
@@ -336,7 +324,7 @@ const VendorBookingPage: React.FC<VendorBookingPageProps> = ({ vendorId }) => {
                             <Clock
                               size={20}
                               color="currentColor"
-                              variant="Outline"
+                              weight="regular"
                               className="absolute left-4 top-1/2 -translate-y-1/2 text-foreground/40"
                             />
                             <input
@@ -361,10 +349,10 @@ const VendorBookingPage: React.FC<VendorBookingPageProps> = ({ vendorId }) => {
                           Event Location <span className="text-primary">*</span>
                         </label>
                         <div className="relative">
-                          <Location
+                          <MapPin
                             size={20}
                             color="currentColor"
-                            variant="Outline"
+                            weight="regular"
                             className="absolute left-4 top-1/2 -translate-y-1/2 text-foreground/40"
                           />
                           <input
@@ -475,7 +463,7 @@ const VendorBookingPage: React.FC<VendorBookingPageProps> = ({ vendorId }) => {
                           <User
                             size={20}
                             color="currentColor"
-                            variant="Outline"
+                            weight="regular"
                             className="absolute left-4 top-1/2 -translate-y-1/2 text-foreground/40"
                           />
                           <input
@@ -501,10 +489,10 @@ const VendorBookingPage: React.FC<VendorBookingPageProps> = ({ vendorId }) => {
                             Email Address <span className="text-primary">*</span>
                           </label>
                           <div className="relative">
-                            <Sms
+                            <Envelope
                               size={20}
                               color="currentColor"
-                              variant="Outline"
+                              weight="regular"
                               className="absolute left-4 top-1/2 -translate-y-1/2 text-foreground/40"
                             />
                             <input
@@ -529,10 +517,10 @@ const VendorBookingPage: React.FC<VendorBookingPageProps> = ({ vendorId }) => {
                             Phone Number <span className="text-primary">*</span>
                           </label>
                           <div className="relative">
-                            <Call
+                            <Phone
                               size={20}
                               color="currentColor"
-                              variant="Outline"
+                              weight="regular"
                               className="absolute left-4 top-1/2 -translate-y-1/2 text-foreground/40"
                             />
                             <input
@@ -561,7 +549,7 @@ const VendorBookingPage: React.FC<VendorBookingPageProps> = ({ vendorId }) => {
                       variant="primary"
                       size="lg"
                       fullWidth
-                      leftIcon={TickCircle}
+                      leftIcon={CheckCircle}
                       type="submit"
                       isLoading={isSubmitting}
                       disabled={isSubmitting}
@@ -606,15 +594,15 @@ const VendorBookingPage: React.FC<VendorBookingPageProps> = ({ vendorId }) => {
                   {/* Vendor Info */}
                   <div className="mb-6 space-y-3">
                     <div className="flex items-center gap-2 text-sm text-foreground/70">
-                      <TickCircle size={16} color="currentColor" variant="Bold" className="text-primary" />
+                      <CheckCircle size={16} color="currentColor" weight="fill" className="text-primary" />
                       <span>Verified vendor</span>
                     </div>
                     <div className="flex items-center gap-2 text-sm text-foreground/70">
-                      <DocumentText size={16} color="currentColor" variant="Outline" />
+                      <FileText size={16} color="currentColor" weight="regular" />
                       <span>Response within 24 hours</span>
                     </div>
                     <div className="flex items-center gap-2 text-sm text-foreground/70">
-                      <Lock size={16} color="currentColor" variant="Outline" />
+                      <Lock size={16} color="currentColor" weight="regular" />
                       <span>Secure booking process</span>
                     </div>
                   </div>

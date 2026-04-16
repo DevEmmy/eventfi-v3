@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Button from "@/components/Button";
-import { User, ArrowRight2 } from "iconsax-react";
+import { User, CaretRight } from '@phosphor-icons/react';
 import axios from "axios";
 import axiosInstance from "@/lib/axios";
 import toast from "@/lib/toast";
@@ -126,7 +126,7 @@ const IdentityStep = () => {
                   <User
                     size={48}
                     color="currentColor"
-                    variant="Outline"
+                    weight="regular"
                     className="text-foreground/40 group-hover:text-primary"
                   />
                 )}
@@ -181,7 +181,7 @@ const IdentityStep = () => {
             variant="primary"
             size="lg"
             fullWidth
-            rightIcon={ArrowRight2}
+            rightIcon={CaretRight}
             disabled={!isFormValid || loading}
             onClick={handleContinue}
             isLoading={loading}

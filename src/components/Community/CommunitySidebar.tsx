@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { User, Calendar, Star1, TickCircle } from "iconsax-react";
+import { User, CalendarBlank, Star, CheckCircle } from '@phosphor-icons/react';
 
 interface CommunitySidebarProps {}
 
@@ -56,7 +56,7 @@ const CommunitySidebar: React.FC<CommunitySidebarProps> = () => {
               className="flex items-center gap-3 p-3 bg-foreground/5 rounded-xl hover:bg-foreground/10 transition-all duration-200 cursor-pointer border border-foreground/5 hover:border-foreground/10"
             >
               <div className="w-8 h-8 rounded-full bg-foreground/5 flex items-center justify-center shrink-0">
-                <User size={18} color="currentColor" variant="Bold" className="text-primary" />
+                <User size={18} color="currentColor" weight="fill" className="text-primary" />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1.5 mb-0.5">
@@ -64,10 +64,10 @@ const CommunitySidebar: React.FC<CommunitySidebarProps> = () => {
                     {user.name}
                   </span>
                   {user.verified && (
-                    <TickCircle
+                    <CheckCircle
                       size={13}
                       color="currentColor"
-                      variant="Bold"
+                      weight="fill"
                       className="text-primary shrink-0"
                     />
                   )}
@@ -93,7 +93,7 @@ const CommunitySidebar: React.FC<CommunitySidebarProps> = () => {
               className="flex flex-col items-center gap-2 p-4 bg-foreground/5 rounded-xl border border-foreground/5 shrink-0 w-[140px]"
             >
               <div className="w-14 h-14 rounded-full bg-foreground/5 flex items-center justify-center">
-                <User size={28} color="currentColor" variant="Bold" className="text-primary" />
+                <User size={28} color="currentColor" weight="fill" className="text-primary" />
               </div>
               <div className="flex flex-col items-center gap-1 w-full">
                 <div className="flex items-center gap-1">
@@ -101,10 +101,10 @@ const CommunitySidebar: React.FC<CommunitySidebarProps> = () => {
                     {user.name}
                   </span>
                   {user.verified && (
-                    <TickCircle
+                    <CheckCircle
                       size={12}
                       color="currentColor"
-                      variant="Bold"
+                      weight="fill"
                       className="text-primary shrink-0"
                     />
                   )}
@@ -133,7 +133,7 @@ const CommunitySidebar: React.FC<CommunitySidebarProps> = () => {
             >
               <h4 className="font-semibold text-foreground mb-2">{call.title}</h4>
               <div className="flex items-center gap-2 text-sm text-foreground/70 mb-2">
-                <Calendar size={16} color="currentColor" variant="Outline" />
+                <CalendarBlank size={16} color="currentColor" weight="regular" />
                 <span>{call.date}</span>
               </div>
               <div className="flex items-center justify-between">

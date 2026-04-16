@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { User, Location, TickCircle, Edit2, Share, AddCircle, CloseCircle } from "iconsax-react";
+import { User, MapPin, CheckCircle, PencilSimple, ShareNetwork, PlusCircle, XCircle } from '@phosphor-icons/react';
 import Button from "@/components/Button";
 
 interface ProfileHeaderProps {
@@ -57,7 +57,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                   <User
                     size={48}
                     color="currentColor"
-                    variant="Bold"
+                    weight="fill"
                     className="text-foreground/40"
                   />
                 )}
@@ -72,10 +72,10 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                   {displayName}
                 </h1>
                 {isVerified && (
-                  <TickCircle
+                  <CheckCircle
                     size={24}
                     color="currentColor"
-                    variant="Bold"
+                    weight="fill"
                     className="text-primary shrink-0"
                   />
                 )}
@@ -108,7 +108,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
               {/* Location */}
               {location && (
                 <div className="flex items-center gap-2 text-foreground/60 mb-6">
-                  <Location size={18} color="currentColor" variant="Outline" />
+                  <MapPin size={18} color="currentColor" weight="regular" />
                   <span>{location}</span>
                 </div>
               )}
@@ -147,7 +147,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                   <Button
                     variant="outline"
                     size="md"
-                    leftIcon={Edit2}
+                    leftIcon={PencilSimple}
                     onClick={onEdit}
                   >
                     Edit Profile
@@ -155,9 +155,9 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                 ) : (
                   <>
                     <Button
-                      variant={isFollowing ? "outline" : "primary"}
+                      
                       size="md"
-                      leftIcon={isFollowing ? CloseCircle : AddCircle}
+                      leftIcon={isFollowing ? XCircle : PlusCircle}
                       onClick={onFollow}
                     >
                       {isFollowing ? "Following" : "Follow"}
@@ -167,9 +167,9 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                 <Button
                   variant="ghost"
                   size="md"
-                  leftIcon={Share}
+                  leftIcon={ShareNetwork}
                 >
-                  Share
+                  ShareNetwork
                 </Button>
               </div>
             </div>

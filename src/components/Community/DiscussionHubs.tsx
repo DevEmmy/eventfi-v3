@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { MessageText1, Image as ImageIcon, User, Wallet3, ArrowRight2, Like1, Message2 } from "iconsax-react";
+import { ChatText, Image as ImageIcon, User, Wallet, CaretRight, ThumbsUp, ChatCircle } from '@phosphor-icons/react';
 import Button from "@/components/Button";
 
 interface DiscussionHubsProps {
@@ -18,7 +18,7 @@ const DiscussionHubs: React.FC<DiscussionHubsProps> = ({
       id: "recaps",
       label: "Event Recaps & Photos",
       icon: ImageIcon,
-      description: "Share your event experiences",
+      description: "ShareNetwork your event experiences",
       color: "primary",
     },
     {
@@ -31,14 +31,14 @@ const DiscussionHubs: React.FC<DiscussionHubsProps> = ({
     {
       id: "lounge",
       label: "General Lounge",
-      icon: MessageText1,
+      icon: ChatText,
       description: "Casual chat and networking",
       color: "accent",
     },
     {
       id: "token",
       label: "Token Holders",
-      icon: Wallet3,
+      icon: Wallet,
       description: "Exclusive Web3 community",
       color: "primary",
       comingSoon: true,
@@ -196,7 +196,7 @@ const DiscussionHubs: React.FC<DiscussionHubsProps> = ({
                       : "border-foreground/10 text-foreground/70 hover:border-primary/30 hover:text-primary bg-background"
                   } ${category.comingSoon ? "opacity-50 cursor-not-allowed" : ""}`}
                 >
-                  <IconComponent size={20} color="currentColor" variant={isActive ? "Bold" : "Outline"} />
+                  <IconComponent size={20} color="currentColor"  />
                   <span>{category.label}</span>
                   {category.comingSoon && (
                     <span className="text-xs px-2.5 py-1 bg-foreground/5 rounded-full font-medium">
@@ -227,7 +227,7 @@ const DiscussionHubs: React.FC<DiscussionHubsProps> = ({
                           <ImageIcon
                             size={24}
                             color="currentColor"
-                            variant="Bold"
+                            weight="fill"
                             className="text-primary"
                           />
                         </div>
@@ -240,12 +240,12 @@ const DiscussionHubs: React.FC<DiscussionHubsProps> = ({
                     </div>
                     <div className="flex items-center gap-6">
                       <div className="flex items-center gap-2 text-foreground/70">
-                        <Message2 size={18} color="currentColor" variant="Outline" />
+                        <ChatCircle size={18} color="currentColor" weight="regular" />
                         <span className="font-medium">{discussion.replies}</span>
                         <span className="text-foreground/50">replies</span>
                       </div>
                       <div className="flex items-center gap-2 text-foreground/70">
-                        <Like1 size={18} color="currentColor" variant="Outline" />
+                        <ThumbsUp size={18} color="currentColor" weight="regular" />
                         <span className="font-medium">{discussion.likes}</span>
                         <span className="text-foreground/50">likes</span>
                       </div>
@@ -258,7 +258,7 @@ const DiscussionHubs: React.FC<DiscussionHubsProps> = ({
 
           {/* Create New Post Button */}
           <div className="flex justify-center">
-            <Button variant="primary" size="lg" rightIcon={ArrowRight2} className="px-8">
+            <Button variant="primary" size="lg" rightIcon={CaretRight} className="px-8">
               Start a Discussion
             </Button>
           </div>

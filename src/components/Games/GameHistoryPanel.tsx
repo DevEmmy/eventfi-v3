@@ -6,7 +6,7 @@ import {
   ActivitySummary,
   ActivityDetail,
 } from "@/services/activity";
-import { Gift, Music, Crown, ArrowLeft, People, Calendar, Timer } from "iconsax-react";
+import { Gift, MusicNote, Crown, ArrowLeft, Users, CalendarBlank, Timer } from '@phosphor-icons/react';
 import Image from "next/image";
 
 interface GameHistoryPanelProps {
@@ -28,14 +28,14 @@ function GameTypeBadge({ type }: { type: string }) {
   if (type === "LUCKY_DRAW") {
     return (
       <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-yellow-500/10 text-yellow-500 text-xs font-semibold">
-        <Gift size={11} color="currentColor" variant="Bold" />
+        <Gift size={11} color="currentColor" weight="fill" />
         Lucky Draw
       </span>
     );
   }
   return (
     <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-semibold">
-      <Music size={11} color="currentColor" variant="Bold" />
+      <MusicNote size={11} color="currentColor" weight="fill" />
       Applause Meter
     </span>
   );
@@ -116,8 +116,8 @@ function DetailView({
         <div className="flex items-center gap-3">
           <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${detail.type === "LUCKY_DRAW" ? "bg-yellow-500/10" : "bg-primary/10"}`}>
             {detail.type === "LUCKY_DRAW"
-              ? <Gift size={20} color="#f59e0b" variant="Bold" />
-              : <Music size={20} color="currentColor" variant="Bold" className="text-primary" />
+              ? <Gift size={20} color="#f59e0b" weight="fill" />
+              : <MusicNote size={20} color="currentColor" weight="fill" className="text-primary" />
             }
           </div>
           <div>
@@ -125,7 +125,7 @@ function DetailView({
               {detail.type === "LUCKY_DRAW" ? "Lucky Draw" : "Applause Meter"}
             </h4>
             <div className="flex items-center gap-1.5 mt-0.5 text-xs text-foreground/40">
-              <Calendar size={11} color="currentColor" />
+              <CalendarBlank size={11} color="currentColor" />
               {formatDate(detail.createdAt)}
             </div>
           </div>
@@ -162,7 +162,7 @@ function DetailView({
       {detail.type === "LUCKY_DRAW" && (detail.winners?.length ?? 0) > 0 && (
         <div className="bg-background border border-yellow-500/20 rounded-2xl overflow-hidden">
           <div className="px-4 py-3 border-b border-yellow-500/10 flex items-center gap-2">
-            <Crown size={14} color="#f59e0b" variant="Bold" />
+            <Crown size={14} color="#f59e0b" weight="fill" />
             <span className="text-sm font-semibold text-foreground">
               {(detail.winners?.length ?? 0) === 1 ? "Winner" : "Winners"}
             </span>
@@ -191,7 +191,7 @@ function DetailView({
                   <p className="text-sm font-semibold text-foreground truncate">{w.name}</p>
                   {w.username && <p className="text-xs text-foreground/40">@{w.username}</p>}
                 </div>
-                <Crown size={14} color="#f59e0b" variant="Bold" className="shrink-0" />
+                <Crown size={14} color="#f59e0b" weight="fill" className="shrink-0" />
               </li>
             ))}
           </ul>
@@ -207,7 +207,7 @@ function DetailView({
       {detail.type === "APPLAUSE_METER" && (detail.leaderboard?.length ?? 0) > 0 && (
         <div className="bg-background border border-foreground/10 rounded-2xl overflow-hidden">
           <div className="px-4 py-3 border-b border-foreground/5 flex items-center gap-2">
-            <Crown size={14} color="#f59e0b" variant="Bold" />
+            <Crown size={14} color="#f59e0b" weight="fill" />
             <span className="text-sm font-semibold text-foreground">Final Leaderboard</span>
             <span className="text-xs text-foreground/40 ml-auto">{detail.leaderboard!.length} tappers</span>
           </div>
@@ -285,7 +285,7 @@ export default function GameHistoryPanel({ eventId }: GameHistoryPanelProps) {
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <h4 className="text-sm font-semibold text-foreground/60 uppercase tracking-wide">
-          Game History
+          GameController History
         </h4>
         <span className="text-xs text-foreground/40">{history.length} game{history.length !== 1 ? "s" : ""}</span>
       </div>
@@ -314,8 +314,8 @@ export default function GameHistoryPanel({ eventId }: GameHistoryPanelProps) {
               >
                 <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${isLucky ? "bg-yellow-500/10" : "bg-primary/10"}`}>
                   {isLucky
-                    ? <Gift size={17} color="#f59e0b" variant="Bold" />
-                    : <Music size={17} color="currentColor" variant="Bold" className="text-primary" />
+                    ? <Gift size={17} color="#f59e0b" weight="fill" />
+                    : <MusicNote size={17} color="currentColor" weight="fill" className="text-primary" />
                   }
                 </div>
                 <div className="flex-1 min-w-0">

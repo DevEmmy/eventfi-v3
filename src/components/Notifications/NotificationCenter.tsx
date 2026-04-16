@@ -2,19 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import {
-  Notification,
-  TickCircle,
-  CloseCircle,
-  Calendar,
-  Ticket,
-  MoneyRecive,
-  Shop,
-  Star1,
-  MessageText1,
-  Clock,
-  Trash,
-} from "iconsax-react";
+import { Bell, CheckCircle, XCircle, CalendarBlank, Ticket, Coins, Storefront, Star, ChatText, Clock, Trash } from '@phosphor-icons/react';
 import { io, Socket } from "socket.io-client";
 import { NotificationService, NotificationItem } from "@/services/notifications";
 import { useUserStore } from "@/store/useUserStore";
@@ -169,26 +157,26 @@ const NotificationCenter: React.FC<NotificationCenterProps> = () => {
   const getNotificationIcon = (type: string) => {
     switch (type) {
       case "ticket_sale":
-        return <Ticket size={20} color="currentColor" variant="Bold" className="text-primary" />;
+        return <Ticket size={20} color="currentColor" weight="fill" className="text-primary" />;
       case "event_reminder":
       case "event_nearby":
       case "event_updated":
       case "event_cancelled":
-        return <Calendar size={20} color="currentColor" variant="Bold" className="text-primary" />;
+        return <CalendarBlank size={20} color="currentColor" weight="fill" className="text-primary" />;
       case "booking_request":
       case "booking_accepted":
       case "booking_declined":
-        return <Shop size={20} color="currentColor" variant="Bold" className="text-secondary" />;
+        return <Storefront size={20} color="currentColor" weight="fill" className="text-secondary" />;
       case "review_received":
-        return <Star1 size={20} color="currentColor" variant="Bold" className="text-accent" />;
+        return <Star size={20} color="currentColor" weight="fill" className="text-accent" />;
       case "vendor_booked":
-        return <TickCircle size={20} color="currentColor" variant="Bold" className="text-green-500" />;
+        return <CheckCircle size={20} color="currentColor" weight="fill" className="text-green-500" />;
       case "payment_received":
-        return <MoneyRecive size={20} color="currentColor" variant="Bold" className="text-green-500" />;
+        return <Coins size={20} color="currentColor" weight="fill" className="text-green-500" />;
       case "message":
-        return <MessageText1 size={20} color="currentColor" variant="Bold" className="text-primary" />;
+        return <ChatText size={20} color="currentColor" weight="fill" className="text-primary" />;
       default:
-        return <Notification size={20} color="currentColor" variant="Bold" className="text-foreground/60" />;
+        return <Bell size={20} color="currentColor" weight="fill" className="text-foreground/60" />;
     }
   };
 
@@ -209,16 +197,16 @@ const NotificationCenter: React.FC<NotificationCenterProps> = () => {
 
   return (
     <div className="relative" ref={dropdownRef}>
-      {/* Notification Bell Button */}
+      {/* Notification Notification Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="relative p-2 text-foreground/70 hover:text-primary transition-colors"
         aria-label="Notifications"
       >
-        <Notification
+        <Bell
           size={24}
           color="currentColor"
-          variant={isOpen ? "Bold" : "Outline"}
+          
         />
         {unreadCount > 0 && (
           <span className="absolute top-0 right-0 w-5 h-5 bg-primary text-white text-xs font-bold rounded-full flex items-center justify-center">
@@ -247,7 +235,7 @@ const NotificationCenter: React.FC<NotificationCenterProps> = () => {
                 className="p-1 hover:bg-foreground/10 rounded-lg transition-colors"
                 aria-label="Close notifications"
               >
-                <CloseCircle size={20} color="currentColor" variant="Outline" />
+                <XCircle size={20} color="currentColor" weight="regular" />
               </button>
             </div>
           </div>
@@ -256,10 +244,10 @@ const NotificationCenter: React.FC<NotificationCenterProps> = () => {
           <div className="overflow-y-auto flex-1">
             {notifications.length === 0 ? (
               <div className="p-8 text-center">
-                <Notification
+                <Bell
                   size={48}
                   color="currentColor"
-                  variant="Outline"
+                  weight="regular"
                   className="text-foreground/30 mx-auto mb-3"
                 />
                 <p className="text-foreground/60">No notifications</p>
@@ -290,7 +278,7 @@ const NotificationCenter: React.FC<NotificationCenterProps> = () => {
                           {notification.message}
                         </p>
                         <div className="flex items-center gap-2 text-xs text-foreground/50">
-                          <Clock size={14} color="currentColor" variant="Outline" />
+                          <Clock size={14} color="currentColor" weight="regular" />
                           <span>{formatTimestamp(notification.createdAt)}</span>
                         </div>
                       </div>
@@ -299,7 +287,7 @@ const NotificationCenter: React.FC<NotificationCenterProps> = () => {
                         className="opacity-0 group-hover:opacity-100 p-1 hover:bg-foreground/10 rounded transition-all shrink-0"
                         aria-label="Delete notification"
                       >
-                        <Trash size={16} color="currentColor" variant="Outline" />
+                        <Trash size={16} color="currentColor" weight="regular" />
                       </button>
                     </div>
                   </div>

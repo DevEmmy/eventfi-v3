@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Gift, Music, Crown, People, Flash, TickCircle } from "iconsax-react";
+import { Gift, MusicNote, Crown, Users, Lightning, CheckCircle } from '@phosphor-icons/react';
 
 // Animated Lucky Draw mockup
 const LuckyDrawMockup = () => {
@@ -19,7 +19,7 @@ const LuckyDrawMockup = () => {
       {/* Header bar */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Gift size={16} color="#f59e0b" variant="Bold" />
+          <Gift size={16} color="#f59e0b" weight="fill" />
           <div className="h-2.5 bg-yellow-500/40 rounded w-20"></div>
         </div>
         <span className="text-xs font-bold text-green-500 flex items-center gap-1">
@@ -45,7 +45,7 @@ const LuckyDrawMockup = () => {
 
       {/* Winner card */}
       <div className="flex-1 flex flex-col items-center justify-center bg-yellow-500/5 border border-yellow-500/20 rounded-xl p-3">
-        <Crown size={20} color="#f59e0b" variant="Bold" className="mb-1" />
+        <Crown size={20} color="#f59e0b" weight="fill" className="mb-1" />
         <div className="w-10 h-10 rounded-full bg-yellow-500/20 ring-2 ring-yellow-400 flex items-center justify-center text-sm font-bold text-yellow-500 mb-1">
           AK
         </div>
@@ -55,7 +55,7 @@ const LuckyDrawMockup = () => {
 
       {/* Draw button */}
       <div className="h-8 rounded-lg bg-yellow-500/20 flex items-center justify-center gap-2">
-        <Crown size={14} color="#f59e0b" variant="Bold" />
+        <Crown size={14} color="#f59e0b" weight="fill" />
         <div className="h-2 bg-yellow-500/40 rounded w-16"></div>
       </div>
     </div>
@@ -74,7 +74,7 @@ const ApplauseMockup = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Music size={16} color="currentColor" variant="Bold" className="text-primary" />
+          <MusicNote size={16} color="currentColor" weight="fill" className="text-primary" />
           <div className="h-2.5 bg-primary/40 rounded w-24"></div>
         </div>
         <span className="text-xs font-bold text-green-500 flex items-center gap-1">
@@ -110,7 +110,7 @@ const ApplauseMockup = () => {
 
       {/* Participants */}
       <div className="flex items-center justify-center gap-1 text-xs text-foreground/40">
-        <People size={12} color="currentColor" variant="Outline" />
+        <Users size={12} color="currentColor" weight="regular" />
         <span>38 people tapping</span>
       </div>
     </div>
@@ -144,7 +144,7 @@ const games = [
     tagline: "Feel the energy of the room, live",
     description:
       "Give your audience a tap button and watch the excitement build in real time. Perfect for crowd reactions, speaker intros, or just hyping up the energy.",
-    icon: Music,
+    icon: MusicNote,
     iconColor: "currentColor",
     iconBg: "bg-primary/10",
     gradient: "from-primary/10 via-primary/5 to-background",
@@ -168,8 +168,8 @@ const LiveGamesSection = () => {
         <div className="text-center max-w-3xl mx-auto mb-12 lg:mb-16">
           {/* Label */}
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/10 border border-accent/20 mb-6">
-            <Flash size={14} color="currentColor" variant="Bold" className="text-accent" />
-            <span className="text-sm font-semibold text-accent">Live Game Add-ons</span>
+            <Lightning size={14} color="currentColor" weight="fill" className="text-accent" />
+            <span className="text-sm font-semibold text-accent">Live GameController Add-ons</span>
           </div>
 
           <h2 className="text-3xl lg:text-4xl xl:text-5xl font-bold font-[family-name:var(--font-clash-display)] mb-4 text-foreground">
@@ -182,7 +182,7 @@ const LiveGamesSection = () => {
           </p>
         </div>
 
-        {/* Game Cards */}
+        {/* GameController Cards */}
         <div className="grid md:grid-cols-2 gap-6 lg:gap-8 max-w-5xl mx-auto">
           {games.map((game) => {
             const Icon = game.icon;
@@ -202,11 +202,11 @@ const LiveGamesSection = () => {
                     <Icon
                       size={28}
                       color={game.iconColor}
-                      variant="Bold"
+                      weight="fill"
                     />
                   </div>
                   <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-500/10 text-green-500 text-xs font-semibold">
-                    <TickCircle size={12} color="currentColor" variant="Bold" />
+                    <CheckCircle size={12} color="currentColor" weight="fill" />
                     Available Now
                   </span>
                 </div>
@@ -226,10 +226,10 @@ const LiveGamesSection = () => {
                 <ul className="space-y-2 mb-6">
                   {game.perks.map((perk, i) => (
                     <li key={i} className="flex items-center gap-2 text-sm text-foreground/70">
-                      <TickCircle
+                      <CheckCircle
                         size={14}
                         color="currentColor"
-                        variant="Bold"
+                        weight="fill"
                         className={game.accentText}
                       />
                       {perk}

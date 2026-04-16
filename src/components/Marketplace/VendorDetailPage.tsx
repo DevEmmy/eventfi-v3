@@ -3,26 +3,14 @@
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Button from "@/components/Button";
-import {
-  Location,
-  Star1,
-  TickCircle,
-  Share,
-  Heart,
-  ArrowLeft2,
-  MessageText1,
-  Calendar,
-  Call,
-  Sms,
-  Clock,
-} from "iconsax-react";
+import { MapPin, Star, CheckCircle, ShareNetwork, Heart, CaretLeft, ChatText, CalendarBlank, Phone, Envelope, Clock } from '@phosphor-icons/react';
 import { useRouter } from "next/navigation";
 import { VendorService, VendorProfile, VendorReview } from "@/services/vendor";
 
 const categoryDisplayMap: Record<string, string> = {
   PHOTOGRAPHY: "Photography",
   VIDEOGRAPHY: "Videography",
-  DJ_MUSIC: "DJ & Music",
+  DJ_MUSIC: "DJ & MusicNote",
   CATERING: "Catering",
   VENUES: "Venues",
   DECORATIONS: "Decorations",
@@ -128,7 +116,7 @@ const VendorDetailPage: React.FC<VendorDetailPageProps> = ({ vendorId }) => {
           onClick={() => router.back()}
           className="flex items-center gap-2 text-foreground/70 hover:text-primary transition-colors"
         >
-          <ArrowLeft2 size={20} color="currentColor" variant="Outline" />
+          <CaretLeft size={20} color="currentColor" weight="regular" />
           <span>Back to Marketplace</span>
         </button>
       </div>
@@ -139,7 +127,7 @@ const VendorDetailPage: React.FC<VendorDetailPageProps> = ({ vendorId }) => {
           <Image src={vendor.coverImage} alt={vendor.name} fill className="object-cover" />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
-            <TickCircle size={120} color="currentColor" variant="Bold" className="text-primary/30" />
+            <CheckCircle size={120} color="currentColor" weight="fill" className="text-primary/30" />
           </div>
         )}
 
@@ -154,16 +142,16 @@ const VendorDetailPage: React.FC<VendorDetailPageProps> = ({ vendorId }) => {
             <Heart
               size={20}
               color="currentColor"
-              variant={isFavorite ? "Bold" : "Outline"}
+              
               className={isFavorite ? "text-primary" : "text-foreground"}
             />
           </button>
           <button
             onClick={handleShare}
             className="w-10 h-10 rounded-full bg-background/90 backdrop-blur-sm flex items-center justify-center hover:bg-background transition-colors"
-            aria-label="Share vendor"
+            aria-label="ShareNetwork vendor"
           >
-            <Share size={20} color="currentColor" variant="Outline" />
+            <ShareNetwork size={20} color="currentColor" weight="regular" />
           </button>
         </div>
 
@@ -187,24 +175,24 @@ const VendorDetailPage: React.FC<VendorDetailPageProps> = ({ vendorId }) => {
                 </h1>
                 {vendor.isVerified && (
                   <div className="mt-2">
-                    <TickCircle size={32} color="currentColor" variant="Bold" className="text-primary" />
+                    <CheckCircle size={32} color="currentColor" weight="fill" className="text-primary" />
                   </div>
                 )}
               </div>
 
               <div className="flex flex-wrap items-center gap-4 mb-6">
                 <div className="flex items-center gap-2">
-                  <Star1 size={20} color="currentColor" variant="Bold" className="text-primary" />
+                  <Star size={20} color="currentColor" weight="fill" className="text-primary" />
                   <span className="font-semibold text-foreground">{vendor.averageRating.toFixed(1)}</span>
                   <span className="text-foreground/60">({vendor.reviewCount.toLocaleString()} reviews)</span>
                 </div>
                 <div className="flex items-center gap-2 text-foreground/70">
-                  <Location size={20} color="currentColor" variant="Outline" />
+                  <MapPin size={20} color="currentColor" weight="regular" />
                   <span>{vendor.location}</span>
                 </div>
                 {vendor.yearsOfExperience > 0 && (
                   <div className="flex items-center gap-2 text-foreground/70">
-                    <Clock size={20} color="currentColor" variant="Outline" />
+                    <Clock size={20} color="currentColor" weight="regular" />
                     <span>{vendor.yearsOfExperience}+ years experience</span>
                   </div>
                 )}
@@ -255,11 +243,11 @@ const VendorDetailPage: React.FC<VendorDetailPageProps> = ({ vendorId }) => {
                           <div className="flex items-center gap-2">
                             <div className="flex items-center gap-1">
                               {[...Array(5)].map((_, i) => (
-                                <Star1
+                                <Star
                                   key={i}
                                   size={16}
                                   color="currentColor"
-                                  variant={i < review.rating ? "Bold" : "Outline"}
+                                  
                                   className={i < review.rating ? "text-primary" : "text-foreground/30"}
                                 />
                               ))}
@@ -287,7 +275,7 @@ const VendorDetailPage: React.FC<VendorDetailPageProps> = ({ vendorId }) => {
 
                 <div className="mb-6 p-4 bg-primary/10 rounded-xl">
                   <div className="flex items-center gap-2 mb-2">
-                    <Star1 size={24} color="currentColor" variant="Bold" className="text-primary" />
+                    <Star size={24} color="currentColor" weight="fill" className="text-primary" />
                     <span className="text-2xl font-bold text-foreground">{vendor.averageRating.toFixed(1)}</span>
                   </div>
                   <p className="text-sm text-foreground/70">{vendor.reviewCount.toLocaleString()} reviews</p>
@@ -300,7 +288,7 @@ const VendorDetailPage: React.FC<VendorDetailPageProps> = ({ vendorId }) => {
                         href={`tel:${vendor.phone}`}
                         className="flex items-center gap-3 p-3 bg-foreground/5 rounded-xl hover:bg-foreground/10 transition-colors"
                       >
-                        <Call size={20} color="currentColor" variant="Outline" />
+                        <Phone size={20} color="currentColor" weight="regular" />
                         <span className="text-foreground">{vendor.phone}</span>
                       </a>
                     )}
@@ -309,7 +297,7 @@ const VendorDetailPage: React.FC<VendorDetailPageProps> = ({ vendorId }) => {
                         href={`mailto:${vendor.email}`}
                         className="flex items-center gap-3 p-3 bg-foreground/5 rounded-xl hover:bg-foreground/10 transition-colors"
                       >
-                        <Sms size={20} color="currentColor" variant="Outline" />
+                        <Envelope size={20} color="currentColor" weight="regular" />
                         <span className="text-foreground">{vendor.email}</span>
                       </a>
                     )}
@@ -320,7 +308,7 @@ const VendorDetailPage: React.FC<VendorDetailPageProps> = ({ vendorId }) => {
                   variant="primary"
                   size="lg"
                   fullWidth
-                  leftIcon={Calendar}
+                  leftIcon={CalendarBlank}
                   onClick={() => router.push(`/marketplace/${vendorId}/book`)}
                 >
                   Book Vendor
@@ -329,17 +317,17 @@ const VendorDetailPage: React.FC<VendorDetailPageProps> = ({ vendorId }) => {
                 <div className="mt-6 pt-6 border-t border-foreground/10 space-y-3 text-sm text-foreground/60">
                   {vendor.isVerified && (
                     <div className="flex items-start gap-2">
-                      <TickCircle size={16} color="currentColor" variant="Bold" />
+                      <CheckCircle size={16} color="currentColor" weight="fill" />
                       <span>Verified vendor</span>
                     </div>
                   )}
                   <div className="flex items-start gap-2">
-                    <MessageText1 size={16} color="currentColor" variant="Outline" />
+                    <ChatText size={16} color="currentColor" weight="regular" />
                     <span>Response within 24 hours</span>
                   </div>
                   {vendor.bookingCount > 0 && (
                     <div className="flex items-start gap-2">
-                      <Calendar size={16} color="currentColor" variant="Outline" />
+                      <CalendarBlank size={16} color="currentColor" weight="regular" />
                       <span>{vendor.bookingCount} bookings completed</span>
                     </div>
                   )}

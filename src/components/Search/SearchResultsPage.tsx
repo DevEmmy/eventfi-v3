@@ -5,14 +5,7 @@ import { useSearchParams } from "next/navigation";
 import SearchBar from "@/components/SearchBar";
 import EventCard, { EventCardProps } from "@/components/Homepage/EventCard";
 import VendorCard, { VendorCardProps } from "@/components/Marketplace/VendorCard";
-import {
-  Calendar,
-  Shop,
-  User,
-  Grid3,
-  RowVertical,
-  SearchNormal1,
-} from "iconsax-react";
+import { CalendarBlank, Storefront, User, GridFour, List, MagnifyingGlass } from '@phosphor-icons/react';
 
 type TabType = "all" | "events" | "vendors" | "users";
 
@@ -42,12 +35,12 @@ const SearchResultsPage = () => {
     },
     {
       id: "2",
-      title: "Afro Nation Music Festival",
+      title: "Afro Nation MusicNote Festival",
       date: "March 22, 2024",
       time: "2:00 PM - 11:00 PM",
       location: "Tafawa Balewa Square",
       price: "₦15,000",
-      category: "Music",
+      category: "MusicNote",
       attendees: 3500,
     },
     {
@@ -77,7 +70,7 @@ const SearchResultsPage = () => {
     {
       id: "2",
       name: "SoundWave DJ Services",
-      category: "DJ & Music",
+      category: "DJ & MusicNote",
       location: "Lagos, Nigeria",
       rating: 4.9,
       reviewCount: 189,
@@ -116,7 +109,7 @@ const SearchResultsPage = () => {
     },
   ];
 
-  // Filter results based on search query
+  // Funnel results based on search query
   const filterResults = <T extends { title?: string; name?: string; displayName?: string; location?: string; category?: string; bio?: string }>(
     items: T[]
   ): T[] => {
@@ -145,9 +138,9 @@ const SearchResultsPage = () => {
   const totalResults = filteredEvents.length + filteredVendors.length + filteredUsers.length;
 
   const tabs = [
-    { id: "all" as TabType, label: "All", count: totalResults, icon: SearchNormal1 },
-    { id: "events" as TabType, label: "Events", count: filteredEvents.length, icon: Calendar },
-    { id: "vendors" as TabType, label: "Vendors", count: filteredVendors.length, icon: Shop },
+    { id: "all" as TabType, label: "All", count: totalResults, icon: MagnifyingGlass },
+    { id: "events" as TabType, label: "Events", count: filteredEvents.length, icon: CalendarBlank },
+    { id: "vendors" as TabType, label: "Vendors", count: filteredVendors.length, icon: Storefront },
     { id: "users" as TabType, label: "Users", count: filteredUsers.length, icon: User },
   ];
 
@@ -171,7 +164,7 @@ const SearchResultsPage = () => {
           {filteredEvents.length > 0 && (
             <div>
               <div className="flex items-center gap-3 mb-6">
-                <Calendar size={24} color="currentColor" variant="Bold" className="text-primary" />
+                <CalendarBlank size={24} color="currentColor" weight="fill" className="text-primary" />
                 <h3 className="text-xl font-bold text-foreground">
                   Events ({filteredEvents.length})
                 </h3>
@@ -202,7 +195,7 @@ const SearchResultsPage = () => {
           {filteredVendors.length > 0 && (
             <div>
               <div className="flex items-center gap-3 mb-6">
-                <Shop size={24} color="currentColor" variant="Bold" className="text-primary" />
+                <Storefront size={24} color="currentColor" weight="fill" className="text-primary" />
                 <h3 className="text-xl font-bold text-foreground">
                   Vendors ({filteredVendors.length})
                 </h3>
@@ -233,7 +226,7 @@ const SearchResultsPage = () => {
           {filteredUsers.length > 0 && (
             <div>
               <div className="flex items-center gap-3 mb-6">
-                <User size={24} color="currentColor" variant="Bold" className="text-primary" />
+                <User size={24} color="currentColor" weight="fill" className="text-primary" />
                 <h3 className="text-xl font-bold text-foreground">
                   Users ({filteredUsers.length})
                 </h3>
@@ -249,7 +242,7 @@ const SearchResultsPage = () => {
                   >
                     <div className="flex items-start gap-4">
                       <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
-                        <User size={32} color="currentColor" variant="Bold" className="text-primary" />
+                        <User size={32} color="currentColor" weight="fill" className="text-primary" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
@@ -344,7 +337,7 @@ const SearchResultsPage = () => {
             >
               <div className="flex items-start gap-4">
                 <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
-                  <User size={32} color="currentColor" variant="Bold" className="text-primary" />
+                  <User size={32} color="currentColor" weight="fill" className="text-primary" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
@@ -423,7 +416,7 @@ const SearchResultsPage = () => {
                   }`}
                   aria-label="Grid view"
                 >
-                  <Grid3 size={20} color="currentColor" variant="Outline" />
+                  <GridFour size={20} color="currentColor" weight="regular" />
                 </button>
                 <button
                   onClick={() => setViewMode("list")}
@@ -434,7 +427,7 @@ const SearchResultsPage = () => {
                   }`}
                   aria-label="List view"
                 >
-                  <RowVertical size={20} color="currentColor" variant="Outline" />
+                  <List size={20} color="currentColor" weight="regular" />
                 </button>
               </div>
             )}
@@ -454,7 +447,7 @@ const SearchResultsPage = () => {
                       : "text-foreground/70 hover:text-foreground hover:bg-foreground/5"
                   }`}
                 >
-                  <TabIcon size={18} color="currentColor" variant="Outline" />
+                  <TabIcon size={18} color="currentColor" weight="regular" />
                   <span>{tab.label}</span>
                   <span
                     className={`px-2 py-0.5 rounded-full text-xs ${
@@ -476,10 +469,10 @@ const SearchResultsPage = () => {
           <div>{renderResults()}</div>
         ) : (
           <div className="text-center py-16">
-            <SearchNormal1
+            <MagnifyingGlass
               size={64}
               color="currentColor"
-              variant="Outline"
+              weight="regular"
               className="mx-auto text-foreground/20 mb-4"
             />
             <h3 className="text-xl font-bold text-foreground mb-2">No Results Found</h3>

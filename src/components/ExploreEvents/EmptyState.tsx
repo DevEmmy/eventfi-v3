@@ -2,7 +2,7 @@
 
 import React from "react";
 import Button from "@/components/Button";
-import { Calendar } from "iconsax-react";
+import { CalendarBlank } from '@phosphor-icons/react';
 
 interface EmptyStateProps {
   onClearFilters: () => void;
@@ -12,10 +12,10 @@ const EmptyState: React.FC<EmptyStateProps> = ({ onClearFilters }) => {
   return (
     <div className="text-center py-16">
       <div className="max-w-md mx-auto">
-        <Calendar
+        <CalendarBlank
           size={64}
           color="currentColor"
-          variant="Outline"
+          weight="regular"
           className="text-foreground/30 mx-auto mb-4"
         />
         <h3 className="text-xl font-bold text-foreground mb-2">

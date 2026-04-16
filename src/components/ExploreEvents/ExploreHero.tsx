@@ -2,7 +2,7 @@
 
 import React from "react";
 import SearchBar from "@/components/SearchBar";
-import { Filter, Location as LocationIcon, Calendar } from "iconsax-react";
+import { Funnel, MapPin as LocationIcon, CalendarBlank } from '@phosphor-icons/react';
 
 interface ExploreHeroProps {
   searchQuery: string;
@@ -46,15 +46,15 @@ const ExploreHero: React.FC<ExploreHeroProps> = ({
                   : "border-foreground/20 text-foreground/70 hover:border-primary hover:text-primary"
                 }`}
             >
-              <Filter size={18} color="currentColor" variant="Outline" />
+              <Funnel size={18} color="currentColor" weight="regular" />
               <span>Filters</span>
             </button>
             <button className="flex items-center gap-2 px-4 py-2 rounded-full border-2 border-foreground/20 text-foreground/70 hover:border-primary hover:text-primary transition-all duration-200 font-medium">
-              <LocationIcon size={18} color="currentColor" variant="Outline" />
+              <LocationIcon size={18} color="currentColor" weight="regular" />
               <span>Near Me</span>
             </button>
             <button className="flex items-center gap-2 px-4 py-2 rounded-full border-2 border-foreground/20 text-foreground/70 hover:border-primary hover:text-primary transition-all duration-200 font-medium">
-              <Calendar size={18} color="currentColor" variant="Outline" />
+              <CalendarBlank size={18} color="currentColor" weight="regular" />
               <span>This Week</span>
             </button>
           </div>

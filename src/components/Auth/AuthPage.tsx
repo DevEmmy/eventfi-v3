@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Button from "@/components/Button";
-import { Share, Wallet3 } from "iconsax-react";
+import { ShareNetwork, Wallet } from '@phosphor-icons/react';
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import axiosInstance from "@/lib/axios";
@@ -98,7 +98,7 @@ const AuthForm = ({ mode }: { mode: "login" | "signup" }) => {
                   }
                 }}
                 onError={() => {
-                  console.log('Login Failed');
+                  console.log('SignIn Failed');
                   toast.error("Google login failed");
                 }}
                 useOneTap
@@ -115,7 +115,7 @@ const AuthForm = ({ mode }: { mode: "login" | "signup" }) => {
               variant="outline"
               size="lg"
               fullWidth
-              leftIcon={Share}
+              leftIcon={ShareNetwork}
               onClick={() => handleSocialAuth("twitter")}
             >
               Continue with X
@@ -194,7 +194,7 @@ const AuthForm = ({ mode }: { mode: "login" | "signup" }) => {
               className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-full border-2 border-foreground/10 text-foreground/30 cursor-not-allowed opacity-50 relative group"
               title="Coming soon to Beta"
             >
-              <Wallet3 size={20} color="currentColor" variant="Outline" />
+              <Wallet size={20} color="currentColor" weight="regular" />
               <span>Connect Wallet</span>
               <span className="text-xs">🔒</span>
             </button>

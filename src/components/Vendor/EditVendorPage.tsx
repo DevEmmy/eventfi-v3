@@ -3,26 +3,14 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Button from "@/components/Button";
-import {
-  Shop,
-  DocumentText,
-  Location,
-  Image as ImageIcon,
-  ArrowLeft2,
-  ArrowRight2,
-  Add,
-  Trash,
-  Call,
-  Sms,
-  TickCircle,
-} from "iconsax-react";
+import { Storefront, FileText, MapPin, Image as ImageIcon, CaretLeft, CaretRight, Plus, Trash, Phone, Envelope, CheckCircle } from '@phosphor-icons/react';
 import { VendorService } from "@/services/vendor";
 import customToast from "@/lib/toast";
 
 const categoryDisplayMap: Record<string, string> = {
   PHOTOGRAPHY: "Photography",
   VIDEOGRAPHY: "Videography",
-  DJ_MUSIC: "DJ & Music",
+  DJ_MUSIC: "DJ & MusicNote",
   CATERING: "Catering",
   VENUES: "Venues",
   DECORATIONS: "Decorations",
@@ -99,16 +87,16 @@ const EditVendorPage = () => {
   const [isSaving, setIsSaving] = useState(false);
 
   const sections = [
-    { id: "basic", label: "Basic Info", icon: DocumentText },
-    { id: "services", label: "Services & Pricing", icon: Shop },
-    { id: "contact", label: "Contact & Location", icon: Location },
+    { id: "basic", label: "Basic Info", icon: FileText },
+    { id: "services", label: "Services & Pricing", icon: Storefront },
+    { id: "contact", label: "Contact & Location", icon: MapPin },
     { id: "portfolio", label: "Portfolio & Settings", icon: ImageIcon },
   ];
 
   const categories = [
     "Photography",
     "Videography",
-    "DJ & Music",
+    "DJ & MusicNote",
     "Catering",
     "Venues",
     "Decorations",
@@ -321,7 +309,7 @@ const EditVendorPage = () => {
                     onClick={() => setFormData((prev) => ({ ...prev, logo: null }))}
                     className="absolute -top-2 -right-2 p-2 bg-background/90 backdrop-blur-sm rounded-full text-foreground/60 hover:text-primary transition-colors shadow-lg"
                   >
-                    <Trash size={16} color="currentColor" variant="Outline" />
+                    <Trash size={16} color="currentColor" weight="regular" />
                   </button>
                 </div>
               ) : (
@@ -330,7 +318,7 @@ const EditVendorPage = () => {
                     <ImageIcon
                       size={32}
                       color="currentColor"
-                      variant="Outline"
+                      weight="regular"
                       className="text-foreground/40 mb-2"
                     />
                     <span className="text-xs text-foreground/60 text-center px-2">
@@ -376,7 +364,7 @@ const EditVendorPage = () => {
                 <Button
                   variant="outline"
                   size="md"
-                  leftIcon={Add}
+                  leftIcon={Plus}
                   onClick={handleAddSpecialty}
                 >
                   Add
@@ -394,7 +382,7 @@ const EditVendorPage = () => {
                         onClick={() => handleRemoveSpecialty(specialty)}
                         className="text-foreground/60 hover:text-primary transition-colors"
                       >
-                        <Trash size={14} color="currentColor" variant="Outline" />
+                        <Trash size={14} color="currentColor" weight="regular" />
                       </button>
                     </span>
                   ))}
@@ -452,10 +440,10 @@ const EditVendorPage = () => {
                     Phone Number <span className="text-primary">*</span>
                   </label>
                   <div className="relative">
-                    <Call
+                    <Phone
                       size={20}
                       color="currentColor"
-                      variant="Outline"
+                      weight="regular"
                       className="absolute left-4 top-1/2 -translate-y-1/2 text-foreground/40"
                     />
                     <input
@@ -475,10 +463,10 @@ const EditVendorPage = () => {
                     Email Address <span className="text-primary">*</span>
                   </label>
                   <div className="relative">
-                    <Sms
+                    <Envelope
                       size={20}
                       color="currentColor"
-                      variant="Outline"
+                      weight="regular"
                       className="absolute left-4 top-1/2 -translate-y-1/2 text-foreground/40"
                     />
                     <input
@@ -569,7 +557,7 @@ const EditVendorPage = () => {
                     onClick={() => setFormData((prev) => ({ ...prev, coverImage: null }))}
                     className="absolute top-4 right-4 p-2 bg-background/90 backdrop-blur-sm rounded-full text-foreground/60 hover:text-primary transition-colors"
                   >
-                    <Trash size={20} color="currentColor" variant="Outline" />
+                    <Trash size={20} color="currentColor" weight="regular" />
                   </button>
                 </div>
               ) : (
@@ -578,7 +566,7 @@ const EditVendorPage = () => {
                     <ImageIcon
                       size={48}
                       color="currentColor"
-                      variant="Outline"
+                      weight="regular"
                       className="text-foreground/40 mb-3"
                     />
                     <span className="text-foreground/60 font-medium">
@@ -616,7 +604,7 @@ const EditVendorPage = () => {
                         onClick={() => handleRemovePortfolioImage(index)}
                         className="absolute top-2 right-2 p-1.5 bg-background/90 backdrop-blur-sm rounded-full text-foreground/60 hover:text-primary transition-colors opacity-0 group-hover:opacity-100"
                       >
-                        <Trash size={16} color="currentColor" variant="Outline" />
+                        <Trash size={16} color="currentColor" weight="regular" />
                       </button>
                     </div>
                   ))}
@@ -627,7 +615,7 @@ const EditVendorPage = () => {
                   <ImageIcon
                     size={32}
                     color="currentColor"
-                    variant="Outline"
+                    weight="regular"
                     className="text-foreground/40 mb-2"
                   />
                   <span className="text-foreground/60 font-medium text-sm">
@@ -723,7 +711,7 @@ const EditVendorPage = () => {
               onClick={() => router.back()}
               className="flex items-center gap-2 text-foreground/60 hover:text-foreground mb-4 transition-colors"
             >
-              <ArrowLeft2 size={20} color="currentColor" variant="Outline" />
+              <CaretLeft size={20} color="currentColor" weight="regular" />
               <span>Back</span>
             </button>
             <h1 className="text-sm lg:text-[16px] xl:text-[20px] font-bold font-[family-name:var(--font-clash-display)] text-foreground mb-2">
@@ -781,7 +769,7 @@ const EditVendorPage = () => {
             <Button
               variant="ghost"
               size="md"
-              leftIcon={ArrowLeft2}
+              leftIcon={CaretLeft}
               onClick={() => setActiveSection(Math.max(0, activeSection - 1))}
               disabled={activeSection === 0}
             >
@@ -800,7 +788,7 @@ const EditVendorPage = () => {
                 <Button
                   variant="primary"
                   size="md"
-                  rightIcon={TickCircle}
+                  rightIcon={CheckCircle}
                   onClick={handleSaveChanges}
                   isLoading={isSaving}
                 >
@@ -810,7 +798,7 @@ const EditVendorPage = () => {
                 <Button
                   variant="primary"
                   size="md"
-                  rightIcon={ArrowRight2}
+                  rightIcon={CaretRight}
                   onClick={() =>
                     setActiveSection(Math.min(sections.length - 1, activeSection + 1))
                   }

@@ -2,19 +2,7 @@
 
 import React from "react";
 import Button from "@/components/Button";
-import {
-  Shop,
-  TickCircle,
-  Edit2,
-  ArrowRight2,
-  Location,
-  Star1,
-  Call,
-  Sms,
-  Global,
-  MoneyRecive,
-  Briefcase,
-} from "iconsax-react";
+import { Storefront, CheckCircle, PencilSimple, CaretRight, MapPin, Star, Phone, Envelope, Globe, Coins, Briefcase } from '@phosphor-icons/react';
 
 interface VendorProfileSectionProps {
   hasVendorProfile: boolean;
@@ -55,10 +43,10 @@ const VendorProfileSection: React.FC<VendorProfileSectionProps> = ({
       <div className="bg-background border border-foreground/10 rounded-2xl p-8">
         <div className="flex items-start gap-6">
           <div className="w-16 h-16 rounded-xl bg-secondary/10 flex items-center justify-center shrink-0">
-            <Shop
+            <Storefront
               size={32}
               color="currentColor"
-              variant="Bold"
+              weight="fill"
               className="text-secondary"
             />
           </div>
@@ -73,8 +61,8 @@ const VendorProfileSection: React.FC<VendorProfileSectionProps> = ({
             <Button
               variant="primary"
               size="md"
-              leftIcon={Shop}
-              rightIcon={ArrowRight2}
+              leftIcon={Storefront}
+              rightIcon={CaretRight}
               onClick={onCreateVendor}
             >
               Create Vendor Profile
@@ -111,10 +99,10 @@ const VendorProfileSection: React.FC<VendorProfileSectionProps> = ({
               />
             ) : (
               <div className="w-20 h-20 rounded-xl bg-secondary/10 flex items-center justify-center shrink-0">
-                <Shop
+                <Storefront
                   size={40}
                   color="currentColor"
-                  variant="Bold"
+                  weight="fill"
                   className="text-secondary"
                 />
               </div>
@@ -125,10 +113,10 @@ const VendorProfileSection: React.FC<VendorProfileSectionProps> = ({
                   {vendorData?.name || "My Vendor Profile"}
                 </h2>
                 {vendorData?.isVerified && (
-                  <TickCircle
+                  <CheckCircle
                     size={24}
                     color="currentColor"
-                    variant="Bold"
+                    weight="fill"
                     className="text-primary"
                   />
                 )}
@@ -139,7 +127,7 @@ const VendorProfileSection: React.FC<VendorProfileSectionProps> = ({
                 </span>
                 {vendorData?.rating && (
                   <div className="flex items-center gap-1">
-                    <Star1 size={16} color="currentColor" variant="Bold" className="text-primary" />
+                    <Star size={16} color="currentColor" weight="fill" className="text-primary" />
                     <span className="font-semibold text-foreground">
                       {vendorData.rating.toFixed(1)}
                     </span>
@@ -148,7 +136,7 @@ const VendorProfileSection: React.FC<VendorProfileSectionProps> = ({
                 )}
                 {vendorData?.location && (
                   <div className="flex items-center gap-1">
-                    <Location size={16} color="currentColor" variant="Outline" />
+                    <MapPin size={16} color="currentColor" weight="regular" />
                     <span>{vendorData.location}</span>
                   </div>
                 )}
@@ -170,7 +158,7 @@ const VendorProfileSection: React.FC<VendorProfileSectionProps> = ({
             <Button
               variant="outline"
               size="sm"
-              leftIcon={Edit2}
+              leftIcon={PencilSimple}
               onClick={onEditVendor}
             >
               Edit
@@ -178,7 +166,7 @@ const VendorProfileSection: React.FC<VendorProfileSectionProps> = ({
             <Button
               variant="ghost"
               size="sm"
-              rightIcon={ArrowRight2}
+              rightIcon={CaretRight}
               onClick={onViewVendor}
             >
               View Public
@@ -239,19 +227,19 @@ const VendorProfileSection: React.FC<VendorProfileSectionProps> = ({
           <div className="space-y-3">
             {vendorData?.phone && (
               <div className="flex items-center gap-3 text-foreground/70">
-                <Call size={20} color="currentColor" variant="Outline" />
+                <Phone size={20} color="currentColor" weight="regular" />
                 <span>{vendorData.phone}</span>
               </div>
             )}
             {vendorData?.email && (
               <div className="flex items-center gap-3 text-foreground/70">
-                <Sms size={20} color="currentColor" variant="Outline" />
+                <Envelope size={20} color="currentColor" weight="regular" />
                 <span>{vendorData.email}</span>
               </div>
             )}
             {vendorData?.website && (
               <div className="flex items-center gap-3">
-                <Global size={20} color="currentColor" variant="Outline" className="text-foreground/70" />
+                <Globe size={20} color="currentColor" weight="regular" className="text-foreground/70" />
                 <a
                   href={vendorData.website}
                   target="_blank"
@@ -264,7 +252,7 @@ const VendorProfileSection: React.FC<VendorProfileSectionProps> = ({
             )}
             {vendorData?.address && (
               <div className="flex items-start gap-3 text-foreground/70">
-                <Location size={20} color="currentColor" variant="Outline" className="mt-0.5" />
+                <MapPin size={20} color="currentColor" weight="regular" className="mt-0.5" />
                 <span>{vendorData.address}</span>
               </div>
             )}
@@ -279,7 +267,7 @@ const VendorProfileSection: React.FC<VendorProfileSectionProps> = ({
           <div className="space-y-3">
             {vendorData?.priceRange && (
               <div className="flex items-center gap-3">
-                <MoneyRecive size={20} color="currentColor" variant="Outline" className="text-foreground/70" />
+                <Coins size={20} color="currentColor" weight="regular" className="text-foreground/70" />
                 <div>
                   <div className="text-sm text-foreground/60">Price Range</div>
                   <div className="font-semibold text-foreground">{vendorData.priceRange}</div>
@@ -288,7 +276,7 @@ const VendorProfileSection: React.FC<VendorProfileSectionProps> = ({
             )}
             {vendorData?.yearsOfExperience && (
               <div className="flex items-center gap-3">
-                <Briefcase size={20} color="currentColor" variant="Outline" className="text-foreground/70" />
+                <Briefcase size={20} color="currentColor" weight="regular" className="text-foreground/70" />
                 <div>
                   <div className="text-sm text-foreground/60">Experience</div>
                   <div className="font-semibold text-foreground">
@@ -299,7 +287,7 @@ const VendorProfileSection: React.FC<VendorProfileSectionProps> = ({
             )}
             {vendorData?.category && (
               <div className="flex items-center gap-3">
-                <Shop size={20} color="currentColor" variant="Outline" className="text-foreground/70" />
+                <Storefront size={20} color="currentColor" weight="regular" className="text-foreground/70" />
                 <div>
                   <div className="text-sm text-foreground/60">Category</div>
                   <div className="font-semibold text-foreground">{vendorData.category}</div>

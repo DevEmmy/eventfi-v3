@@ -4,19 +4,7 @@ import React from "react";
 import { useRouter } from "next/navigation";
 import Button from "@/components/Button";
 import { OrganizerDashboardData } from "@/services/events";
-import {
-  CalendarAdd,
-  Calendar,
-  Ticket,
-  MoneyRecive,
-  People,
-  ArrowUp2,
-  Eye,
-  Chart,
-  Shop,
-  Clock,
-  Notification,
-} from "iconsax-react";
+import { CalendarPlus, CalendarBlank, Ticket, Coins, Users, CaretUp, Eye, ChartBar, Storefront, Clock, Bell } from '@phosphor-icons/react';
 
 interface DashboardContentProps {
   data: OrganizerDashboardData;
@@ -29,28 +17,28 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ data }) => {
   const quickActions = [
     {
       label: "Create Event",
-      icon: CalendarAdd,
+      icon: CalendarPlus,
       bgColor: "bg-primary/10",
       iconColor: "text-primary",
       onClick: () => router.push("/events/create"),
     },
     {
       label: "Browse Vendors",
-      icon: Shop,
+      icon: Storefront,
       bgColor: "bg-secondary/10",
       iconColor: "text-secondary",
       onClick: () => router.push("/marketplace"),
     },
     {
       label: "My Events",
-      icon: Calendar,
+      icon: CalendarBlank,
       bgColor: "bg-accent/10",
       iconColor: "text-accent",
       onClick: () => router.push("/profile?tab=events"),
     },
     {
       label: "Notifications",
-      icon: Notification,
+      icon: Bell,
       bgColor: "bg-primary/10",
       iconColor: "text-primary",
       onClick: () => router.push("/notifications"),
@@ -88,11 +76,11 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ data }) => {
         <div className="bg-background border border-foreground/10 rounded-2xl p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-              <Calendar size={24} color="currentColor" variant="Bold" className="text-primary" />
+              <CalendarBlank size={24} color="currentColor" weight="fill" className="text-primary" />
             </div>
             {stats.eventsThisMonth > 0 && (
               <div className="flex items-center gap-1 text-green-500 text-sm">
-                <ArrowUp2 size={16} color="currentColor" variant="Bold" />
+                <CaretUp size={16} color="currentColor" weight="fill" />
                 <span>{stats.eventsThisMonth} this month</span>
               </div>
             )}
@@ -110,7 +98,7 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ data }) => {
         <div className="bg-background border border-foreground/10 rounded-2xl p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="w-12 h-12 rounded-xl bg-secondary/10 flex items-center justify-center">
-              <People size={24} color="currentColor" variant="Bold" className="text-secondary" />
+              <Users size={24} color="currentColor" weight="fill" className="text-secondary" />
             </div>
           </div>
           <div className="text-3xl font-bold text-foreground mb-1">
@@ -126,7 +114,7 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ data }) => {
         <div className="bg-background border border-foreground/10 rounded-2xl p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center">
-              <MoneyRecive size={24} color="currentColor" variant="Bold" className="text-accent" />
+              <Coins size={24} color="currentColor" weight="fill" className="text-accent" />
             </div>
           </div>
           <div className="text-3xl font-bold text-foreground mb-1">
@@ -144,7 +132,7 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ data }) => {
         <div className="bg-background border border-foreground/10 rounded-2xl p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-              <Ticket size={24} color="currentColor" variant="Bold" className="text-primary" />
+              <Ticket size={24} color="currentColor" weight="fill" className="text-primary" />
             </div>
           </div>
           <div className="text-3xl font-bold text-foreground mb-1">
@@ -180,7 +168,7 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ data }) => {
                       <ActionIcon
                         size={24}
                         color="currentColor"
-                        variant="Bold"
+                        weight="fill"
                         className={action.iconColor}
                       />
                     </div>
@@ -208,7 +196,7 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ data }) => {
             </div>
             {upcomingEventsList.length === 0 ? (
               <div className="bg-background border border-foreground/10 rounded-2xl p-8 text-center">
-                <Calendar size={48} color="currentColor" variant="Outline" className="text-foreground/20 mx-auto mb-3" />
+                <CalendarBlank size={48} color="currentColor" weight="regular" className="text-foreground/20 mx-auto mb-3" />
                 <p className="text-foreground/60 mb-4">No upcoming events</p>
                 <Button variant="primary" size="sm" onClick={() => router.push("/events/create")}>
                   Create Your First Event
@@ -254,7 +242,7 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ data }) => {
                       <Button
                         variant="primary"
                         size="sm"
-                        leftIcon={Chart}
+                        leftIcon={ChartBar}
                         onClick={(e) => {
                           e.stopPropagation();
                           router.push(`/events/${event.id}/manage`);
@@ -288,15 +276,15 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ data }) => {
                   >
                     <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
                       {activity.type === "ticket_sale" ? (
-                        <Ticket size={16} color="currentColor" variant="Bold" className="text-primary" />
+                        <Ticket size={16} color="currentColor" weight="fill" className="text-primary" />
                       ) : activity.type === "event_reminder" || activity.type === "event_updated" ? (
-                        <Calendar size={16} color="currentColor" variant="Bold" className="text-primary" />
+                        <CalendarBlank size={16} color="currentColor" weight="fill" className="text-primary" />
                       ) : activity.type === "booking_request" || activity.type === "booking_accepted" ? (
-                        <Shop size={16} color="currentColor" variant="Bold" className="text-primary" />
+                        <Storefront size={16} color="currentColor" weight="fill" className="text-primary" />
                       ) : activity.type === "payment_received" ? (
-                        <MoneyRecive size={16} color="currentColor" variant="Bold" className="text-green-500" />
+                        <Coins size={16} color="currentColor" weight="fill" className="text-green-500" />
                       ) : (
-                        <Notification size={16} color="currentColor" variant="Bold" className="text-primary" />
+                        <Bell size={16} color="currentColor" weight="fill" className="text-primary" />
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -304,7 +292,7 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ data }) => {
                         {activity.message}
                       </p>
                       <div className="flex items-center gap-1 text-xs text-foreground/50">
-                        <Clock size={12} color="currentColor" variant="Outline" />
+                        <Clock size={12} color="currentColor" weight="regular" />
                         <span>{formatTimestamp(activity.time)}</span>
                       </div>
                     </div>
@@ -349,7 +337,7 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ data }) => {
                   variant="outline"
                   size="sm"
                   fullWidth
-                  leftIcon={Chart}
+                  leftIcon={ChartBar}
                   onClick={() => router.push("/profile?tab=events")}
                 >
                   View All Events

@@ -2,7 +2,7 @@
 
 import React from "react";
 import EventCard, { EventCardProps } from "@/components/Homepage/EventCard";
-import { Grid3, RowVertical } from "iconsax-react";
+import { GridFour, List } from '@phosphor-icons/react';
 import { EventService } from "@/services/events";
 
 interface EventsListProps {
@@ -44,7 +44,7 @@ const EventsList: React.FC<EventsListProps> = ({
                 }`}
               aria-label="Grid view"
             >
-              <Grid3 size={20} color="currentColor" variant="Outline" />
+              <GridFour size={20} color="currentColor" weight="regular" />
             </button>
             <button
               onClick={() => onViewModeChange("list")}
@@ -54,7 +54,7 @@ const EventsList: React.FC<EventsListProps> = ({
                 }`}
               aria-label="List view"
             >
-              <RowVertical size={20} color="currentColor" variant="Outline" />
+              <List size={20} color="currentColor" weight="regular" />
             </button>
           </div>
         </div>

@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { EventService } from "@/services/events";
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
-import { Calendar, Heart, Share, ArrowLeft2, Chart, Clock, Location, Map, Star1, Ticket, Tag, MessageText1, TickCircle, User, People, Global } from "iconsax-react";
+import { CalendarBlank, Heart, ShareNetwork, CaretLeft, ChartBar, Clock, MapPin, MapTrifold, Star, Ticket, Tag, ChatText, CheckCircle, User, Users, Globe } from '@phosphor-icons/react';
 import Button from "../Button";
 import EventCard from "../Homepage/EventCard";
 import { useUserStore } from "@/store/useUserStore";
@@ -45,7 +45,7 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
         setLoading(true);
         const data: any = await EventService.getEventById(eventId);
 
-        // Map API data to component structure
+        // MapTrifold API data to component structure
         const mappedEvent = {
           id: data.id,
           title: data.title,
@@ -199,7 +199,7 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
           onClick={() => router.back()}
           className="flex items-center gap-2 text-foreground/70 hover:text-primary transition-colors"
         >
-          <ArrowLeft2 size={20} color="currentColor" variant="Outline" />
+          <CaretLeft size={20} color="currentColor" weight="regular" />
           <span>Back to Events</span>
         </button>
       </div>
@@ -215,10 +215,10 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
-            <Calendar
+            <CalendarBlank
               size={120}
               color="currentColor"
-              variant="Bold"
+              weight="fill"
               className="text-primary/30"
             />
           </div>
@@ -235,7 +235,7 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
               className="px-4 py-2 rounded-full bg-primary text-white text-sm font-semibold hover:bg-primary/90 transition-colors backdrop-blur-sm flex items-center gap-2 cursor-pointer"
               aria-label="Manage event"
             >
-              <Chart size={16} color="currentColor" variant="Bold" />
+              <ChartBar size={16} color="currentColor" weight="fill" />
               Manage
             </button>
           )}
@@ -247,16 +247,16 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
             <Heart
               size={20}
               color="currentColor"
-              variant={isFavorite ? "Bold" : "Outline"}
+              
               className={isFavorite ? "text-primary" : "text-foreground"}
             />
           </button>
           <button
             onClick={handleShare}
             className="w-10 h-10 rounded-full bg-background/90 backdrop-blur-sm flex items-center justify-center hover:bg-background transition-colors cursor-pointer"
-            aria-label="Share event"
+            aria-label="ShareNetwork event"
           >
-            <Share size={20} color="currentColor" variant="Outline" />
+            <ShareNetwork size={20} color="currentColor" weight="regular" />
           </button>
         </div>
 
@@ -288,19 +288,19 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
               {/* Event Meta */}
               <div className="flex flex-wrap items-center gap-4 mb-6">
                 <div className="flex items-center gap-2 text-foreground/70">
-                  <Calendar size={20} color="currentColor" variant="Outline" />
+                  <CalendarBlank size={20} color="currentColor" weight="regular" />
                   <span>{event.date}</span>
                 </div>
                 <div className="flex items-center gap-2 text-foreground/70">
-                  <Clock size={20} color="currentColor" variant="Outline" />
+                  <Clock size={20} color="currentColor" weight="regular" />
                   <span>{event.time}</span>
                 </div>
                 <div className="flex items-center gap-2 text-foreground/70">
-                  <Location size={20} color="currentColor" variant="Outline" />
+                  <MapPin size={20} color="currentColor" weight="regular" />
                   <span>{event.locationType === "ONLINE" ? "Online Event" : event.location}</span>
                 </div>
                 <div className="flex items-center gap-2 text-foreground/70">
-                  <People size={20} color="currentColor" variant="Outline" />
+                  <Users size={20} color="currentColor" weight="regular" />
                   <span>{event.attendees.toLocaleString()} going</span>
                 </div>
               </div>
@@ -382,7 +382,7 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
                     window.location.href = `/events/${eventId}/checkout?qty=${ticketQuantity}`;
                   }}
                 >
-                  <Ticket size={20} color="currentColor" variant="Bold" />
+                  <Ticket size={20} color="currentColor" weight="fill" />
                   Get Tickets
                 </Button>
 
@@ -395,7 +395,7 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
                     onClick={() => openEventChat(eventId)}
                     className="mt-3"
                   >
-                    <MessageText1 size={18} color="currentColor" variant="Outline" />
+                    <ChatText size={18} color="currentColor" weight="regular" />
                     Join Event Chat
                   </Button>
                 )}
@@ -403,11 +403,11 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
                 {/* Additional Info */}
                 <div className="mt-6 pt-6 border-t border-foreground/10 space-y-3 text-sm text-foreground/60">
                   <div className="flex items-start gap-2">
-                    <Tag size={16} color="currentColor" variant="Outline" />
+                    <Tag size={16} color="currentColor" weight="regular" />
                     <span>Free cancellation up to 24 hours before event</span>
                   </div>
                   <div className="flex items-start gap-2">
-                    <Ticket size={16} color="currentColor" variant="Outline" />
+                    <Ticket size={16} color="currentColor" weight="regular" />
                     <span>Mobile tickets accepted</span>
                   </div>
                 </div>
@@ -500,7 +500,7 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
                         </div>
                       ) : (
                         <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center shrink-0 border-2 border-primary/20">
-                          <User size={24} color="currentColor" variant="Bold" className="text-primary" />
+                          <User size={24} color="currentColor" weight="fill" className="text-primary" />
                         </div>
                       )}
                       <div className="flex-1 min-w-0">
@@ -519,7 +519,7 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
                           {speaker.websiteUrl && (
                             <a href={speaker.websiteUrl} target="_blank" rel="noopener noreferrer"
                               className="text-xs text-primary hover:underline">
-                              <Global size={12} color="currentColor" variant="Outline" className="inline" />
+                              <Globe size={12} color="currentColor" weight="regular" className="inline" />
                             </a>
                           )}
                         </div>
@@ -539,7 +539,7 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
                 {event.address || event.location !== "Online" ? (
                   <div className="bg-foreground/5 rounded-2xl border border-foreground/10 p-6">
                     <div className="flex items-start gap-4 mb-4">
-                      <Map size={24} color="currentColor" variant="Bold" className="text-primary" />
+                      <MapTrifold size={24} color="currentColor" weight="fill" className="text-primary" />
                       <div>
                         <p className="font-semibold text-foreground mb-1">{event.location}</p>
                         <p className="text-foreground/70 text-sm">{event.address}</p>
@@ -555,7 +555,7 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
                       />
                     ) : (
                       <div className="w-full h-64 rounded-xl bg-foreground/5 border border-foreground/10 flex items-center justify-center">
-                        <p className="text-sm text-foreground/40">Map unavailable for this location</p>
+                        <p className="text-sm text-foreground/40">MapTrifold unavailable for this location</p>
                       </div>
                     )}
                     <a
@@ -568,13 +568,13 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-2 mt-3 text-sm text-primary hover:text-primary/80 transition-colors font-medium"
                     >
-                      <Location size={16} color="currentColor" variant="Outline" />
+                      <MapPin size={16} color="currentColor" weight="regular" />
                       Open in Google Maps
                     </a>
                   </div>
                 ) : (
                   <div className="bg-foreground/5 rounded-2xl border border-dashed border-foreground/20 p-6 flex items-start gap-4">
-                    <Map size={24} color="currentColor" variant="Outline" className="text-foreground/30 mt-0.5 shrink-0" />
+                    <MapTrifold size={24} color="currentColor" weight="regular" className="text-foreground/30 mt-0.5 shrink-0" />
                     <div>
                       <p className="font-semibold text-foreground/60">Venue to be announced</p>
                       <p className="text-sm text-foreground/40 mt-1">
@@ -613,11 +613,11 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
                       </div>
                       <div className="flex items-center justify-center gap-1">
                         {[1, 2, 3, 4, 5].map((star) => (
-                          <Star1
+                          <Star
                             key={star}
                             size={20}
                             color="currentColor"
-                            variant={star <= Math.round(reviewStats.averageRating || 0) ? "Bold" : "Outline"}
+                            
                             className={
                               star <= Math.round(reviewStats.averageRating || 0)
                                 ? "text-primary"
@@ -640,10 +640,10 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
                               <span className="text-sm font-semibold text-foreground">
                                 {star}
                               </span>
-                              <Star1
+                              <Star
                                 size={14}
                                 color="currentColor"
-                                variant="Bold"
+                                weight="fill"
                                 className="text-primary"
                               />
                             </div>
@@ -681,7 +681,7 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
                           />
                         ) : (
                           <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                            <User size={24} color="currentColor" variant="Bold" className="text-primary" />
+                            <User size={24} color="currentColor" weight="fill" className="text-primary" />
                           </div>
                         )}
                         <div className="flex-1">
@@ -691,11 +691,11 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
                             </h4>
                             <div className="flex items-center gap-1">
                               {[1, 2, 3, 4, 5].map((star) => (
-                                <Star1
+                                <Star
                                   key={star}
                                   size={16}
                                   color="currentColor"
-                                  variant={star <= review.rating ? "Bold" : "Outline"}
+                                  
                                   className={
                                     star <= review.rating
                                       ? "text-primary"
@@ -737,7 +737,7 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
                     )}
                     <div className="flex items-center gap-4 pt-4 border-t border-foreground/10">
                       <button className="flex items-center gap-2 text-sm text-foreground/60 hover:text-primary transition-colors">
-                        <TickCircle size={16} color="currentColor" variant="Outline" />
+                        <CheckCircle size={16} color="currentColor" weight="regular" />
                         <span>Helpful ({review.helpfulCount || 0})</span>
                       </button>
                     </div>
@@ -745,11 +745,11 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
                 ))}
               </div>
 
-              {/* Load More */}
+              {/* Load DotsThree */}
               {reviewStats?.totalReviews > 5 && (
                 <div className="text-center mt-6">
                   <Button variant="outline" size="md">
-                    Load More Reviews
+                    Load DotsThree Reviews
                   </Button>
                 </div>
               )}
@@ -843,7 +843,7 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
                     window.location.href = `/events/${eventId}/checkout?qty=${ticketQuantity}`;
                   }}
                 >
-                  <Ticket size={20} color="currentColor" variant="Bold" />
+                  <Ticket size={20} color="currentColor" weight="fill" />
                   Get Tickets
                 </Button>
 
@@ -856,7 +856,7 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
                     onClick={() => openEventChat(eventId)}
                     className="mt-3"
                   >
-                    <MessageText1 size={18} color="currentColor" variant="Outline" />
+                    <ChatText size={18} color="currentColor" weight="regular" />
                     Join Event Chat
                   </Button>
                 )}
@@ -864,11 +864,11 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
                 {/* Additional Info */}
                 <div className="mt-6 pt-6 border-t border-foreground/10 space-y-3 text-sm text-foreground/60">
                   <div className="flex items-start gap-2">
-                    <Tag size={16} color="currentColor" variant="Outline" />
+                    <Tag size={16} color="currentColor" weight="regular" />
                     <span>Free cancellation up to 24 hours before event</span>
                   </div>
                   <div className="flex items-start gap-2">
-                    <Ticket size={16} color="currentColor" variant="Outline" />
+                    <Ticket size={16} color="currentColor" weight="regular" />
                     <span>Mobile tickets accepted</span>
                   </div>
                 </div>

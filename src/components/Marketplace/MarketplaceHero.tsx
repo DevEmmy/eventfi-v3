@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import SearchBar from "@/components/SearchBar";
-import { Filter, Location as LocationIcon, Star1 } from "iconsax-react";
+import { Funnel, MapPin as LocationIcon, Star } from '@phosphor-icons/react';
 
 interface MarketplaceHeroProps {
   searchQuery: string;
@@ -47,15 +47,15 @@ const MarketplaceHero: React.FC<MarketplaceHeroProps> = ({
                   : "border-foreground/20 text-foreground/70 hover:border-primary hover:text-primary"
               }`}
             >
-              <Filter size={18} color="currentColor" variant="Outline" />
+              <Funnel size={18} color="currentColor" weight="regular" />
               <span>Filters</span>
             </button>
             <button className="flex items-center gap-2 px-4 py-2 rounded-full border-2 border-foreground/20 text-foreground/70 hover:border-primary hover:text-primary transition-all duration-200 font-medium">
-              <LocationIcon size={18} color="currentColor" variant="Outline" />
+              <LocationIcon size={18} color="currentColor" weight="regular" />
               <span>Near Me</span>
             </button>
             <button className="flex items-center gap-2 px-4 py-2 rounded-full border-2 border-foreground/20 text-foreground/70 hover:border-primary hover:text-primary transition-all duration-200 font-medium">
-              <Star1 size={18} color="currentColor" variant="Outline" />
+              <Star size={18} color="currentColor" weight="regular" />
               <span>Top Rated</span>
             </button>
           </div>

@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
-import { Calendar, Location, Clock, Ticket, Heart, Link1, Share } from "iconsax-react";
+import { CalendarBlank, MapPin, Clock, Ticket, Heart, Link, ShareNetwork } from '@phosphor-icons/react';
 import { UserService } from "@/services/user";
 import customToast from "@/lib/toast";
 
@@ -112,10 +112,10 @@ const EventCard: React.FC<EventCardProps> = ({
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
-            <Calendar
+            <CalendarBlank
               size={64}
               color="currentColor"
-              variant="Bold"
+              weight="fill"
               className="text-primary/30"
             />
           </div>
@@ -133,12 +133,12 @@ const EventCard: React.FC<EventCardProps> = ({
           <button
             onClick={handleShare}
             className="p-2 bg-background/90 backdrop-blur-sm rounded-full hover:bg-background transition-colors"
-            aria-label="Share event"
+            aria-label="ShareNetwork event"
           >
-            <Share
+            <ShareNetwork
               size={20}
               color="currentColor"
-              variant="Outline"
+              weight="regular"
               className="text-foreground"
             />
           </button>
@@ -150,7 +150,7 @@ const EventCard: React.FC<EventCardProps> = ({
             <Heart
               size={20}
               color="currentColor"
-              variant={isFavorite ? "Bold" : "Outline"}
+              
               className={isFavorite ? "text-primary" : "text-foreground"}
             />
           </button>
@@ -171,13 +171,13 @@ const EventCard: React.FC<EventCardProps> = ({
         <div className="space-y-2 mb-4 flex-1">
           {/* Date */}
           <div className="flex items-center gap-2 text-sm text-foreground/70">
-            <Calendar size={16} color="currentColor" variant="Outline" />
+            <CalendarBlank size={16} color="currentColor" weight="regular" />
             <span>{date}</span>
           </div>
 
           {/* Time */}
           <div className="flex items-center gap-2 text-sm text-foreground/70">
-            <Clock size={16} color="currentColor" variant="Outline" />
+            <Clock size={16} color="currentColor" weight="regular" />
             <span>{time}</span>
           </div>
 
@@ -185,7 +185,7 @@ const EventCard: React.FC<EventCardProps> = ({
           {
             locationType === "PHYSICAL" ? (
               <div className="flex items-center gap-2 text-sm text-foreground/70">
-                <Location size={16} color="currentColor" variant="Outline" />
+                <MapPin size={16} color="currentColor" weight="regular" />
                 <span className="line-clamp-1">{location}</span>
               </div>
             )
@@ -193,7 +193,7 @@ const EventCard: React.FC<EventCardProps> = ({
 
               (
                 <div className="flex items-center gap-2 text-sm text-foreground/70">
-                  <Link1 size={16} color="currentColor" variant="Outline" />
+                  <Link size={16} color="currentColor" weight="regular" />
                   <span className="line-clamp-1">Virtual (Online)</span>
                 </div>
               )
@@ -204,7 +204,7 @@ const EventCard: React.FC<EventCardProps> = ({
         <div className="flex items-center justify-between pt-4 border-t border-foreground/10">
           {/* Price */}
           <div className="flex items-center gap-2">
-            <Ticket size={18} color="currentColor" variant="Bold" className="text-primary" />
+            <Ticket size={18} color="currentColor" weight="fill" className="text-primary" />
             <span className="font-bold text-foreground">{price}</span>
           </div>
 

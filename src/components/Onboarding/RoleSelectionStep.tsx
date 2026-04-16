@@ -2,7 +2,7 @@
 
 import React from "react";
 import Button from "@/components/Button";
-import { Ticket, CalendarAdd, Briefcase, ArrowRight2 } from "iconsax-react";
+import { Ticket, CalendarPlus, Briefcase, CaretRight } from '@phosphor-icons/react';
 import { useRouter } from "next/navigation";
 
 const RoleSelectionStep = () => {
@@ -43,7 +43,7 @@ const RoleSelectionStep = () => {
     },
     {
       id: "organizer",
-      icon: CalendarAdd,
+      icon: CalendarPlus,
       emoji: "📅",
       title: "Organize an Event",
       description:
@@ -135,7 +135,7 @@ const RoleSelectionStep = () => {
                       <IconComponent
                         size={32}
                         color="currentColor"
-                        variant="Bold"
+                        weight="fill"
                         className={colors.icon}
                       />
                     </div>
@@ -151,10 +151,10 @@ const RoleSelectionStep = () => {
 
                   {/* Arrow Indicator */}
                   <div className="absolute top-6 right-6 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <ArrowRight2
+                    <CaretRight
                       size={24}
                       color="currentColor"
-                      variant="Outline"
+                      weight="regular"
                       className={colors.icon}
                     />
                   </div>

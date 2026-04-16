@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Calendar, User, TickCircle } from "iconsax-react";
+import { CalendarBlank, User, CheckCircle } from '@phosphor-icons/react';
 
 interface ProfileTabsProps {
   activeTab: string;
@@ -49,7 +49,7 @@ const ProfileTabs: React.FC<ProfileTabsProps> = ({
                   <IconComponent
                     size={20}
                     color="currentColor"
-                    variant={isActive ? "Bold" : "Outline"}
+                    
                   />
                   <span>{tab.label}</span>
                   {tab.count !== undefined && (

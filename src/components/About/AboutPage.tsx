@@ -2,21 +2,21 @@
 
 import React from "react";
 import Button from "@/components/Button";
-import { ArrowRight2, TickCircle, User, Calendar, Shop, Game } from "iconsax-react";
+import { CaretRight, CheckCircle, User, CalendarBlank, Storefront, GameController } from '@phosphor-icons/react';
 
 const AboutPage = () => {
   const stats = [
     { label: "Active Users", value: "10K+", icon: User },
-    { label: "Events Hosted", value: "500+", icon: Calendar },
-    { label: "Verified Vendors", value: "200+", icon: Shop },
-    { label: "Events Attended", value: "50K+", icon: Game },
+    { label: "Events Hosted", value: "500+", icon: CalendarBlank },
+    { label: "Verified Vendors", value: "200+", icon: Storefront },
+    { label: "Events Attended", value: "50K+", icon: GameController },
   ];
 
   const values = [
     {
       title: "Innovation First",
       description: "We're constantly pushing boundaries to make event management seamless and engaging.",
-      icon: TickCircle,
+      icon: CheckCircle,
     },
     {
       title: "Community Driven",
@@ -26,12 +26,12 @@ const AboutPage = () => {
     {
       title: "Trust & Security",
       description: "Verified vendors, secure payments, and reliable support you can count on.",
-      icon: TickCircle,
+      icon: CheckCircle,
     },
     {
       title: "Accessibility",
       description: "Events should be accessible to everyone, regardless of size or budget.",
-      icon: TickCircle,
+      icon: CheckCircle,
     },
   ];
 
@@ -108,7 +108,7 @@ const AboutPage = () => {
                       <IconComponent
                         size={40}
                         color="currentColor"
-                        variant="Bold"
+                        weight="fill"
                         className={colorSet.icon}
                       />
                     </div>
@@ -150,7 +150,7 @@ const AboutPage = () => {
                         <IconComponent
                           size={24}
                           color="currentColor"
-                          variant="Bold"
+                          weight="fill"
                           className="text-primary"
                         />
                       </div>
@@ -204,10 +204,10 @@ const AboutPage = () => {
               Whether you're an organizer, attendee, or vendor, there's a place for you in the EventFi community.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button variant="primary" size="lg" rightIcon={ArrowRight2}>
+              <Button variant="primary" size="lg" rightIcon={CaretRight}>
                 Get Started
               </Button>
-              <Button variant="outline" size="lg" rightIcon={ArrowRight2}>
+              <Button variant="outline" size="lg" rightIcon={CaretRight}>
                 Contact Us
               </Button>
             </div>

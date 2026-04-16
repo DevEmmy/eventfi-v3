@@ -2,7 +2,7 @@
 
 import React from "react";
 import Button from "../Button";
-import { ArrowRight2, MessageQuestion } from "iconsax-react";
+import { CaretRight, ChatCircleText } from '@phosphor-icons/react';
 
 const FinalCTASection = () => {
   return (
@@ -30,8 +30,8 @@ const FinalCTASection = () => {
             <Button
               variant="secondary"
               size="lg"
-              rightIcon={ArrowRight2}
-              iconVariant="Bold"
+              rightIcon={CaretRight}
+              iconWeight="bold"
               onClick={() => {
                 window.location.href = "/auth/signup";
               }}
@@ -47,7 +47,7 @@ const FinalCTASection = () => {
               }}
               className="flex items-center gap-2 px-6 py-3 text-white hover:text-white/80 font-medium transition-colors duration-200 border-2 border-white/30 hover:border-white/50 rounded-full"
             >
-              <MessageQuestion size={20} color="currentColor" variant="Outline" />
+              <ChatCircleText size={20} color="currentColor" weight="regular" />
               <span>Contact Sales</span>
             </button>
           </div>

@@ -4,18 +4,7 @@ import React, { useEffect, useRef, useState } from "react";
 import confetti from "canvas-confetti";
 import { useActivity } from "@/hooks/useActivity";
 import Button from "@/components/Button";
-import {
-  Gift,
-  People,
-  Play,
-  Stop,
-  Crown,
-  CloseCircle,
-  Refresh,
-  Music,
-  Flash,
-  Timer,
-} from "iconsax-react";
+import { Gift, Users, Play, Stop, Crown, XCircle, ArrowsClockwise, MusicNote, Lightning, Timer } from '@phosphor-icons/react';
 import Image from "next/image";
 import { LeaderboardEntry } from "@/store/useActivityStore";
 import GameHistoryPanel from "./GameHistoryPanel";
@@ -80,7 +69,7 @@ function ApplausePodium({
           </p>
         </div>
         <span className="px-3 py-1 rounded-full bg-foreground/5 text-foreground/50 text-xs font-semibold">
-          Game ended
+          GameController ended
         </span>
       </div>
 
@@ -129,7 +118,7 @@ function ApplausePodium({
       </div>
 
       <Button variant="primary" size="md" leftIcon={Stop} onClick={onDone} className="w-full">
-        End Game &amp; Close
+        End GameController &amp; Close
       </Button>
 
       <style jsx>{`
@@ -228,7 +217,7 @@ const OrganizerGamePanel: React.FC<OrganizerGamePanelProps> = ({ eventId }) => {
           {/* Lucky Draw */}
           <div className="bg-background border border-foreground/10 rounded-2xl p-6 flex flex-col gap-4 hover:border-primary/40 transition-colors">
             <div className="w-12 h-12 rounded-xl bg-yellow-500/10 flex items-center justify-center">
-              <Gift size={24} color="#f59e0b" variant="Bold" />
+              <Gift size={24} color="#f59e0b" weight="fill" />
             </div>
             <div>
               <h4 className="font-bold text-foreground text-lg">Lucky Draw</h4>
@@ -249,7 +238,7 @@ const OrganizerGamePanel: React.FC<OrganizerGamePanelProps> = ({ eventId }) => {
           {/* Applause Meter */}
           <div className="bg-background border border-foreground/10 rounded-2xl p-6 flex flex-col gap-4 hover:border-primary/40 transition-colors">
             <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-              <Music size={24} color="currentColor" variant="Bold" className="text-primary" />
+              <MusicNote size={24} color="currentColor" weight="fill" className="text-primary" />
             </div>
             <div>
               <h4 className="font-bold text-foreground text-lg">Applause Meter</h4>
@@ -286,7 +275,7 @@ const OrganizerGamePanel: React.FC<OrganizerGamePanelProps> = ({ eventId }) => {
               </div>
             </div>
 
-            <Button variant="outline" size="sm" leftIcon={Flash} onClick={handleLaunchApplause} disabled={!!launching}>
+            <Button variant="outline" size="sm" leftIcon={Lightning} onClick={handleLaunchApplause} disabled={!!launching}>
               {launching === "APPLAUSE_METER" ? "Launching…" : `Launch — ${DURATION_OPTIONS.find((o) => o.value === selectedDuration)?.label}`}
             </Button>
           </div>
@@ -307,7 +296,7 @@ const OrganizerGamePanel: React.FC<OrganizerGamePanelProps> = ({ eventId }) => {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-yellow-500/10 flex items-center justify-center">
-              <Gift size={20} color="#f59e0b" variant="Bold" />
+              <Gift size={20} color="#f59e0b" weight="fill" />
             </div>
             <div>
               <h3 className="font-bold text-foreground">Lucky Draw — Live</h3>
@@ -340,10 +329,10 @@ const OrganizerGamePanel: React.FC<OrganizerGamePanelProps> = ({ eventId }) => {
         {!drawCountdown && showDrawReveal && drawWinners.length > 0 ? (
           <div className="relative bg-linear-to-br from-yellow-500/10 to-amber-600/5 border border-yellow-500/20 rounded-2xl p-6">
             <button onClick={hideReveal} className="absolute top-3 right-3 text-foreground/40 hover:text-foreground/70 transition-colors cursor-pointer">
-              <CloseCircle size={20} color="currentColor" variant="Bold" />
+              <XCircle size={20} color="currentColor" weight="fill" />
             </button>
             <div className="text-center mb-4">
-              <Crown size={32} color="#f59e0b" variant="Bold" className="mx-auto mb-2" />
+              <Crown size={32} color="#f59e0b" weight="fill" className="mx-auto mb-2" />
               <h4 className="font-bold text-foreground text-lg">
                 {drawWinners.length === 1 ? "We have a winner!" : `${drawWinners.length} winners!`}
               </h4>
@@ -374,7 +363,7 @@ const OrganizerGamePanel: React.FC<OrganizerGamePanelProps> = ({ eventId }) => {
           !drawCountdown && (
             <div className="bg-background border border-foreground/10 rounded-2xl p-8 text-center">
               <div className="w-16 h-16 rounded-full bg-yellow-500/10 flex items-center justify-center mx-auto mb-4">
-                <Gift size={32} color="#f59e0b" variant="Bold" />
+                <Gift size={32} color="#f59e0b" weight="fill" />
               </div>
               <p className="text-foreground/60 text-sm">
                 Attendees can see the Lucky Draw is live. Hit Draw when you're ready to pick a winner.
@@ -387,7 +376,7 @@ const OrganizerGamePanel: React.FC<OrganizerGamePanelProps> = ({ eventId }) => {
           <Button
             variant="primary"
             size="md"
-            leftIcon={showDrawReveal ? Refresh : Crown}
+            leftIcon={showDrawReveal ? ArrowsClockwise : Crown}
             onClick={handleDraw}
             disabled={isLoading || drawCountdown !== null}
             className="flex-1"
@@ -395,7 +384,7 @@ const OrganizerGamePanel: React.FC<OrganizerGamePanelProps> = ({ eventId }) => {
             {isLoading ? "Drawing…" : drawCountdown !== null ? `Revealing in ${drawCountdown}…` : showDrawReveal ? "Draw Again" : "Draw Winner"}
           </Button>
           <Button variant="outline" size="md" leftIcon={Stop} onClick={handleEnd} disabled={isLoading}>
-            End Game
+            End GameController
           </Button>
         </div>
       </div>
@@ -411,7 +400,7 @@ const OrganizerGamePanel: React.FC<OrganizerGamePanelProps> = ({ eventId }) => {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-              <Music size={20} color="currentColor" variant="Bold" className="text-primary" />
+              <MusicNote size={20} color="currentColor" weight="fill" className="text-primary" />
             </div>
             <div>
               <h3 className="font-bold text-foreground">Applause Meter — Live</h3>
@@ -461,7 +450,7 @@ const OrganizerGamePanel: React.FC<OrganizerGamePanelProps> = ({ eventId }) => {
         {/* Top-5 Leaderboard */}
         <div className="bg-background border border-foreground/10 rounded-2xl overflow-hidden">
           <div className="px-4 py-3 border-b border-foreground/5 flex items-center gap-2">
-            <Crown size={15} color="#f59e0b" variant="Bold" />
+            <Crown size={15} color="#f59e0b" weight="fill" />
             <span className="text-sm font-semibold text-foreground">Live Leaderboard</span>
             <span className="text-xs text-foreground/40 ml-auto">Top 5</span>
           </div>
@@ -498,13 +487,13 @@ const OrganizerGamePanel: React.FC<OrganizerGamePanelProps> = ({ eventId }) => {
 
         <div className="flex gap-3 items-center">
           <div className="flex-1 bg-foreground/5 rounded-xl p-3 flex items-center gap-2 text-foreground/60">
-            <People size={16} color="currentColor" variant="Outline" />
+            <Users size={16} color="currentColor" weight="regular" />
             <span className="text-xs">Attendees see a live tap button on their screen</span>
           </div>
-          {/* Only show End Game once the timer has expired */}
+          {/* Only show End GameController once the timer has expired */}
           {(applauseTimeLeft === null || applauseTimeLeft <= 0) && (
             <Button variant="outline" size="md" leftIcon={Stop} onClick={handleEnd} disabled={isLoading}>
-              End Game
+              End GameController
             </Button>
           )}
         </div>

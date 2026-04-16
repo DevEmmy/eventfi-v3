@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import ProfileHeader from "./ProfileHeader";
 import ProfileTabs from "./ProfileTabs";
 import EventCard, { EventCardProps } from "@/components/Homepage/EventCard";
-import { Calendar, User, TickCircle } from "iconsax-react";
+import { CalendarBlank, User, CheckCircle } from '@phosphor-icons/react';
 import { UserService } from "@/services/user";
 import { EventService } from "@/services/events";
 import { useUserStore } from "@/store/useUserStore";
@@ -125,13 +125,13 @@ const UserProfile: React.FC<UserProfileProps> = ({
     {
       id: "events",
       label: "Events",
-      icon: Calendar,
+      icon: CalendarBlank,
       count: profileData?.stats.eventsHosted || 0,
     },
     {
       id: "following",
       label: "Following",
-      icon: TickCircle,
+      icon: CheckCircle,
       count: profileData?.stats.following || 0,
     },
     {

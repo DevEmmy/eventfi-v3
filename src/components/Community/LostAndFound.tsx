@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { TickCircle, User, Calendar, Location } from "iconsax-react";
+import { CheckCircle, User, CalendarBlank, MapPin } from '@phosphor-icons/react';
 import Button from "@/components/Button";
 
 interface LostAndFoundProps {}
@@ -70,7 +70,7 @@ const LostAndFound: React.FC<LostAndFoundProps> = () => {
           {/* Header */}
           <div className="text-center mb-10">
             <div className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-foreground/5 rounded-full mb-4">
-              <TickCircle size={20} color="currentColor" variant="Bold" className="text-secondary" />
+              <CheckCircle size={20} color="currentColor" weight="fill" className="text-secondary" />
               <span className="text-sm font-semibold text-secondary">Community Service</span>
             </div>
             <h2 className="text-3xl lg:text-4xl font-bold font-[family-name:var(--font-clash-display)] mb-3 text-foreground">
@@ -81,7 +81,7 @@ const LostAndFound: React.FC<LostAndFoundProps> = () => {
             </p>
           </div>
 
-          {/* Filter Tabs */}
+          {/* Funnel Tabs */}
           <div className="flex justify-center gap-3 mb-10">
             {(["all", "lost", "found"] as const).map((filterType) => (
               <button
@@ -133,24 +133,24 @@ const LostAndFound: React.FC<LostAndFoundProps> = () => {
                       </h3>
                       <div className="flex flex-wrap items-center gap-4 text-sm text-foreground/60 mb-4">
                         <div className="flex items-center gap-2">
-                          <Location size={16} color="currentColor" variant="Outline" />
+                          <MapPin size={16} color="currentColor" weight="regular" />
                           <span className="font-medium">{item.location}</span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <Calendar size={16} color="currentColor" variant="Outline" />
+                          <CalendarBlank size={16} color="currentColor" weight="regular" />
                           <span>{item.date}</span>
                         </div>
                       </div>
                       <div className="flex items-center gap-2 mb-4">
                         <div className="w-8 h-8 rounded-full bg-foreground/5 flex items-center justify-center">
-                          <User size={16} color="currentColor" variant="Bold" className="text-primary" />
+                          <User size={16} color="currentColor" weight="fill" className="text-primary" />
                         </div>
                         <span className="text-sm font-medium text-foreground/80">{item.reporter}</span>
                         {item.verified && (
-                          <TickCircle
+                          <CheckCircle
                             size={16}
                             color="currentColor"
-                            variant="Bold"
+                            weight="fill"
                             className="text-primary"
                           />
                         )}
@@ -158,7 +158,7 @@ const LostAndFound: React.FC<LostAndFoundProps> = () => {
                     </div>
                   </div>
                   <Button 
-                    variant={item.type === "found" ? "secondary" : "outline"} 
+                     
                     size="md" 
                     className="w-full"
                   >
@@ -172,10 +172,10 @@ const LostAndFound: React.FC<LostAndFoundProps> = () => {
             <div className="lg:col-span-1">
               <div className="bg-background border border-foreground/10 rounded-2xl p-6 sticky top-24">
                 <div className="flex items-center gap-3 mb-4">
-                  <TickCircle
+                  <CheckCircle
                     size={24}
                     color="currentColor"
-                    variant="Bold"
+                    weight="fill"
                     className="text-primary"
                   />
                   <h3 className="text-xl font-bold font-[family-name:var(--font-clash-display)] text-foreground">
@@ -192,7 +192,7 @@ const LostAndFound: React.FC<LostAndFoundProps> = () => {
                       className="flex items-center gap-3 p-4 bg-foreground/5 rounded-xl border border-foreground/10"
                     >
                       <div className="w-12 h-12 rounded-xl bg-foreground/5 flex items-center justify-center shrink-0">
-                        <User size={24} color="currentColor" variant="Bold" className="text-primary" />
+                        <User size={24} color="currentColor" weight="fill" className="text-primary" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
@@ -200,10 +200,10 @@ const LostAndFound: React.FC<LostAndFoundProps> = () => {
                             {samaritan.name}
                           </span>
                           {samaritan.verified && (
-                            <TickCircle
+                            <CheckCircle
                               size={14}
                               color="currentColor"
-                              variant="Bold"
+                              weight="fill"
                               className="text-primary shrink-0"
                             />
                           )}

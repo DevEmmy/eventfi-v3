@@ -3,15 +3,7 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import Button from "@/components/Button";
-import {
-  Star1,
-  ArrowLeft2,
-  Calendar,
-  Location,
-  Clock,
-  Image as ImageIcon,
-  Trash,
-} from "iconsax-react";
+import { Star, CaretLeft, CalendarBlank, MapPin, Clock, Image as ImageIcon, Trash } from '@phosphor-icons/react';
 import { EventService } from "@/services/events";
 import customToast from "@/lib/toast";
 
@@ -105,14 +97,14 @@ const EventReviewForm: React.FC<EventReviewFormProps> = ({
             onClick={() => router.back()}
             className="flex items-center gap-2 text-foreground/70 hover:text-primary transition-colors mb-6"
           >
-            <ArrowLeft2 size={20} color="currentColor" variant="Outline" />
+            <CaretLeft size={20} color="currentColor" weight="regular" />
             <span>Back</span>
           </button>
           <h1 className="text-3xl lg:text-4xl font-bold font-[family-name:var(--font-clash-display)] text-foreground mb-2">
             Write a Review
           </h1>
           <p className="text-foreground/60">
-            Share your experience and help others discover great events
+            ShareNetwork your experience and help others discover great events
           </p>
         </div>
 
@@ -123,13 +115,13 @@ const EventReviewForm: React.FC<EventReviewFormProps> = ({
             <div className="flex flex-wrap items-center gap-4 text-sm text-foreground/70">
               {eventDate && (
                 <div className="flex items-center gap-2">
-                  <Calendar size={16} color="currentColor" variant="Outline" />
+                  <CalendarBlank size={16} color="currentColor" weight="regular" />
                   <span>{eventDate}</span>
                 </div>
               )}
               {eventLocation && (
                 <div className="flex items-center gap-2">
-                  <Location size={16} color="currentColor" variant="Outline" />
+                  <MapPin size={16} color="currentColor" weight="regular" />
                   <span>{eventLocation}</span>
                 </div>
               )}
@@ -153,12 +145,10 @@ const EventReviewForm: React.FC<EventReviewFormProps> = ({
                     onMouseLeave={() => setHoveredRating(0)}
                     className="transition-transform hover:scale-110"
                   >
-                    <Star1
+                    <Star
                       size={40}
                       color="currentColor"
-                      variant={
-                        star <= (hoveredRating || rating) ? "Bold" : "Outline"
-                      }
+                      
                       className={
                         star <= (hoveredRating || rating)
                           ? "text-primary"
@@ -204,7 +194,7 @@ const EventReviewForm: React.FC<EventReviewFormProps> = ({
               <textarea
                 value={review}
                 onChange={(e) => setReview(e.target.value)}
-                placeholder="Share your experience at this event. What did you like? What could be improved?"
+                placeholder="ShareNetwork your experience at this event. What did you like? What could be improved?"
                 rows={8}
                 maxLength={1000}
                 className="w-full px-4 py-3 bg-foreground/5 border border-foreground/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-foreground placeholder:text-foreground/40 resize-none"
@@ -241,7 +231,7 @@ const EventReviewForm: React.FC<EventReviewFormProps> = ({
                           onClick={() => handleRemovePhoto(index)}
                           className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
                         >
-                          <Trash size={16} color="currentColor" variant="Bold" />
+                          <Trash size={16} color="currentColor" weight="fill" />
                         </button>
                       </div>
                     ))}
@@ -257,7 +247,7 @@ const EventReviewForm: React.FC<EventReviewFormProps> = ({
                       className="hidden"
                     />
                     <div className="flex items-center justify-center gap-2 px-6 py-4 border-2 border-dashed border-foreground/20 rounded-xl hover:border-primary transition-colors cursor-pointer">
-                      <ImageIcon size={20} color="currentColor" variant="Outline" />
+                      <ImageIcon size={20} color="currentColor" weight="regular" />
                       <span className="text-foreground/70 font-medium">
                         Add Photos ({photos.length}/5)
                       </span>

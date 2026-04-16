@@ -2,16 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Button from "@/components/Button";
-import {
-  Setting2,
-  User,
-  Notification,
-  Lock,
-  Trash,
-  Logout,
-  Edit2,
-  TickCircle,
-} from "iconsax-react";
+import { Gear, User, Bell, Lock, Trash, SignOut, PencilSimple, CheckCircle } from '@phosphor-icons/react';
 import { SettingsService } from "@/services/settings";
 import { NotificationSettings, PrivacySettings } from "@/types/settings";
 import { useUserStore } from "@/store/useUserStore";
@@ -132,7 +123,7 @@ const SettingsSection = () => {
       <div className="bg-background border border-foreground/10 rounded-2xl p-6">
         <div className="flex items-center gap-3 mb-6">
           <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-            <User size={24} color="currentColor" variant="Bold" className="text-primary" />
+            <User size={24} color="currentColor" weight="fill" className="text-primary" />
           </div>
           <h3 className="text-xl font-bold font-[family-name:var(--font-clash-display)] text-foreground">
             Account Settings
@@ -147,7 +138,7 @@ const SettingsSection = () => {
             <Button
               variant="outline"
               size="sm"
-              leftIcon={Edit2}
+              leftIcon={PencilSimple}
               onClick={() => window.location.href = "/profile/edit"}
             >
               Edit
@@ -173,7 +164,7 @@ const SettingsSection = () => {
       <div className="bg-background border border-foreground/10 rounded-2xl p-6">
         <div className="flex items-center gap-3 mb-6">
           <div className="w-10 h-10 rounded-lg bg-secondary/10 flex items-center justify-center">
-            <Notification size={24} color="currentColor" variant="Bold" className="text-secondary" />
+            <Bell size={24} color="currentColor" weight="fill" className="text-secondary" />
           </div>
           <h3 className="text-xl font-bold font-[family-name:var(--font-clash-display)] text-foreground">
             Notifications
@@ -347,7 +338,7 @@ const SettingsSection = () => {
       <div className="bg-background border border-foreground/10 rounded-2xl p-6">
         <div className="flex items-center gap-3 mb-6">
           <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center">
-            <Lock size={24} color="currentColor" variant="Bold" className="text-accent" />
+            <Lock size={24} color="currentColor" weight="fill" className="text-accent" />
           </div>
           <h3 className="text-xl font-bold font-[family-name:var(--font-clash-display)] text-foreground">
             Privacy Settings
@@ -444,7 +435,7 @@ const SettingsSection = () => {
       <div className="bg-background border border-red-500/20 rounded-2xl p-6">
         <div className="flex items-center gap-3 mb-6">
           <div className="w-10 h-10 rounded-lg bg-red-500/10 flex items-center justify-center">
-            <Trash size={24} color="currentColor" variant="Bold" className="text-red-500" />
+            <Trash size={24} color="currentColor" weight="fill" className="text-red-500" />
           </div>
           <h3 className="text-xl font-bold font-[family-name:var(--font-clash-display)] text-foreground">
             Danger Zone
@@ -476,7 +467,7 @@ const SettingsSection = () => {
             <Button
               variant="outline"
               size="sm"
-              leftIcon={Logout}
+              leftIcon={SignOut}
               onClick={handleLogout}
             >
               Log Out
@@ -491,7 +482,7 @@ const SettingsSection = () => {
           <Button
             variant="primary"
             size="md"
-            leftIcon={TickCircle}
+            leftIcon={CheckCircle}
             onClick={handleSaveSettings}
             disabled={saving}
           >

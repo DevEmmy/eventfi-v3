@@ -2,7 +2,7 @@
 
 import React from "react";
 import Button from "@/components/Button";
-import { CalendarAdd, Shop, Ticket, ArrowRight2 } from "iconsax-react";
+import { CalendarPlus, Storefront, Ticket, CaretRight } from '@phosphor-icons/react';
 
 interface QuickActionsProps {
   userRoles: string[];
@@ -22,7 +22,7 @@ const QuickActions: React.FC<QuickActionsProps> = ({
       id: "create-event",
       label: "Create Event",
       description: "Host your next event",
-      icon: CalendarAdd,
+      icon: CalendarPlus,
       color: "primary",
       onClick: onCreateEvent,
       visible: true,
@@ -31,7 +31,7 @@ const QuickActions: React.FC<QuickActionsProps> = ({
       id: "create-vendor",
       label: userRoles.includes("vendor") ? "Manage Vendor Profile" : "Become a Vendor",
       description: userRoles.includes("vendor") ? "Update your vendor details" : "Offer your services",
-      icon: Shop,
+      icon: Storefront,
       color: "secondary",
       onClick: onCreateVendor,
       visible: true,
@@ -94,7 +94,7 @@ const QuickActions: React.FC<QuickActionsProps> = ({
                     <IconComponent
                       size={24}
                       color="currentColor"
-                      variant="Bold"
+                      weight="fill"
                       className={colors.icon}
                     />
                   </div>
@@ -103,10 +103,10 @@ const QuickActions: React.FC<QuickActionsProps> = ({
                 <p className="text-sm text-foreground/60 mb-3">{action.description}</p>
                 <div className="flex items-center gap-1 text-sm font-medium mt-auto">
                   <span className={colors.icon}>Get started</span>
-                  <ArrowRight2
+                  <CaretRight
                     size={16}
                     color="currentColor"
-                    variant="Outline"
+                    weight="regular"
                     className={colors.icon}
                   />
                 </div>

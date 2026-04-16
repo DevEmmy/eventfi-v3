@@ -3,14 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Button from "@/components/Button";
-import {
-  ArrowLeft2,
-  User,
-  Location,
-  TickCircle,
-  Trash,
-  Edit2,
-} from "iconsax-react";
+import { CaretLeft, User, MapPin, CheckCircle, Trash, PencilSimple } from '@phosphor-icons/react';
 import Image from "next/image";
 import { useUserStore } from "@/store/useUserStore";
 import { UserService } from "@/services/user";
@@ -177,7 +170,7 @@ const EditProfilePage = () => {
               onClick={() => router.back()}
               className="flex items-center gap-2 text-foreground/60 hover:text-foreground mb-4 transition-colors"
             >
-              <ArrowLeft2 size={20} color="currentColor" variant="Outline" />
+              <CaretLeft size={20} color="currentColor" weight="regular" />
               <span>Back to Profile</span>
             </button>
             <h1 className="text-3xl lg:text-4xl font-bold font-[family-name:var(--font-clash-display)] text-foreground mb-2">
@@ -217,7 +210,7 @@ const EditProfilePage = () => {
                       <User
                         size={48}
                         color="currentColor"
-                        variant="Bold"
+                        weight="fill"
                         className="text-foreground/40"
                       />
                     )}
@@ -227,14 +220,14 @@ const EditProfilePage = () => {
                       onClick={handleRemoveAvatar}
                       className="absolute -top-2 -right-2 p-2 bg-background/90 backdrop-blur-sm rounded-full text-foreground/60 hover:text-primary transition-colors shadow-lg"
                     >
-                      <Trash size={16} color="currentColor" variant="Outline" />
+                      <Trash size={16} color="currentColor" weight="regular" />
                     </button>
                   )}
                 </div>
                 <div className="flex-1">
                   <label className="block">
                     <div className="inline-flex items-center gap-2 px-4 py-2 border-2 border-foreground/20 rounded-xl cursor-pointer hover:border-primary transition-all duration-200">
-                      <Edit2 size={18} color="currentColor" variant="Outline" />
+                      <PencilSimple size={18} color="currentColor" weight="regular" />
                       <span className="text-sm font-medium text-foreground">
                         {formData.avatar ? "Change Photo" : "Upload Photo"}
                       </span>
@@ -318,7 +311,7 @@ const EditProfilePage = () => {
               />
               <div className="flex items-center justify-between mt-2">
                 <p className="text-xs text-foreground/60">
-                  Share a bit about yourself, your interests, or what you do
+                  ShareNetwork a bit about yourself, your interests, or what you do
                 </p>
                 <p className="text-xs text-foreground/60">
                   {formData.bio.length}/500
@@ -332,10 +325,10 @@ const EditProfilePage = () => {
                 Location
               </label>
               <div className="relative">
-                <Location
+                <MapPin
                   size={20}
                   color="currentColor"
-                  variant="Outline"
+                  weight="regular"
                   className="absolute left-4 top-1/2 -translate-y-1/2 text-foreground/40"
                 />
                 <select
@@ -373,10 +366,10 @@ const EditProfilePage = () => {
             {user.isVerified && (
               <div className="p-4 bg-primary/10 border border-primary/20 rounded-xl">
                 <div className="flex items-center gap-3">
-                  <TickCircle
+                  <CheckCircle
                     size={24}
                     color="currentColor"
-                    variant="Bold"
+                    weight="fill"
                     className="text-primary"
                   />
                   <div>
@@ -424,7 +417,7 @@ const EditProfilePage = () => {
             <Button
               variant="primary"
               size="md"
-              rightIcon={TickCircle}
+              rightIcon={CheckCircle}
               onClick={handleSave}
               disabled={!isFormValid() || isSaving}
               isLoading={isSaving}

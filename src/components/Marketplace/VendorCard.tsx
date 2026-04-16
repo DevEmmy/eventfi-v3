@@ -2,7 +2,7 @@
 
 import React from "react";
 import Image from "next/image";
-import { Location, Star1, TickCircle, Briefcase } from "iconsax-react";
+import { MapPin, Star, CheckCircle, Briefcase } from '@phosphor-icons/react';
 
 export interface VendorCardProps {
   id: string;
@@ -49,7 +49,7 @@ const VendorCard: React.FC<VendorCardProps> = ({
             <Briefcase
               size={64}
               color="currentColor"
-              variant="Bold"
+              weight="fill"
               className="text-primary/30"
             />
           </div>
@@ -66,10 +66,10 @@ const VendorCard: React.FC<VendorCardProps> = ({
         {verified && (
           <div className="absolute top-3 right-3">
             <div className="w-8 h-8 rounded-full bg-primary/90 backdrop-blur-sm flex items-center justify-center">
-              <TickCircle
+              <CheckCircle
                 size={18}
                 color="white"
-                variant="Bold"
+                weight="fill"
               />
             </div>
           </div>
@@ -92,7 +92,7 @@ const VendorCard: React.FC<VendorCardProps> = ({
           {/* Rating */}
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1">
-              <Star1 size={16} color="currentColor" variant="Bold" className="text-primary" />
+              <Star size={16} color="currentColor" weight="fill" className="text-primary" />
               <span className="font-semibold text-foreground">{rating.toFixed(1)}</span>
             </div>
             <span className="text-sm text-foreground/60">
@@ -103,7 +103,7 @@ const VendorCard: React.FC<VendorCardProps> = ({
 
         {/* Location */}
         <div className="flex items-center gap-2 text-sm text-foreground/70 mb-4">
-          <Location size={16} color="currentColor" variant="Outline" />
+          <MapPin size={16} color="currentColor" weight="regular" />
           <span className="line-clamp-1">{location}</span>
         </div>
 
@@ -134,7 +134,7 @@ const VendorCard: React.FC<VendorCardProps> = ({
           {/* Verified Label */}
           {verified && (
             <span className="text-xs text-primary font-medium flex items-center gap-1">
-              <TickCircle size={14} color="currentColor" variant="Bold" />
+              <CheckCircle size={14} color="currentColor" weight="fill" />
               Verified
             </span>
           )}

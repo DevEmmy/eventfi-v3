@@ -3,7 +3,7 @@
 import React, { useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Button from "@/components/Button";
-import { Lock, Eye, EyeSlash } from "iconsax-react";
+import { Lock, Eye, EyeSlash } from '@phosphor-icons/react';
 import { UserService } from "@/services/user";
 import toast from "@/lib/toast";
 
@@ -69,7 +69,7 @@ function ResetPasswordForm() {
             <div className="space-y-4">
                 <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-foreground/40">
-                        <Lock size={20} variant="Outline" />
+                        <Lock size={20} weight="regular" />
                     </div>
                     <input
                         type={showPassword ? "text" : "password"}
@@ -90,7 +90,7 @@ function ResetPasswordForm() {
 
                 <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-foreground/40">
-                        <Lock size={20} variant="Outline" />
+                        <Lock size={20} weight="regular" />
                     </div>
                     <input
                         type={showPassword ? "text" : "password"}

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { SearchNormal1 } from "iconsax-react";
+import { MagnifyingGlass } from '@phosphor-icons/react';
 
 interface SearchBarProps {
   placeholder?: string;
@@ -33,10 +33,10 @@ const SearchBar: React.FC<SearchBarProps> = ({
       role="search"
     >
       <div className="relative flex items-center">
-        <SearchNormal1
+        <MagnifyingGlass
           size={20}
           color="currentColor"
-          variant="Outline"
+          weight="regular"
           className="absolute left-4 text-foreground/40 pointer-events-none"
         />
         <input
