@@ -48,7 +48,7 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ data }) => {
       icon: Wallet,
       bgColor: "bg-green-500/10",
       iconColor: "text-green-500",
-      onClick: () => router.push("/organizer/payouts"),
+      onClick: () => router.push("/profile?tab=payouts"),
     },
   ];
 

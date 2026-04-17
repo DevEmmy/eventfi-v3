@@ -3,7 +3,6 @@ import type { NextRequest } from 'next/server';
 
 const PROTECTED_ROUTES = [
     '/profile',
-    '/organizer',
     '/vendor/create',
     '/vendor/edit',
     '/events/create',
@@ -38,7 +37,6 @@ export function middleware(request: NextRequest) {
 export const config = {
     matcher: [
         '/profile/:path*',
-        '/organizer/:path*',
         '/vendor/create',
         '/vendor/edit',
         '/events/create',

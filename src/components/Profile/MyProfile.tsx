@@ -12,7 +12,8 @@ import SettingsSection from "./SettingsSection";
 import DashboardContent from "./DashboardContent";
 import VendorDashboardContent from "./VendorDashboardContent";
 import SavedEvents from "./SavedEvents";
-import { CalendarBlank, Ticket, Storefront, Gear, House, ChartBar, Heart } from '@phosphor-icons/react';
+import { CalendarBlank, Ticket, Storefront, Gear, House, ChartBar, Heart, Wallet } from '@phosphor-icons/react';
+import PayoutPage from "@/components/Organizer/PayoutPage";
 import EventCard, { EventCardProps } from "@/components/Homepage/EventCard";
 import { useUserStore } from "@/store/useUserStore";
 
@@ -208,12 +209,17 @@ const MyProfile: React.FC<MyProfileProps> = ({ userData }) => {
       },
     ];
 
-  // Add Dashboard tab for organizers
+  // Add Dashboard and Payouts tabs for organizers
   if (isOrganizer) {
     tabs.push({
       id: "dashboard",
       label: "Organizer Dashboard",
       icon: ChartBar,
+    });
+    tabs.push({
+      id: "payouts",
+      label: "Payouts",
+      icon: Wallet,
     });
   }
 
@@ -438,6 +444,9 @@ const MyProfile: React.FC<MyProfileProps> = ({ userData }) => {
 
       case "vendor-dashboard":
         return <VendorDashboardContent />;
+
+      case "payouts":
+        return <PayoutPage />;
 
       case "events":
         return (
