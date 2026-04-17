@@ -4,7 +4,7 @@ import React from "react";
 import { useRouter } from "next/navigation";
 import Button from "@/components/Button";
 import { OrganizerDashboardData } from "@/services/events";
-import { CalendarPlus, CalendarBlank, Ticket, Coins, Users, CaretUp, Eye, ChartBar, Storefront, Clock, Bell } from '@phosphor-icons/react';
+import { CalendarPlus, CalendarBlank, Ticket, Coins, Users, CaretUp, Eye, ChartBar, Storefront, Clock, Bell, Wallet } from '@phosphor-icons/react';
 
 interface DashboardContentProps {
   data: OrganizerDashboardData;
@@ -42,6 +42,13 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ data }) => {
       bgColor: "bg-primary/10",
       iconColor: "text-primary",
       onClick: () => router.push("/notifications"),
+    },
+    {
+      label: "Payouts",
+      icon: Wallet,
+      bgColor: "bg-green-500/10",
+      iconColor: "text-green-500",
+      onClick: () => router.push("/organizer/payouts"),
     },
   ];
 
