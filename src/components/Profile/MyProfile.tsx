@@ -87,9 +87,10 @@ const MyProfile: React.FC<MyProfileProps> = ({ userData }) => {
   const hasVendorProfile = currentUser.roles.some((role) =>
     role.toLowerCase().includes("vendor")
   );
-  const isOrganizer = currentUser.roles.some((role) =>
-    role.toLowerCase().includes("organizer") || role.toLowerCase().includes("host")
-  );
+  // Any logged-in user can create events and act as an organizer.
+  // The onboarding role selection doesn't persist to the API, so role-gating
+  // these tabs would hide them from most users. Show them to everyone.
+  const isOrganizer = true;
 
   // State for events, tickets, and dashboard
   const [myEvents, setMyEvents] = useState<EventCardProps[]>([]);
