@@ -254,13 +254,13 @@ const MyProfile: React.FC<MyProfileProps> = ({ userData }) => {
   );
 
   // Add vendor tab if user has vendor profile or can create one
-  if (hasVendorProfile || isOrganizer) {
-    tabs.push({
-      id: "vendor",
-      label: "Vendor Profile",
-      icon: Storefront,
-    });
-  }
+  // if (hasVendorProfile || isOrganizer) {
+  //   tabs.push({
+  //     id: "vendor",
+  //     label: "Vendor Profile",
+  //     icon: Storefront,
+  //   });
+  // }
 
   // Add settings tab
   tabs.push({
