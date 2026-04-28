@@ -15,6 +15,7 @@ export interface AIEventResult {
   venue: string;
   location: string;
   onlineLink: string;
+  capacity: number | null;
   visibility: "public" | "private";
   tickets: Array<{
     name: string;

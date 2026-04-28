@@ -154,9 +154,13 @@ const CreateEventPage = () => {
   };
 
   const handleAIGenerated = (result: AIEventResult) => {
+    const aiTitle = result.title || '';
+    const aiSlug = aiTitle ? aiTitle.replace(/[^a-zA-Z0-9]/g, '-').toUpperCase() : '';
+
     setFormData(prev => ({
       ...prev,
-      title: result.title || prev.title,
+      title: aiTitle || prev.title,
+      slug: aiSlug || prev.slug,
       description: result.description || prev.description,
       category: result.category || prev.category,
       startDate: result.startDate || prev.startDate,
@@ -167,8 +171,14 @@ const CreateEventPage = () => {
       venue: result.venue || prev.venue,
       location: result.location || prev.location,
       onlineLink: result.onlineLink || prev.onlineLink,
+      capacity: result.capacity != null ? String(result.capacity) : prev.capacity,
       visibility: result.visibility || prev.visibility,
     }));
+
+    // Tags — previously dropped; now applied
+    if (result.tags && result.tags.length > 0) {
+      setTags(result.tags);
+    }
 
     if (result.tickets && result.tickets.length > 0) {
       setTicketTypes(result.tickets.map((t, i) => ({
@@ -189,11 +199,28 @@ const CreateEventPage = () => {
       })));
     }
 
-    // Count non-empty fields filled
+    // Geocode the AI-supplied address so lat/lng are set
+    if (!result.isOnline && (result.venue || result.location)) {
+      geocodeAddress(result.location, result.venue);
+    }
+
+    // Accurate filled-field count
     const filled = [
-      result.title, result.description, result.category,
-      result.startDate, result.startTime, result.venue || result.onlineLink,
+      result.title,
+      result.description,
+      result.category,
+      result.startDate,
+      result.startTime,
+      result.endDate,
+      result.endTime,
+      result.venue || result.location || result.onlineLink,
+      result.capacity,
+      result.visibility,
+      result.tags?.length ? 'tags' : '',
+      result.tickets?.length ? 'tickets' : '',
+      result.agenda?.length ? 'agenda' : '',
     ].filter(Boolean).length;
+
     setAiFilledFields(filled);
     setShowAIPanel(false);
     customToast.success(`AI filled ${filled} fields — review and publish when ready!`);
