@@ -45,9 +45,9 @@ export const BookingService = {
         return response.data.data;
     },
 
-    // Initialize payment (paid tickets) — always routes through ZendFi hosted checkout
+    // Initialize payment (paid tickets) — routes through Paystack hosted checkout
     initializePayment: async (orderId: string, callbackUrl: string): Promise<PaymentInitResponse> => {
-        const response = await axiosInstance.post<ApiResponse<PaymentInitResponse>>(`/bookings/${orderId}/pay`, { paymentMethod: 'zendfi', callbackUrl });
+        const response = await axiosInstance.post<ApiResponse<PaymentInitResponse>>(`/bookings/${orderId}/pay`, { paymentMethod: 'paystack', callbackUrl });
         return response.data.data;
     },
 

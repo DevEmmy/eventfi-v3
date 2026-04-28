@@ -568,14 +568,14 @@ const EventCheckoutPage: React.FC<EventCheckoutPageProps> = ({ eventId }) => {
                 </div>
               </div>
 
-              {/* ZendFi payment notice - Only show if not free */}
+              {/* Paystack payment notice - Only show if not free */}
               {!isFree && (
                 <div className="bg-foreground/5 rounded-2xl p-6 border border-foreground/10">
                   <h2 className="text-xl font-bold font-[family-name:var(--font-clash-display)] mb-2 text-foreground">
                     Payment
                   </h2>
                   <p className="text-sm text-foreground/60">
-                    You&apos;ll be redirected to a secure checkout page to complete your payment. We accept USDC, USDT, and SOL.
+                    You&apos;ll be redirected to a secure Paystack checkout page to complete your payment. We accept cards, bank transfers, and USSD.
                   </p>
                 </div>
               )}
@@ -639,10 +639,10 @@ const EventCheckoutPage: React.FC<EventCheckoutPageProps> = ({ eventId }) => {
                     <Lock size={20} color="currentColor" weight="fill" className="text-primary" />
                     <div>
                       <p className="text-sm font-semibold text-foreground">
-                        Secured by ZendFi
+                        Secured by Paystack
                       </p>
                       <p className="text-xs text-foreground/60">
-                        Payments processed on Solana — gasless &amp; non-custodial
+                        256-bit SSL encryption — your payment is safe
                       </p>
                     </div>
                   </div>
