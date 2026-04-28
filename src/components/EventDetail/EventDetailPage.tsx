@@ -21,6 +21,7 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
   const router = useRouter();
   const [isFavorite, setIsFavorite] = useState(false);
   const [ticketQuantity, setTicketQuantity] = useState(1);
+  const [selectedTicketId, setSelectedTicketId] = useState<string>("");
 
   const [event, setEvent] = useState<any>(null);
   const [reviews, setReviews] = useState<any[]>([]);
@@ -84,13 +85,18 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
               { time: data.startTime, activity: "Event Starts" },
               { time: data.endTime, activity: "Event Ends" }
             ],
-          tags: data.tags || []
+          tags: data.tags || [],
+          tickets: data.tickets || [],
         };
 
         setEvent(mappedEvent);
         setSpeakers(data.speakers || []);
         setOrganizerId(data.organizerId || data.organizer?.id || null);
         setHasTicket(data.hasTicket || data.userHasTicket || false);
+
+        // Pre-select the first available ticket type
+        const firstAvailable = (data.tickets || []).find((t: any) => t.remaining > 0) || data.tickets?.[0];
+        if (firstAvailable) setSelectedTicketId(firstAvailable.id);
 
         // Resolve map coordinates: use stored lat/lng or geocode the address
         if (data.lat && data.lng && data.lat !== 0 && data.lng !== 0) {
@@ -321,19 +327,51 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
             {/* Ticket Purchase - Mobile Only (shown right after event details) */}
             <div className="lg:hidden">
               <div className="bg-background border-2 border-foreground/10 rounded-2xl p-6 shadow-lg">
-                <div className="mb-6">
-                  <div className="flex items-baseline gap-2 mb-2">
-                    <span className="text-3xl font-bold text-foreground">
-                      {event.price}
-                    </span>
-                    {event.price !== "Free" && (
-                      <span className="text-sm text-foreground/60">per ticket</span>
-                    )}
+                {/* Ticket Type Selector */}
+                {event.tickets && event.tickets.length > 0 && (
+                  <div className="mb-6">
+                    <p className="text-sm font-semibold text-foreground mb-3">Select Ticket</p>
+                    <div className="space-y-2">
+                      {event.tickets.map((ticket: any) => {
+                        const isSoldOut = ticket.remaining === 0;
+                        const isFree = ticket.type === 'FREE' || ticket.price === 0;
+                        const isSelected = selectedTicketId === ticket.id;
+                        return (
+                          <button
+                            key={ticket.id}
+                            onClick={() => !isSoldOut && setSelectedTicketId(ticket.id)}
+                            disabled={isSoldOut}
+                            className={`w-full p-3 rounded-xl border-2 text-left transition-all ${
+                              isSelected
+                                ? 'border-primary bg-primary/10'
+                                : isSoldOut
+                                ? 'border-foreground/10 opacity-50 cursor-not-allowed'
+                                : 'border-foreground/15 hover:border-primary/50'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between gap-2">
+                              <div className="flex items-center gap-2.5 min-w-0">
+                                <div className={`w-4 h-4 rounded-full border-2 shrink-0 flex items-center justify-center ${isSelected ? 'border-primary bg-primary' : 'border-foreground/30'}`}>
+                                  {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                                </div>
+                                <div className="min-w-0">
+                                  <p className="text-sm font-semibold text-foreground truncate">{ticket.name}</p>
+                                  {isSoldOut && <p className="text-xs text-foreground/40">Sold out</p>}
+                                  {!isSoldOut && ticket.remaining <= 20 && (
+                                    <p className="text-xs text-red-500">Only {ticket.remaining} left</p>
+                                  )}
+                                </div>
+                              </div>
+                              <span className="text-sm font-bold text-primary shrink-0">
+                                {isFree ? 'Free' : `₦${ticket.price.toLocaleString()}`}
+                              </span>
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
-                  <p className="text-sm text-foreground/60">
-                    {event.attendees.toLocaleString()} people going
-                  </p>
-                </div>
+                )}
 
                 {/* Ticket Quantity */}
                 <div className="mb-6">
@@ -342,9 +380,7 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
                   </label>
                   <div className="flex items-center gap-4">
                     <button
-                      onClick={() =>
-                        setTicketQuantity(Math.max(1, ticketQuantity - 1))
-                      }
+                      onClick={() => setTicketQuantity(Math.max(1, ticketQuantity - 1))}
                       className="w-10 h-10 rounded-full border-2 border-foreground/20 flex items-center justify-center hover:border-primary hover:text-primary transition-colors"
                     >
                       -
@@ -362,16 +398,21 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
                 </div>
 
                 {/* Total Price */}
-                {event.price !== "Free" && (
-                  <div className="mb-6 p-4 bg-primary/10 rounded-xl">
-                    <div className="flex justify-between items-center">
-                      <span className="text-foreground/70">Total</span>
-                      <span className="text-xl font-bold text-primary">
-                        ₦{parseInt(event.price.replace(/[₦,]/g, "")) * ticketQuantity}
-                      </span>
+                {(() => {
+                  const sel = event.tickets?.find((t: any) => t.id === selectedTicketId);
+                  const selPrice = sel?.price || 0;
+                  const selFree = sel?.type === 'FREE' || selPrice === 0;
+                  return !selFree && selPrice > 0 ? (
+                    <div className="mb-6 p-4 bg-primary/10 rounded-xl">
+                      <div className="flex justify-between items-center">
+                        <span className="text-foreground/70">Total</span>
+                        <span className="text-xl font-bold text-primary">
+                          ₦{(selPrice * ticketQuantity).toLocaleString()}
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                )}
+                  ) : null;
+                })()}
 
                 {/* CTA Button */}
                 <Button
@@ -379,7 +420,9 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
                   size="lg"
                   fullWidth
                   onClick={() => {
-                    window.location.href = `/events/${eventId}/checkout?qty=${ticketQuantity}`;
+                    const params = new URLSearchParams({ qty: String(ticketQuantity) });
+                    if (selectedTicketId) params.set('typeId', selectedTicketId);
+                    window.location.href = `/events/${eventId}/checkout?${params}`;
                   }}
                 >
                   <Ticket size={20} color="currentColor" weight="fill" />
@@ -459,6 +502,55 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
                 {event.description}
               </p>
             </div>
+
+            {/* Tickets */}
+            {event.tickets && event.tickets.length > 0 && (
+              <div>
+                <h2 className="text-2xl font-bold font-[family-name:var(--font-clash-display)] mb-4 text-foreground">
+                  Tickets
+                </h2>
+                <div className="space-y-3">
+                  {event.tickets.map((ticket: any) => {
+                    const isSoldOut = ticket.remaining === 0;
+                    const isFree = ticket.type === 'FREE' || ticket.price === 0;
+                    return (
+                      <div
+                        key={ticket.id}
+                        className={`p-5 rounded-2xl border bg-foreground/5 transition-opacity ${isSoldOut ? 'border-foreground/10 opacity-60' : 'border-foreground/10'}`}
+                      >
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1 flex-wrap">
+                              <h3 className="font-semibold text-foreground">{ticket.name}</h3>
+                              {isSoldOut ? (
+                                <span className="text-xs px-2 py-0.5 bg-foreground/10 text-foreground/50 rounded-full">Sold Out</span>
+                              ) : ticket.remaining <= 20 ? (
+                                <span className="text-xs px-2 py-0.5 bg-red-500/10 text-red-500 rounded-full">
+                                  Only {ticket.remaining} left
+                                </span>
+                              ) : null}
+                            </div>
+                            {ticket.description && (
+                              <p className="text-sm text-foreground/60 mb-2">{ticket.description}</p>
+                            )}
+                            <p className="text-xs text-foreground/40">
+                              {isSoldOut
+                                ? 'No tickets remaining'
+                                : `${ticket.remaining} of ${ticket.quantity} available`}
+                            </p>
+                          </div>
+                          <div className="text-right shrink-0">
+                            <p className="text-xl font-bold text-primary">
+                              {isFree ? 'Free' : `₦${ticket.price.toLocaleString()}`}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             {/* Schedule */}
             <div>
@@ -781,19 +873,55 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
           <div className="hidden lg:block lg:col-span-1">
             <div className="sticky top-24">
               <div className="bg-background border-2 border-foreground/10 rounded-2xl p-6 lg:p-8 shadow-lg">
-                <div className="mb-6">
-                  <div className="flex items-baseline gap-2 mb-2">
-                    <span className="text-3xl font-bold text-foreground">
-                      {event.price}
-                    </span>
-                    {event.price !== "Free" && (
-                      <span className="text-sm text-foreground/60">per ticket</span>
-                    )}
+                <p className="text-sm text-foreground/60 mb-4">
+                  {event.attendees.toLocaleString()} people going
+                </p>
+
+                {/* Ticket Type Selector */}
+                {event.tickets && event.tickets.length > 0 && (
+                  <div className="mb-6">
+                    <p className="text-sm font-semibold text-foreground mb-3">Select Ticket</p>
+                    <div className="space-y-2">
+                      {event.tickets.map((ticket: any) => {
+                        const isSoldOut = ticket.remaining === 0;
+                        const isFree = ticket.type === 'FREE' || ticket.price === 0;
+                        const isSelected = selectedTicketId === ticket.id;
+                        return (
+                          <button
+                            key={ticket.id}
+                            onClick={() => !isSoldOut && setSelectedTicketId(ticket.id)}
+                            disabled={isSoldOut}
+                            className={`w-full p-3 rounded-xl border-2 text-left transition-all ${
+                              isSelected
+                                ? 'border-primary bg-primary/10'
+                                : isSoldOut
+                                ? 'border-foreground/10 opacity-50 cursor-not-allowed'
+                                : 'border-foreground/15 hover:border-primary/50'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between gap-2">
+                              <div className="flex items-center gap-2.5 min-w-0">
+                                <div className={`w-4 h-4 rounded-full border-2 shrink-0 flex items-center justify-center ${isSelected ? 'border-primary bg-primary' : 'border-foreground/30'}`}>
+                                  {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                                </div>
+                                <div className="min-w-0">
+                                  <p className="text-sm font-semibold text-foreground truncate">{ticket.name}</p>
+                                  {isSoldOut && <p className="text-xs text-foreground/40">Sold out</p>}
+                                  {!isSoldOut && ticket.remaining <= 20 && (
+                                    <p className="text-xs text-red-500">Only {ticket.remaining} left</p>
+                                  )}
+                                </div>
+                              </div>
+                              <span className="text-sm font-bold text-primary shrink-0">
+                                {isFree ? 'Free' : `₦${ticket.price.toLocaleString()}`}
+                              </span>
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
-                  <p className="text-sm text-foreground/60">
-                    {event.attendees.toLocaleString()} people going
-                  </p>
-                </div>
+                )}
 
                 {/* Ticket Quantity */}
                 <div className="mb-6">
@@ -802,9 +930,7 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
                   </label>
                   <div className="flex items-center gap-4">
                     <button
-                      onClick={() =>
-                        setTicketQuantity(Math.max(1, ticketQuantity - 1))
-                      }
+                      onClick={() => setTicketQuantity(Math.max(1, ticketQuantity - 1))}
                       className="w-10 h-10 rounded-full border-2 border-foreground/20 flex items-center justify-center hover:border-primary hover:text-primary transition-colors"
                     >
                       -
@@ -822,16 +948,21 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
                 </div>
 
                 {/* Total Price */}
-                {event.price !== "Free" && (
-                  <div className="mb-6 p-4 bg-primary/10 rounded-xl">
-                    <div className="flex justify-between items-center">
-                      <span className="text-foreground/70">Total</span>
-                      <span className="text-xl font-bold text-primary">
-                        ₦{parseInt(event.price.replace(/[₦,]/g, "")) * ticketQuantity}
-                      </span>
+                {(() => {
+                  const sel = event.tickets?.find((t: any) => t.id === selectedTicketId);
+                  const selPrice = sel?.price || 0;
+                  const selFree = sel?.type === 'FREE' || selPrice === 0;
+                  return !selFree && selPrice > 0 ? (
+                    <div className="mb-6 p-4 bg-primary/10 rounded-xl">
+                      <div className="flex justify-between items-center">
+                        <span className="text-foreground/70">Total</span>
+                        <span className="text-xl font-bold text-primary">
+                          ₦{(selPrice * ticketQuantity).toLocaleString()}
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                )}
+                  ) : null;
+                })()}
 
                 {/* CTA Button */}
                 <Button
@@ -839,8 +970,9 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
                   size="lg"
                   fullWidth
                   onClick={() => {
-                    // Handle ticket purchase
-                    window.location.href = `/events/${eventId}/checkout?qty=${ticketQuantity}`;
+                    const params = new URLSearchParams({ qty: String(ticketQuantity) });
+                    if (selectedTicketId) params.set('typeId', selectedTicketId);
+                    window.location.href = `/events/${eventId}/checkout?${params}`;
                   }}
                 >
                   <Ticket size={20} color="currentColor" weight="fill" />
