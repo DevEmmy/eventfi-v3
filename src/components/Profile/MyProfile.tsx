@@ -150,22 +150,22 @@ const MyProfile: React.FC<MyProfileProps> = ({ userData }) => {
         const mappedTickets = response.data.map((ticket: any) => ({
           id: ticket.event.id,
           title: ticket.event.title,
-          slug: ticket.event.slug || undefined,
+          slug: undefined,
           date: new Date(ticket.event.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-          time: ticket.event.startTime && ticket.event.endTime
-            ? `${ticket.event.startTime} - ${ticket.event.endTime}`
-            : 'TBA',
-          locationType: ticket.event.locationType as "ONLINE" | "PHYSICAL" | "HYBRID" | undefined,
-          location: ticket.event.locationType === 'ONLINE'
-            ? 'Online'
-            : (ticket.event.venueName || ticket.event.city || 'TBD'),
-          price: ticket.ticketType || "Standard",
-          category: ticket.event.category || "Event",
+          time: 'TBA',
+          locationType: undefined as "ONLINE" | "PHYSICAL" | "HYBRID" | undefined,
+          location: ticket.event.venueName || ticket.event.city || 'TBD',
+          // ticketType from the API is { name, type } — extract the name string
+          price: (ticket.ticketType?.name ?? ticket.ticketType) || 'Standard',
+          category: 'Event',
           attendees: 0,
           image: ticket.event.coverImage,
           ticketId: ticket.id,
           status: new Date(ticket.event.startDate) > new Date() ? "upcoming" : "past",
-          purchaseDate: new Date(ticket.purchaseDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+          // backend field is purchasedAt, not purchaseDate
+          purchaseDate: ticket.purchasedAt
+            ? new Date(ticket.purchasedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+            : '',
         }));
 
         setMyTickets(mappedTickets);
