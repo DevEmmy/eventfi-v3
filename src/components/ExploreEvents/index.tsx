@@ -10,6 +10,7 @@ import EventsList from "@/components/ExploreEvents/EventsList";
 import EmptyState from "@/components/ExploreEvents/EmptyState";
 import { EventCardProps } from "@/components/Homepage/EventCard";
 import EventRecommendations from "@/components/Events/EventRecommendations";
+import { getTicketPriceInfo } from "@/utils/ticket-pricing";
 
 const ExploreEventsPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -29,15 +30,6 @@ const ExploreEventsPage = () => {
       day: 'numeric',
       year: 'numeric'
     });
-  };
-
-  // Helper to format price
-  const formatPrice = (tickets: any[]) => {
-    if (!tickets || tickets.length === 0) return "Free";
-    const paidTickets = tickets.filter(t => t.type === 'PAID');
-    if (paidTickets.length === 0) return "Free";
-    const minPrice = Math.min(...paidTickets.map(t => t.price));
-    return `₦${minPrice.toLocaleString()}`;
   };
 
   useEffect(() => {
@@ -66,19 +58,23 @@ const ExploreEventsPage = () => {
 
         const response = await EventService.getEvents(params);
 
-        const mappedEvents = response.data.map((event: any) => ({
-          id: event.id,
-          title: event.title,
-          slug: event.slug || undefined,
-          date: formatDate(event.startDate),
-          time: `${event.startTime} - ${event.endTime}`,
-          location: event.venueName || event.city || "Online",
-          price: formatPrice(event.tickets),
-          category: event.category,
-          image: event.coverImage,
-          attendees: event.attendeesCount,
-          locationType: event.locationType
-        }));
+        const mappedEvents = response.data.map((event: any) => {
+          const { label, count } = getTicketPriceInfo(event.tickets);
+          return {
+            id: event.id,
+            title: event.title,
+            slug: event.slug || undefined,
+            date: formatDate(event.startDate),
+            time: `${event.startTime} - ${event.endTime}`,
+            location: event.venueName || event.city || "Online",
+            price: label,
+            ticketCount: count,
+            category: event.category,
+            image: event.coverImage,
+            attendees: event.attendeesCount,
+            locationType: event.locationType,
+          };
+        });
 
         setEvents(mappedEvents);
       } catch (error) {

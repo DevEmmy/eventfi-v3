@@ -193,10 +193,16 @@ const EventCheckoutPage: React.FC<EventCheckoutPageProps> = ({ eventId }) => {
     const fetchEvent = async () => {
       try {
         const eventData = await EventService.getEventById(eventId);
-        setEvent(eventData);
-        // Auto-select first ticket if none selected and only one exists
-        if (!initialTicketTypeId && eventData.tickets.length > 0) {
-          setSelectedTicketId(eventData.tickets[0].id || "");
+        // Sort tickets ascending: free first, then cheapest to most expensive
+        const sorted = {
+          ...eventData,
+          tickets: [...(eventData.tickets || [])].sort((a, b) => (a.price ?? 0) - (b.price ?? 0)),
+        };
+        setEvent(sorted);
+        // Auto-select: prefer the typeId from the URL, then the first available ticket
+        if (!initialTicketTypeId && sorted.tickets.length > 0) {
+          const firstAvailable = sorted.tickets.find((t: any) => (t.remaining ?? 1) > 0) ?? sorted.tickets[0];
+          setSelectedTicketId(firstAvailable.id || "");
         }
       } catch (error) {
         console.error("Failed to fetch event:", error);
@@ -404,44 +410,63 @@ const EventCheckoutPage: React.FC<EventCheckoutPageProps> = ({ eventId }) => {
                   Select Tickets
                 </h2>
                 <div className="space-y-4">
-                  {event.tickets.map((ticket) => (
-                    <button
-                      key={ticket.id}
-                      onClick={() => {
-                        setSelectedTicketId(ticket.id || "");
-                        setOrder(null); // Reset order when ticket changes
-                      }}
-                      className={`w-full p-4 rounded-xl border-2 text-left transition-all ${selectedTicketId === ticket.id
-                          ? "border-primary bg-primary/10"
-                          : "border-foreground/20 hover:border-primary/50"
+                  {event.tickets.map((ticket) => {
+                    const isSoldOut = (ticket.remaining ?? 1) === 0;
+                    const isSelected = selectedTicketId === ticket.id;
+                    const isLow = !isSoldOut && ticket.remaining !== undefined && ticket.remaining <= 20;
+                    return (
+                      <button
+                        key={ticket.id}
+                        onClick={() => {
+                          if (isSoldOut) return;
+                          setSelectedTicketId(ticket.id || "");
+                          setOrder(null);
+                        }}
+                        disabled={isSoldOut}
+                        className={`w-full p-4 rounded-xl border-2 text-left transition-all ${
+                          isSoldOut
+                            ? "border-foreground/10 opacity-50 cursor-not-allowed"
+                            : isSelected
+                            ? "border-primary bg-primary/10"
+                            : "border-foreground/20 hover:border-primary/50"
                         }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${selectedTicketId === ticket.id
-                              ? "border-primary bg-primary"
-                              : "border-foreground/40"
+                      >
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div className={`w-5 h-5 rounded-full border-2 shrink-0 flex items-center justify-center ${
+                              isSelected ? "border-primary bg-primary" : "border-foreground/40"
                             }`}>
-                            {selectedTicketId === ticket.id && (
-                              <div className="w-2 h-2 rounded-full bg-white" />
-                            )}
+                              {isSelected && <div className="w-2 h-2 rounded-full bg-white" />}
+                            </div>
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <p className="font-semibold text-foreground">{ticket.name}</p>
+                                {isSoldOut && (
+                                  <span className="text-xs px-2 py-0.5 bg-foreground/10 text-foreground/50 rounded-full">Sold Out</span>
+                                )}
+                                {isLow && (
+                                  <span className="text-xs px-2 py-0.5 bg-red-500/10 text-red-500 rounded-full">
+                                    Only {ticket.remaining} left
+                                  </span>
+                                )}
+                              </div>
+                              {ticket.description && (
+                                <p className="text-sm text-foreground/60">{ticket.description}</p>
+                              )}
+                              {!isSoldOut && ticket.remaining !== undefined && (
+                                <p className="text-xs text-foreground/40 mt-0.5">
+                                  {ticket.remaining} of {ticket.quantity} available
+                                </p>
+                              )}
+                            </div>
                           </div>
-                          <div>
-                            <p className="font-semibold text-foreground">{ticket.name}</p>
-                            {ticket.description && (
-                              <p className="text-sm text-foreground/60">{ticket.description}</p>
-                            )}
-                            <p className="text-xs text-foreground/50">
-                              {ticket.remaining !== undefined ? `${ticket.remaining} available` : `${ticket.quantity} total`}
-                            </p>
-                          </div>
+                          <span className="font-bold text-lg text-primary shrink-0">
+                            {ticket.type === "FREE" ? "Free" : `₦${ticket.price.toLocaleString()}`}
+                          </span>
                         </div>
-                        <span className="font-bold text-lg text-primary">
-                          {ticket.type === "FREE" ? "Free" : `₦${ticket.price.toLocaleString()}`}
-                        </span>
-                      </div>
-                    </button>
-                  ))}
+                      </button>
+                    );
+                  })}
                 </div>
 
                 {/* Quantity Selector */}

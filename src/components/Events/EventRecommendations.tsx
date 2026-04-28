@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import EventCard, { EventCardProps } from "@/components/Homepage/EventCard";
 import { Star, TrendUp, MapTrifold, CalendarBlank } from '@phosphor-icons/react';
 import { EventService } from "@/services/events";
+import { getTicketPriceInfo } from "@/utils/ticket-pricing";
 
 interface EventRecommendationsProps {
   userId?: string;
@@ -30,15 +31,6 @@ const EventRecommendations: React.FC<EventRecommendationsProps> = ({
       day: 'numeric',
       year: 'numeric'
     });
-  };
-
-  // Format price helper
-  const formatPrice = (tickets: any[]) => {
-    if (!tickets || tickets.length === 0) return "Free";
-    const paidTickets = tickets.filter(t => t.type === 'PAID');
-    if (paidTickets.length === 0) return "Free";
-    const minPrice = Math.min(...paidTickets.map(t => t.price));
-    return `₦${minPrice.toLocaleString()}`;
   };
 
   useEffect(() => {
@@ -86,19 +78,23 @@ const EventRecommendations: React.FC<EventRecommendationsProps> = ({
         }
 
         // MapTrifold API response to EventCardProps
-        const mappedEvents: EventCardProps[] = events.map(event => ({
-          id: event.id,
-          title: event.title,
-          slug: event.slug || undefined,
-          date: formatDate(event.startDate),
-          time: `${event.startTime} - ${event.endTime}`,
-          location: event.venueName || event.city || "Online",
-          price: formatPrice(event.tickets),
-          category: event.category,
-          image: event.coverImage,
-          attendees: event.attendeesCount,
-          locationType: event.locationType
-        }));
+        const mappedEvents: EventCardProps[] = events.map(event => {
+          const { label, count } = getTicketPriceInfo(event.tickets);
+          return {
+            id: event.id,
+            title: event.title,
+            slug: event.slug || undefined,
+            date: formatDate(event.startDate),
+            time: `${event.startTime} - ${event.endTime}`,
+            location: event.venueName || event.city || "Online",
+            price: label,
+            ticketCount: count,
+            category: event.category,
+            image: event.coverImage,
+            attendees: event.attendeesCount,
+            locationType: event.locationType,
+          };
+        });
 
         setRecommendations(mappedEvents);
       } catch (error) {
