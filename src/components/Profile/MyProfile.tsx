@@ -114,7 +114,10 @@ const MyProfile: React.FC<MyProfileProps> = ({ userData }) => {
           slug: event.slug || undefined,
           date: new Date(event.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
           time: `${event.startTime} - ${event.endTime}`,
-          location: event.venueName || event.city || "Online",
+          locationType: event.locationType as "ONLINE" | "PHYSICAL" | "HYBRID",
+          location: event.locationType === 'ONLINE'
+            ? 'Online'
+            : (event.venueName || event.city || 'TBD'),
           price: event.tickets && event.tickets.length > 0
             ? (event.tickets[0].type === 'FREE' ? 'Free' : `₦${event.tickets[0].price.toLocaleString()}`)
             : "Free",
@@ -147,11 +150,17 @@ const MyProfile: React.FC<MyProfileProps> = ({ userData }) => {
         const mappedTickets = response.data.map((ticket: any) => ({
           id: ticket.event.id,
           title: ticket.event.title,
+          slug: ticket.event.slug || undefined,
           date: new Date(ticket.event.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-          time: `${ticket.event.startTime} - ${ticket.event.endTime}`,
-          location: ticket.event.venueName || ticket.event.city || "Online",
-          price: ticket.ticketName || "Standard",
-          category: ticket.event.category,
+          time: ticket.event.startTime && ticket.event.endTime
+            ? `${ticket.event.startTime} - ${ticket.event.endTime}`
+            : 'TBA',
+          locationType: ticket.event.locationType as "ONLINE" | "PHYSICAL" | "HYBRID" | undefined,
+          location: ticket.event.locationType === 'ONLINE'
+            ? 'Online'
+            : (ticket.event.venueName || ticket.event.city || 'TBD'),
+          price: ticket.ticketType || "Standard",
+          category: ticket.event.category || "Event",
           attendees: 0,
           image: ticket.event.coverImage,
           ticketId: ticket.id,

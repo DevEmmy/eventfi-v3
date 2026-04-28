@@ -19,7 +19,7 @@ export interface EventCardProps {
   attendees?: number;
   isSaved?: boolean;
   onClick?: () => void;
-  locationType?: "ONLINE" | "PHYSICAL";
+  locationType?: "ONLINE" | "PHYSICAL" | "HYBRID";
 }
 
 const EventCard: React.FC<EventCardProps> = ({
@@ -182,22 +182,22 @@ const EventCard: React.FC<EventCardProps> = ({
           </div>
 
           {/* Location */}
-          {
-            locationType === "PHYSICAL" ? (
-              <div className="flex items-center gap-2 text-sm text-foreground/70">
-                <MapPin size={16} color="currentColor" weight="regular" />
-                <span className="line-clamp-1">{location}</span>
-              </div>
-            )
-              :
-
-              (
-                <div className="flex items-center gap-2 text-sm text-foreground/70">
-                  <Link size={16} color="currentColor" weight="regular" />
-                  <span className="line-clamp-1">Virtual (Online)</span>
-                </div>
-              )
-          }
+          {locationType === "ONLINE" ? (
+            <div className="flex items-center gap-2 text-sm text-foreground/70">
+              <Link size={16} color="currentColor" weight="regular" />
+              <span className="line-clamp-1">Online</span>
+            </div>
+          ) : locationType === "HYBRID" ? (
+            <div className="flex items-center gap-2 text-sm text-foreground/70">
+              <MapPin size={16} color="currentColor" weight="regular" />
+              <span className="line-clamp-1">{location} · Hybrid</span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 text-sm text-foreground/70">
+              <MapPin size={16} color="currentColor" weight="regular" />
+              <span className="line-clamp-1">{location}</span>
+            </div>
+          )}
         </div>
 
         {/* Footer */}
