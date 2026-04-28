@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import EventCard from "./EventCard";
 import { ArrowRight } from '@phosphor-icons/react';
 import { EventService } from "@/services/events";
+import { getTicketPriceInfo } from "@/utils/ticket-pricing";
 
 const TrendingEventsSection = () => {
   const [trendingEvents, setTrendingEvents] = useState<any[]>([]);
@@ -16,21 +17,23 @@ const TrendingEventsSection = () => {
         const data = await EventService.getTrendingEvents(8);
 
         // MapTrifold API response to component format
-        const mappedEvents = data.map((event: any) => ({
-          id: event.id,
-          title: event.title,
-          slug: event.slug || undefined,
-          date: new Date(event.startDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
-          time: `${event.startTime} - ${event.endTime}`,
-          location: event.venueName || event.city || "Online",
-          price: event.tickets && event.tickets.length > 0
-            ? (event.tickets[0].type === 'FREE' ? 'Free' : `₦${event.tickets[0].price.toLocaleString()}`)
-            : "Free",
-          category: event.category,
-          attendees: event.attendeesCount || 0,
-          image: event.coverImage,
-          locationType: event.locationType
-        }));
+        const mappedEvents = data.map((event: any) => {
+          const { label, count } = getTicketPriceInfo(event.tickets);
+          return {
+            id: event.id,
+            title: event.title,
+            slug: event.slug || undefined,
+            date: new Date(event.startDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
+            time: `${event.startTime} - ${event.endTime}`,
+            location: event.venueName || event.city || "Online",
+            price: label,
+            ticketCount: count,
+            category: event.category,
+            attendees: event.attendeesCount || 0,
+            image: event.coverImage,
+            locationType: event.locationType,
+          };
+        });
 
         setTrendingEvents(mappedEvents);
       } catch (error) {

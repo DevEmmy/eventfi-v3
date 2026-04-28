@@ -16,6 +16,7 @@ import { CalendarBlank, Ticket, Storefront, Gear, House, ChartBar, Heart, Wallet
 import PayoutPage from "@/components/Organizer/PayoutPage";
 import EventCard, { EventCardProps } from "@/components/Homepage/EventCard";
 import { useUserStore } from "@/store/useUserStore";
+import { getTicketPriceInfo } from "@/utils/ticket-pricing";
 
 interface MyProfileProps {
   // Optional prop to override user data (for testing or server-side)
@@ -108,23 +109,25 @@ const MyProfile: React.FC<MyProfileProps> = ({ userData }) => {
         const { UserService } = await import("@/services/user");
         const response = await UserService.getUserEvents({ limit: 10 });
 
-        const mappedEvents = response.data.map((event: any) => ({
-          id: event.id,
-          title: event.title,
-          slug: event.slug || undefined,
-          date: new Date(event.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-          time: `${event.startTime} - ${event.endTime}`,
-          locationType: event.locationType as "ONLINE" | "PHYSICAL" | "HYBRID",
-          location: event.locationType === 'ONLINE'
-            ? 'Online'
-            : (event.venueName || event.city || 'TBD'),
-          price: event.tickets && event.tickets.length > 0
-            ? (event.tickets[0].type === 'FREE' ? 'Free' : `₦${event.tickets[0].price.toLocaleString()}`)
-            : "Free",
-          category: event.category,
-          attendees: event.attendeesCount || 0,
-          image: event.coverImage,
-        }));
+        const mappedEvents = response.data.map((event: any) => {
+          const { label, count } = getTicketPriceInfo(event.tickets);
+          return {
+            id: event.id,
+            title: event.title,
+            slug: event.slug || undefined,
+            date: new Date(event.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+            time: `${event.startTime} - ${event.endTime}`,
+            locationType: event.locationType as "ONLINE" | "PHYSICAL" | "HYBRID",
+            location: event.locationType === 'ONLINE'
+              ? 'Online'
+              : (event.venueName || event.city || 'TBD'),
+            price: label,
+            ticketCount: count,
+            category: event.category,
+            attendees: event.attendeesCount || 0,
+            image: event.coverImage,
+          };
+        });
 
         setMyEvents(mappedEvents);
       } catch (error) {

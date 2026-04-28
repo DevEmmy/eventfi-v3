@@ -5,6 +5,7 @@ import EventCard, { EventCardProps } from "@/components/Homepage/EventCard";
 import { Heart, Trash } from '@phosphor-icons/react';
 import Button from "@/components/Button";
 import { UserService } from "@/services/user";
+import { getTicketPriceInfo } from "@/utils/ticket-pricing";
 
 const SavedEvents: React.FC = () => {
  
@@ -24,15 +25,7 @@ const SavedEvents: React.FC = () => {
           const dateStr = eventDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
           const timeStr = eventDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
 
-          // Format price from tickets
-          let priceStr = "Free";
-          if (event.tickets && event.tickets.length > 0) {
-            const ticket = event.tickets[0];
-            if (ticket.type !== 'FREE' && ticket.price > 0) {
-              const currency = ticket.currency === 'NGN' ? '₦' : ticket.currency;
-              priceStr = `${currency}${ticket.price.toLocaleString()}`;
-            }
-          }
+          const { label, count } = getTicketPriceInfo(event.tickets);
 
           return {
             id: event.id,
@@ -40,7 +33,8 @@ const SavedEvents: React.FC = () => {
             date: dateStr,
             time: timeStr,
             location: event.venueName || event.city || "Online",
-            price: priceStr,
+            price: label,
+            ticketCount: count,
             category: event.category,
             attendees: event.attendeesCount || 0,
             image: event.coverImage,

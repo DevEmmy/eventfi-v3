@@ -8,6 +8,7 @@ import { CalendarBlank, User, CheckCircle } from '@phosphor-icons/react';
 import { UserService } from "@/services/user";
 import { EventService } from "@/services/events";
 import { useUserStore } from "@/store/useUserStore";
+import { getTicketPriceInfo } from "@/utils/ticket-pricing";
 
 interface UserProfileProps {
   username: string;
@@ -96,19 +97,21 @@ const UserProfile: React.FC<UserProfileProps> = ({
         // Fetch events by organizer ID
         const response = await EventService.getEvents({ organizerId: profileData.id, limit: 12 });
 
-        const mappedEvents = response.data.map((event: any) => ({
-          id: event.id,
-          title: event.title,
-          date: new Date(event.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-          time: `${event.startTime} - ${event.endTime}`,
-          location: event.venueName || event.city || "Online",
-          price: event.tickets && event.tickets.length > 0
-            ? (event.tickets[0].type === 'FREE' ? 'Free' : `₦${event.tickets[0].price.toLocaleString()}`)
-            : "Free",
-          category: event.category,
-          attendees: event.attendeesCount || 0,
-          image: event.coverImage,
-        }));
+        const mappedEvents = response.data.map((event: any) => {
+          const { label, count } = getTicketPriceInfo(event.tickets);
+          return {
+            id: event.id,
+            title: event.title,
+            date: new Date(event.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+            time: `${event.startTime} - ${event.endTime}`,
+            location: event.venueName || event.city || "Online",
+            price: label,
+            ticketCount: count,
+            category: event.category,
+            attendees: event.attendeesCount || 0,
+            image: event.coverImage,
+          };
+        });
 
         setHostedEvents(mappedEvents);
       } catch (err) {

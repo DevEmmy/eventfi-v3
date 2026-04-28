@@ -14,6 +14,7 @@ export interface EventCardProps {
   time: string;
   location: string;
   price: string;
+  ticketCount?: number;
   category: string;
   image?: string;
   attendees?: number;
@@ -30,6 +31,7 @@ const EventCard: React.FC<EventCardProps> = ({
   time,
   location,
   price,
+  ticketCount,
   category,
   image,
   attendees,
@@ -205,7 +207,14 @@ const EventCard: React.FC<EventCardProps> = ({
           {/* Price */}
           <div className="flex items-center gap-2">
             <Ticket size={18} color="currentColor" weight="fill" className="text-primary" />
-            <span className="font-bold text-foreground">{price}</span>
+            <div className="flex items-center gap-1.5">
+              <span className="font-bold text-foreground">{price}</span>
+              {ticketCount && ticketCount > 1 && (
+                <span className="text-xs px-1.5 py-0.5 rounded-full bg-foreground/8 text-foreground/50 font-medium">
+                  +{ticketCount - 1} more
+                </span>
+              )}
+            </div>
           </div>
 
           {/* Attendees Count (if available) */}

@@ -11,6 +11,7 @@ import { useUserStore } from "@/store/useUserStore";
 import { useMessengerStore } from "@/store/useMessengerStore";
 import AttendeeGameView from "@/components/Games/AttendeeGameView";
 import { getEventShareUrl } from "@/utils/generateEventSlug";
+import { getTicketPriceInfo } from "@/utils/ticket-pricing";
 import customToast from "@/lib/toast";
 
 interface EventDetailPageProps {
@@ -61,9 +62,7 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
           time: `${data.startTime} - ${data.endTime}`,
           location: data.venueName || data.city || "Online",
           address: data.address || data.location?.address || "Online Event",
-          price: data.tickets && data.tickets.length > 0
-            ? (data.tickets[0].type === 'FREE' ? 'Free' : `₦${data.tickets[0].price.toLocaleString()}`)
-            : "Free",
+          price: getTicketPriceInfo(data.tickets).label,
           category: data.category,
           attendees: data.attendeesCount || 0,
           image: data.coverImage,
@@ -86,7 +85,7 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
               { time: data.endTime, activity: "Event Ends" }
             ],
           tags: data.tags || [],
-          tickets: data.tickets || [],
+          tickets: [...(data.tickets || [])].sort((a: any, b: any) => (a.price ?? 0) - (b.price ?? 0)),
         };
 
         setEvent(mappedEvent);
@@ -130,20 +129,22 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
 
         setReviews(reviewsData.data || []);
         setReviewStats(statsData);
-        setRelatedEvents(relatedData.map((e: any) => ({
-          id: e.id,
-          title: e.title,
-          slug: e.slug || undefined,
-          date: new Date(e.startDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
-          time: `${e.startTime} - ${e.endTime}`,
-          location: e.venueName || e.city || "Online",
-          price: e.tickets && e.tickets.length > 0
-            ? (e.tickets[0].type === 'FREE' ? 'Free' : `₦${e.tickets[0].price.toLocaleString()}`)
-            : "Free",
-          category: e.category,
-          attendees: e.attendeesCount || 0,
-          locationType: e.locationType
-        })));
+        setRelatedEvents(relatedData.map((e: any) => {
+          const { label, count } = getTicketPriceInfo(e.tickets);
+          return {
+            id: e.id,
+            title: e.title,
+            slug: e.slug || undefined,
+            date: new Date(e.startDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
+            time: `${e.startTime} - ${e.endTime}`,
+            location: e.venueName || e.city || "Online",
+            price: label,
+            ticketCount: count,
+            category: e.category,
+            attendees: e.attendeesCount || 0,
+            locationType: e.locationType,
+          };
+        }));
 
       } catch (err) {
         console.error("Failed to fetch event:", err);
