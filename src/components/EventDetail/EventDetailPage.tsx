@@ -25,6 +25,7 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
   const [selectedTicketId, setSelectedTicketId] = useState<string>("");
 
   const [event, setEvent] = useState<any>(null);
+  const [colorPalette, setColorPalette] = useState<{ background: string; lightTone: string; textColor: string } | null>(null);
   const [reviews, setReviews] = useState<any[]>([]);
   const [reviewStats, setReviewStats] = useState<any>(null);
   const [relatedEvents, setRelatedEvents] = useState<any[]>([]);
@@ -91,6 +92,7 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
         setEvent(mappedEvent);
         setSpeakers(data.speakers || []);
         setOrganizerId(data.organizerId || data.organizer?.id || null);
+        if (data.colorPalette) setColorPalette(data.colorPalette);
         setHasTicket(data.hasTicket || data.userHasTicket || false);
 
         // Pre-select the first available ticket type
@@ -199,7 +201,10 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
 
   return (
     <>
-    <div className="min-h-screen bg-background">
+    <div
+      className="min-h-screen bg-background transition-colors duration-500"
+      style={colorPalette ? { backgroundColor: colorPalette.background } : undefined}
+    >
       {/* Back Button */}
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-6">
         <button
@@ -212,7 +217,12 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
       </div>
 
       {/* Hero Image Section */}
-      <div className="relative container mx-auto h-[300px] sm:h-[400px] lg:h-[500px] overflow-hidden bg-gradient-to-br from-primary/20 via-secondary/20 to-accent/20">
+      <div
+        className="relative container mx-auto h-[300px] sm:h-[400px] lg:h-[500px] overflow-hidden"
+        style={colorPalette
+          ? { background: `linear-gradient(135deg, ${colorPalette.lightTone}, ${colorPalette.background})` }
+          : undefined}
+      >
         {event.image ? (
           <Image
             src={event.image}
@@ -231,8 +241,13 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
           </div>
         )}
 
-        {/* Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent"></div>
+        {/* Overlay — fades into page background colour */}
+        <div
+          className="absolute inset-0"
+          style={colorPalette
+            ? { background: `linear-gradient(to top, ${colorPalette.background} 0%, ${colorPalette.background}99 30%, transparent 100%)` }
+            : { background: 'linear-gradient(to top, var(--color-background, #f8f9fa) 0%, color-mix(in srgb, var(--color-background, #f8f9fa) 60%, transparent) 30%, transparent 100%)' }}
+        />
 
         {/* Action Buttons */}
         <div className="absolute top-4 right-4 flex gap-2">
