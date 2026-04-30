@@ -25,7 +25,7 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
   const [selectedTicketId, setSelectedTicketId] = useState<string>("");
 
   const [event, setEvent] = useState<any>(null);
-  const [colorPalette, setColorPalette] = useState<{ background: string; lightTone: string; textColor: string } | null>(null);
+  const [colorPalette, setColorPalette] = useState<{ background: string; lightTone: string; accent: string; textColor: string } | null>(null);
   const [reviews, setReviews] = useState<any[]>([]);
   const [reviewStats, setReviewStats] = useState<any>(null);
   const [relatedEvents, setRelatedEvents] = useState<any[]>([]);
@@ -203,7 +203,13 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
     <>
     <div
       className="min-h-screen bg-background transition-colors duration-500"
-      style={colorPalette ? { backgroundColor: colorPalette.background } : undefined}
+      style={colorPalette ? {
+        backgroundColor: colorPalette.background,
+        // Override Tailwind's CSS vars so every bg-primary / text-primary /
+        // border-primary class inherits the palette accent automatically.
+        '--primary':    colorPalette.accent,
+        '--foreground': colorPalette.textColor,
+      } as React.CSSProperties : undefined}
     >
       {/* Back Button */}
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-6">
@@ -342,7 +348,13 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
 
             {/* Ticket Purchase - Mobile Only (shown right after event details) */}
             <div className="lg:hidden">
-              <div className="bg-background border-2 border-foreground/10 rounded-2xl p-6 shadow-lg">
+              <div
+                className="border-2 rounded-2xl p-6 shadow-sm"
+                style={{
+                  backgroundColor: colorPalette?.lightTone ?? '#f8f9fa',
+                  borderColor: colorPalette ? `${colorPalette.accent}55` : undefined,
+                }}
+              >
                 {/* Ticket Type Selector */}
                 {event.tickets && event.tickets.length > 0 && (
                   <div className="mb-6">
@@ -888,7 +900,13 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
           {/* Right Column - Ticket Purchase (Desktop Only) */}
           <div className="hidden lg:block lg:col-span-1">
             <div className="sticky top-24">
-              <div className="bg-background border-2 border-foreground/10 rounded-2xl p-6 lg:p-8 shadow-lg">
+              <div
+                className="border-2 rounded-2xl p-6 lg:p-8 shadow-sm"
+                style={{
+                  backgroundColor: colorPalette?.lightTone ?? '#f8f9fa',
+                  borderColor: colorPalette ? `${colorPalette.accent}55` : undefined,
+                }}
+              >
                 <p className="text-sm text-foreground/60 mb-4">
                   {event.attendees.toLocaleString()} people going
                 </p>
