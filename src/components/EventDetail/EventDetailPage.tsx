@@ -205,10 +205,9 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
       className="min-h-screen bg-background transition-colors duration-500"
       style={colorPalette ? {
         backgroundColor: colorPalette.background,
-        // Override Tailwind's CSS vars so every bg-primary / text-primary /
-        // border-primary class inherits the palette accent automatically.
-        '--primary':    colorPalette.accent,
-        '--foreground': colorPalette.textColor,
+        // Cascade the palette accent through every bg-primary / text-primary /
+        // border-primary Tailwind class. Compiled CSS uses var(--primary) directly.
+        '--primary': colorPalette.accent,
       } as React.CSSProperties : undefined}
     >
       {/* Back Button */}
@@ -349,10 +348,11 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
             {/* Ticket Purchase - Mobile Only (shown right after event details) */}
             <div className="lg:hidden">
               <div
-                className="border-2 rounded-2xl p-6 shadow-sm"
+                className="border-2 rounded-2xl p-6 shadow-sm bg-white"
                 style={{
-                  backgroundColor: colorPalette?.lightTone ?? '#f8f9fa',
-                  borderColor: colorPalette ? `${colorPalette.accent}55` : undefined,
+                  borderColor: colorPalette?.accent
+                    ? `${colorPalette.accent}60`
+                    : colorPalette?.lightTone,
                 }}
               >
                 {/* Ticket Type Selector */}
@@ -901,10 +901,11 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
           <div className="hidden lg:block lg:col-span-1">
             <div className="sticky top-24">
               <div
-                className="border-2 rounded-2xl p-6 lg:p-8 shadow-sm"
+                className="border-2 rounded-2xl p-6 lg:p-8 shadow-sm bg-white"
                 style={{
-                  backgroundColor: colorPalette?.lightTone ?? '#f8f9fa',
-                  borderColor: colorPalette ? `${colorPalette.accent}55` : undefined,
+                  borderColor: colorPalette?.accent
+                    ? `${colorPalette.accent}60`
+                    : colorPalette?.lightTone,
                 }}
               >
                 <p className="text-sm text-foreground/60 mb-4">
