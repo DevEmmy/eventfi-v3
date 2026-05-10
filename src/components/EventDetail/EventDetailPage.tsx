@@ -199,9 +199,12 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
 
   return (
     <>
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background relative overflow-hidden">
+      {/* Background Pattern */}
+      <div className="absolute inset-0 z-0 pointer-events-none text-foreground opacity-5 dark:opacity-[0.02] mix-blend-multiply dark:mix-blend-screen bg-whatsapp-pattern" />
+
       {/* Back Button */}
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-6 relative z-10">
         <button
           onClick={() => router.back()}
           className="flex items-center gap-2 text-foreground/70 hover:text-primary transition-colors"
@@ -282,7 +285,7 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
       </div>
 
       {/* Main Content */}
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12 relative z-10">
         <div className="grid lg:grid-cols-3 gap-8 lg:gap-12">
           {/* Left Column - Main Content */}
           <div className="lg:col-span-2 space-y-8">

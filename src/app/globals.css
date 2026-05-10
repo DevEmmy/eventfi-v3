@@ -63,3 +63,22 @@ h6 {
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
+
+.bg-whatsapp-pattern {
+  position: relative;
+}
+.bg-whatsapp-pattern::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-color: currentColor;
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cg fill='black'%3E%3Cpolygon points='20,10 22,16 28,16 23,20 25,26 20,22 15,26 17,20 12,16 18,16' /%3E%3Cpath d='M80,20 v12 a4,4 0 1,1 -4,-4 h4 v-10 h8 v8 a4,4 0 1,1 -4,-4 h4 v-8 z' /%3E%3Cpath d='M20,80 h15 v10 h-15 z M18,85 a2,2 0 1,0 0,-4 v-2 h20 v2 a2,2 0 1,0 0,4 v2 h-20 z' /%3E%3Cpath d='M80,80 a4,4 0 0,1 8,0 a4,4 0 0,1 8,0 q0,4 -8,8 q-8,-4 -8,-8' /%3E%3Crect x='50' y='45' width='12' height='12' rx='2' /%3E%3Cpath d='M50,49 h12' stroke='black' stroke-width='2' /%3E%3Ccircle cx='50' cy='90' r='6' fill='none' stroke='black' stroke-width='1.5' /%3E%3Cpath d='M48,89 v1 m4,-1 v1 m-3,3 a3,3 0 0,0 2,0' stroke='black' stroke-linecap='round' /%3E%3Cpath d='M10,50 a4,4 0 1,0 8,0 a4,4 0 1,0 -8,0 m8,0 h4 m0,0 a4,4 0 1,0 8,0 a4,4 0 1,0 -8,0' fill='none' stroke='black' stroke-width='1.5' /%3E%3Cpath d='M90,50 l6,6 v6 h-4 v-6 l-6,-6 z' fill='none' stroke='black' stroke-width='1.5' /%3E%3Ccircle cx='10' cy='100' r='1' /%3E%3Ccircle cx='30' cy='110' r='1.5' /%3E%3Ccircle cx='110' cy='30' r='1' /%3E%3Ccircle cx='90' cy='10' r='2' /%3E%3Cpolygon points='110,80 105,90 108,90 102,100 110,85 106,85' /%3E%3C/g%3E%3C/svg%3E");
+  mask-size: 120px 120px;
+  mask-repeat: repeat;
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cg fill='black'%3E%3Cpolygon points='20,10 22,16 28,16 23,20 25,26 20,22 15,26 17,20 12,16 18,16' /%3E%3Cpath d='M80,20 v12 a4,4 0 1,1 -4,-4 h4 v-10 h8 v8 a4,4 0 1,1 -4,-4 h4 v-8 z' /%3E%3Cpath d='M20,80 h15 v10 h-15 z M18,85 a2,2 0 1,0 0,-4 v-2 h20 v2 a2,2 0 1,0 0,4 v2 h-20 z' /%3E%3Cpath d='M80,80 a4,4 0 0,1 8,0 a4,4 0 0,1 8,0 q0,4 -8,8 q-8,-4 -8,-8' /%3E%3Crect x='50' y='45' width='12' height='12' rx='2' /%3E%3Cpath d='M50,49 h12' stroke='black' stroke-width='2' /%3E%3Ccircle cx='50' cy='90' r='6' fill='none' stroke='black' stroke-width='1.5' /%3E%3Cpath d='M48,89 v1 m4,-1 v1 m-3,3 a3,3 0 0,0 2,0' stroke='black' stroke-linecap='round' /%3E%3Cpath d='M10,50 a4,4 0 1,0 8,0 a4,4 0 1,0 -8,0 m8,0 h4 m0,0 a4,4 0 1,0 8,0 a4,4 0 1,0 -8,0' fill='none' stroke='black' stroke-width='1.5' /%3E%3Cpath d='M90,50 l6,6 v6 h-4 v-6 l-6,-6 z' fill='none' stroke='black' stroke-width='1.5' /%3E%3Ccircle cx='10' cy='100' r='1' /%3E%3Ccircle cx='30' cy='110' r='1.5' /%3E%3Ccircle cx='110' cy='30' r='1' /%3E%3Ccircle cx='90' cy='10' r='2' /%3E%3Cpolygon points='110,80 105,90 108,90 102,100 110,85 106,85' /%3E%3C/g%3E%3C/svg%3E");
+  -webkit-mask-size: 120px 120px;
+  -webkit-mask-repeat: repeat;
+  pointer-events: none;
+}
+
