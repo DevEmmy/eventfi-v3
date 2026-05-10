@@ -201,7 +201,7 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
     <>
     <div className="min-h-screen bg-background relative overflow-hidden">
       {/* Background Pattern */}
-      <div className="absolute inset-0 z-0 pointer-events-none text-foreground opacity-5 dark:opacity-[0.02] mix-blend-multiply dark:mix-blend-screen bg-whatsapp-pattern" />
+      <div className="absolute inset-0 z-0 pointer-events-none text-foreground opacity-10 dark:opacity-10 bg-whatsapp-pattern" />
 
       {/* Back Button */}
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-6 relative z-10">

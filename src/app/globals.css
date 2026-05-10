@@ -65,7 +65,7 @@ h6 {
 }
 
 .bg-whatsapp-pattern {
-  position: relative;
+  /* Let tailwind classes handle positioning */
 }
 .bg-whatsapp-pattern::before {
   content: "";
