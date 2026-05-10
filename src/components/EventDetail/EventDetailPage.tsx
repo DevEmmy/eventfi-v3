@@ -215,7 +215,7 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
       </div>
 
       {/* Hero Image Section */}
-      <div className="relative container mx-auto h-[300px] sm:h-[400px] lg:h-[500px] overflow-hidden bg-gradient-to-br from-primary/20 via-secondary/20 to-accent/20">
+      <div className="relative container mx-auto h-[300px] sm:h-[400px] lg:h-[500px] overflow-hidden bg-background bg-gradient-to-br from-primary/20 via-secondary/20 to-accent/20">
         {event.image ? (
           <Image
             src={event.image}
@@ -320,7 +320,7 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
                 {event.tags.map((tag: any, index: number) => (
                   <span
                     key={index}
-                    className="px-3 py-1 bg-foreground/5 rounded-full text-sm text-foreground/70"
+                    className="px-3 py-1 bg-white dark:bg-neutral-900 border border-foreground/5 shadow-sm rounded-full text-sm text-foreground/70"
                   >
                     #{tag}
                   </span>
@@ -469,7 +469,7 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
                   : `/profile/${event.organizer.id}`;
                 router.push(profilePath)
               }}
-              className="p-6 bg-foreground/5 rounded-2xl border border-foreground/10 cursor-pointer hover:bg-foreground/10 transition-colors"
+              className="p-6 bg-white dark:bg-neutral-900 shadow-sm rounded-2xl border border-foreground/10 cursor-pointer hover:shadow-md transition-all"
             >
               <div className="flex items-center gap-4">
                 <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center overflow-hidden">
@@ -520,7 +520,7 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
                     return (
                       <div
                         key={ticket.id}
-                        className={`p-5 rounded-2xl border bg-foreground/5 transition-opacity ${isSoldOut ? 'border-foreground/10 opacity-60' : 'border-foreground/10'}`}
+                        className={`p-5 rounded-2xl border bg-white dark:bg-neutral-900 shadow-sm transition-opacity ${isSoldOut ? 'border-foreground/10 opacity-60' : 'border-foreground/10'}`}
                       >
                         <div className="flex items-start justify-between gap-4">
                           <div className="flex-1 min-w-0">
@@ -565,7 +565,7 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
                 {event.schedule.map((item: any, index: number) => (
                   <div
                     key={index}
-                    className="flex gap-4 p-4 bg-foreground/5 rounded-xl border border-foreground/10"
+                    className="flex gap-4 p-4 bg-white dark:bg-neutral-900 shadow-sm rounded-xl border border-foreground/10"
                   >
                     <div className="font-semibold text-primary min-w-[100px]">
                       {item.time}
@@ -589,7 +589,7 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
                 </h2>
                 <div className="grid sm:grid-cols-2 gap-4">
                   {speakers.map((speaker: any) => (
-                    <div key={speaker.id} className="flex items-start gap-4 p-4 bg-foreground/5 border border-foreground/10 rounded-2xl">
+                    <div key={speaker.id} className="flex items-start gap-4 p-4 bg-white dark:bg-neutral-900 shadow-sm border border-foreground/10 rounded-2xl">
                       {speaker.avatar ? (
                         <div className="relative w-14 h-14 rounded-full overflow-hidden shrink-0 border-2 border-foreground/10">
                           <Image src={speaker.avatar} alt={speaker.name} fill className="object-cover" />
@@ -633,7 +633,7 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
                   Location
                 </h2>
                 {event.address || event.location !== "Online" ? (
-                  <div className="bg-foreground/5 rounded-2xl border border-foreground/10 p-6">
+                  <div className="bg-white dark:bg-neutral-900 shadow-sm rounded-2xl border border-foreground/10 p-6">
                     <div className="flex items-start gap-4 mb-4">
                       <MapTrifold size={24} color="currentColor" weight="fill" className="text-primary" />
                       <div>
@@ -669,7 +669,7 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
                     </a>
                   </div>
                 ) : (
-                  <div className="bg-foreground/5 rounded-2xl border border-dashed border-foreground/20 p-6 flex items-start gap-4">
+                  <div className="bg-white dark:bg-neutral-900 shadow-sm rounded-2xl border border-dashed border-foreground/20 p-6 flex items-start gap-4">
                     <MapTrifold size={24} color="currentColor" weight="regular" className="text-foreground/30 mt-0.5 shrink-0" />
                     <div>
                       <p className="font-semibold text-foreground/60">Venue to be announced</p>
@@ -701,7 +701,7 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
 
               {/* Rating Summary */}
               {reviewStats && (
-                <div className="bg-foreground/5 rounded-2xl border border-foreground/10 p-6 mb-6">
+                <div className="bg-white dark:bg-neutral-900 shadow-sm rounded-2xl border border-foreground/10 p-6 mb-6">
                   <div className="flex items-center gap-6 mb-4">
                     <div className="text-center">
                       <div className="text-5xl font-bold text-foreground mb-1">
@@ -765,7 +765,7 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
                 {reviews.map((review: any) => (
                   <div
                     key={review.id}
-                    className="bg-foreground/5 rounded-2xl border border-foreground/10 p-6"
+                    className="bg-white dark:bg-neutral-900 shadow-sm rounded-2xl border border-foreground/10 p-6"
                   >
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex items-start gap-4 flex-1">
