@@ -204,7 +204,7 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
       <div className="absolute inset-0 z-0 pointer-events-none text-foreground opacity-10 dark:opacity-10 bg-whatsapp-pattern" />
 
       {/* Back Button */}
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-6 relative z-10">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-6 relative z-10">
         <button
           onClick={() => router.back()}
           className="flex items-center gap-2 text-foreground/70 hover:text-primary transition-colors"
@@ -214,8 +214,9 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
         </button>
       </div>
 
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 py-6 lg:py-8 relative z-10">
       {/* Hero Image Section */}
-      <div className="relative container mx-auto h-[300px] sm:h-[400px] lg:h-[500px] overflow-hidden bg-background bg-gradient-to-br from-primary/20 via-secondary/20 to-accent/20">
+      <div className="relative w-full aspect-video sm:h-[400px] rounded-3xl overflow-hidden shadow-sm bg-background bg-gradient-to-br from-primary/20 via-secondary/20 to-accent/20 mb-8 border border-foreground/10">
         {event.image ? (
           <Image
             src={event.image}
@@ -284,53 +285,61 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12 relative z-10">
-        <div className="grid lg:grid-cols-3 gap-8 lg:gap-12">
+      {/* Main Content Split */}
+      <div>
+        <div className="grid lg:grid-cols-[1fr_340px] gap-8 lg:gap-12">
           {/* Left Column - Main Content */}
-          <div className="lg:col-span-2 space-y-8">
+          <div className="space-y-8">
             {/* Event Header */}
             <div>
-              <h1 className="text-3xl lg:text-4xl xl:text-5xl font-bold font-[family-name:var(--font-clash-display)] mb-4 text-foreground">
+              <h1 className="text-4xl lg:text-5xl font-bold font-[family-name:var(--font-clash-display)] tracking-tight mb-8 text-foreground">
                 {event.title}
               </h1>
 
               {/* Event Meta */}
-              <div className="flex flex-wrap items-center gap-4 mb-6">
-                <div className="flex items-center gap-2 text-foreground/70">
-                  <CalendarBlank size={20} color="currentColor" weight="regular" />
-                  <span>{event.date}</span>
+              <div className="flex flex-col sm:flex-row gap-6 sm:gap-12 mb-8">
+                <div className="flex items-start gap-4">
+                  <div className="p-3 bg-foreground/5 rounded-2xl shrink-0">
+                    <CalendarBlank size={24} className="text-foreground" weight="fill" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-lg text-foreground">{event.date}</p>
+                    <p className="text-foreground/60">{event.time}</p>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2 text-foreground/70">
-                  <Clock size={20} color="currentColor" weight="regular" />
-                  <span>{event.time}</span>
-                </div>
-                <div className="flex items-center gap-2 text-foreground/70">
-                  <MapPin size={20} color="currentColor" weight="regular" />
-                  <span>{event.locationType === "ONLINE" ? "Online Event" : event.location}</span>
-                </div>
-                <div className="flex items-center gap-2 text-foreground/70">
-                  <Users size={20} color="currentColor" weight="regular" />
-                  <span>{event.attendees.toLocaleString()} going</span>
+
+                <div className="flex items-start gap-4">
+                  <div className="p-3 bg-foreground/5 rounded-2xl shrink-0">
+                    <MapPin size={24} className="text-foreground" weight="fill" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-lg text-foreground">{event.locationType === "ONLINE" ? "Online Event" : event.location}</p>
+                    <p className="text-foreground/60 flex items-center gap-1.5">
+                      <Users size={16} />
+                      {event.attendees.toLocaleString()} going
+                    </p>
+                  </div>
                 </div>
               </div>
 
               {/* Tags */}
-              <div className="flex flex-wrap gap-2">
-                {event.tags.map((tag: any, index: number) => (
-                  <span
-                    key={index}
-                    className="px-3 py-1 bg-white dark:bg-neutral-900 border border-foreground/5 shadow-sm rounded-full text-sm text-foreground/70"
-                  >
-                    #{tag}
-                  </span>
-                ))}
-              </div>
+              {event.tags && event.tags.length > 0 && (
+                <div className="flex flex-wrap gap-2 mb-8">
+                  {event.tags.map((tag: any, index: number) => (
+                    <span
+                      key={index}
+                      className="px-3 py-1 bg-white dark:bg-neutral-900 border border-foreground/5 shadow-sm rounded-full text-sm text-foreground/70"
+                    >
+                      #{tag}
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Ticket Purchase - Mobile Only (shown right after event details) */}
             <div className="lg:hidden">
-              <div className="bg-background border-2 border-foreground/10 rounded-2xl p-6 shadow-lg">
+              <div className="bg-white dark:bg-neutral-900 border border-foreground/10 rounded-3xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgba(255,255,255,0.02)]">
                 {/* Ticket Type Selector */}
                 {event.tickets && event.tickets.length > 0 && (
                   <div className="mb-6">
@@ -469,30 +478,28 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
                   : `/profile/${event.organizer.id}`;
                 router.push(profilePath)
               }}
-              className="p-6 bg-white dark:bg-neutral-900 shadow-sm rounded-2xl border border-foreground/10 cursor-pointer hover:shadow-md transition-all"
+              className="group flex items-center gap-4 cursor-pointer pt-6 pb-2"
             >
-              <div className="flex items-center gap-4">
-                <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center overflow-hidden">
-                  <img
-                    src={event.organizer.avatar || "/placeholder.jpg"}
-                    alt={event.organizer.name}
-                    width={64}
-                    height={64}
-                    className="rounded-full object-cover"
-                  />
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <h3 className="font-semibold text-foreground hover:text-primary transition-colors">
-                      {event.organizer.name}
-                    </h3>
-                    {event.organizer.verified && (
-                      <span className="text-xs px-2 py-0.5 bg-primary/10 text-primary rounded-full">
-                        Verified
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-sm text-foreground/60">Event Organizer</p>
+              <div className="w-14 h-14 rounded-full bg-foreground/5 flex items-center justify-center overflow-hidden border border-foreground/10">
+                <img
+                  src={event.organizer.avatar || "/placeholder.jpg"}
+                  alt={event.organizer.name}
+                  width={56}
+                  height={56}
+                  className="rounded-full object-cover"
+                />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm text-foreground/60 mb-0.5">Hosted by</p>
+                <div className="flex items-center gap-2">
+                  <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors text-lg">
+                    {event.organizer.name}
+                  </h3>
+                  {event.organizer.verified && (
+                    <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 bg-primary/10 text-primary rounded-full font-bold">
+                      Verified
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
@@ -509,23 +516,23 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
 
             {/* Tickets */}
             {event.tickets && event.tickets.length > 0 && (
-              <div>
-                <h2 className="text-2xl font-bold font-[family-name:var(--font-clash-display)] mb-4 text-foreground">
+              <div className="pt-8 border-t border-foreground/10">
+                <h2 className="text-2xl font-bold font-[family-name:var(--font-clash-display)] mb-6 text-foreground">
                   Tickets
                 </h2>
-                <div className="space-y-3">
+                <div className="space-y-4">
                   {event.tickets.map((ticket: any) => {
                     const isSoldOut = ticket.remaining === 0;
                     const isFree = ticket.type === 'FREE' || ticket.price === 0;
                     return (
                       <div
                         key={ticket.id}
-                        className={`p-5 rounded-2xl border bg-white dark:bg-neutral-900 shadow-sm transition-opacity ${isSoldOut ? 'border-foreground/10 opacity-60' : 'border-foreground/10'}`}
+                        className={`pb-4 border-b border-foreground/5 transition-opacity ${isSoldOut ? 'opacity-60' : ''}`}
                       >
                         <div className="flex items-start justify-between gap-4">
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-1 flex-wrap">
-                              <h3 className="font-semibold text-foreground">{ticket.name}</h3>
+                              <h3 className="font-semibold text-lg text-foreground">{ticket.name}</h3>
                               {isSoldOut ? (
                                 <span className="text-xs px-2 py-0.5 bg-foreground/10 text-foreground/50 rounded-full">Sold Out</span>
                               ) : ticket.remaining <= 20 ? (
@@ -537,14 +544,9 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
                             {ticket.description && (
                               <p className="text-sm text-foreground/60 mb-2">{ticket.description}</p>
                             )}
-                            <p className="text-xs text-foreground/40">
-                              {isSoldOut
-                                ? 'No tickets remaining'
-                                : `${ticket.remaining} of ${ticket.quantity} available`}
-                            </p>
                           </div>
                           <div className="text-right shrink-0">
-                            <p className="text-xl font-bold text-primary">
+                            <p className="text-xl font-bold text-foreground">
                               {isFree ? 'Free' : `₦${ticket.price.toLocaleString()}`}
                             </p>
                           </div>
@@ -558,22 +560,22 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
 
             {/* Schedule */}
             <div>
-              <h2 className="text-2xl font-bold font-[family-name:var(--font-clash-display)] mb-4 text-foreground">
+              <h2 className="text-2xl font-bold font-[family-name:var(--font-clash-display)] mb-6 text-foreground">
                 Schedule
               </h2>
-              <div className="space-y-3">
+              <div className="space-y-6">
                 {event.schedule.map((item: any, index: number) => (
                   <div
                     key={index}
-                    className="flex gap-4 p-4 bg-white dark:bg-neutral-900 shadow-sm rounded-xl border border-foreground/10"
+                    className="flex gap-6"
                   >
-                    <div className="font-semibold text-primary min-w-[100px]">
+                    <div className="font-medium text-foreground/60 min-w-[100px] pt-0.5">
                       {item.time}
                     </div>
                     <div>
-                      <div className="text-foreground/70">{item.activity}</div>
+                      <div className="font-medium text-foreground text-lg">{item.activity}</div>
                       {item.description && (
-                        <div className="text-sm text-foreground/50 mt-1">{item.description}</div>
+                        <div className="text-sm text-foreground/60 mt-1">{item.description}</div>
                       )}
                     </div>
                   </div>
@@ -583,26 +585,26 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
 
             {/* Speakers */}
             {speakers.length > 0 && (
-              <div>
-                <h2 className="text-2xl font-bold font-[family-name:var(--font-clash-display)] mb-4 text-foreground">
+              <div className="pt-8 border-t border-foreground/10">
+                <h2 className="text-2xl font-bold font-[family-name:var(--font-clash-display)] mb-6 text-foreground">
                   Speakers
                 </h2>
-                <div className="grid sm:grid-cols-2 gap-4">
+                <div className="grid sm:grid-cols-2 gap-8">
                   {speakers.map((speaker: any) => (
-                    <div key={speaker.id} className="flex items-start gap-4 p-4 bg-white dark:bg-neutral-900 shadow-sm border border-foreground/10 rounded-2xl">
+                    <div key={speaker.id} className="flex items-start gap-4">
                       {speaker.avatar ? (
-                        <div className="relative w-14 h-14 rounded-full overflow-hidden shrink-0 border-2 border-foreground/10">
+                        <div className="relative w-16 h-16 rounded-full overflow-hidden shrink-0 border border-foreground/10">
                           <Image src={speaker.avatar} alt={speaker.name} fill className="object-cover" />
                         </div>
                       ) : (
-                        <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center shrink-0 border-2 border-primary/20">
-                          <User size={24} color="currentColor" weight="fill" className="text-primary" />
+                        <div className="w-16 h-16 rounded-full bg-foreground/5 flex items-center justify-center shrink-0 border border-foreground/10">
+                          <User size={24} color="currentColor" weight="fill" className="text-foreground/40" />
                         </div>
                       )}
-                      <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-foreground">{speaker.name}</p>
+                      <div className="flex-1 min-w-0 pt-1">
+                        <p className="font-semibold text-foreground text-lg">{speaker.name}</p>
                         {speaker.title && <p className="text-sm text-foreground/60">{speaker.title}</p>}
-                        {speaker.bio && <p className="text-xs text-foreground/50 mt-1 line-clamp-3">{speaker.bio}</p>}
+                        {speaker.bio && <p className="text-sm text-foreground/50 mt-2 line-clamp-3">{speaker.bio}</p>}
                         <div className="flex items-center gap-3 mt-2">
                           {speaker.twitterUrl && (
                             <a href={speaker.twitterUrl} target="_blank" rel="noopener noreferrer"
@@ -628,31 +630,27 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
 
             {/* Location — Only for physical events */}
             {event.locationType !== "ONLINE" && (
-              <div>
-                <h2 className="text-2xl font-bold font-[family-name:var(--font-clash-display)] mb-4 text-foreground">
+              <div className="pt-8 border-t border-foreground/10">
+                <h2 className="text-2xl font-bold font-[family-name:var(--font-clash-display)] mb-6 text-foreground">
                   Location
                 </h2>
                 {event.address || event.location !== "Online" ? (
-                  <div className="bg-white dark:bg-neutral-900 shadow-sm rounded-2xl border border-foreground/10 p-6">
-                    <div className="flex items-start gap-4 mb-4">
-                      <MapTrifold size={24} color="currentColor" weight="fill" className="text-primary" />
+                  <div>
+                    <div className="flex items-start gap-4 mb-6">
+                      <MapTrifold size={24} color="currentColor" weight="fill" className="text-foreground/40 mt-0.5" />
                       <div>
-                        <p className="font-semibold text-foreground mb-1">{event.location}</p>
-                        <p className="text-foreground/70 text-sm">{event.address}</p>
+                        <p className="font-semibold text-foreground text-lg mb-0.5">{event.location}</p>
+                        <p className="text-foreground/60">{event.address}</p>
                       </div>
                     </div>
-                    {mapCoords ? (
+                    {mapCoords && (
                       <iframe
-                        className="w-full h-64 rounded-xl border-0"
+                        className="w-full h-64 rounded-2xl border border-foreground/10"
                         loading="lazy"
                         referrerPolicy="no-referrer-when-downgrade"
                         src={`https://www.openstreetmap.org/export/embed.html?bbox=${mapCoords.lng - 0.01},${mapCoords.lat - 0.01},${mapCoords.lng + 0.01},${mapCoords.lat + 0.01}&layer=mapnik&marker=${mapCoords.lat},${mapCoords.lng}`}
                         title="Event location map"
                       />
-                    ) : (
-                      <div className="w-full h-64 rounded-xl bg-foreground/5 border border-foreground/10 flex items-center justify-center">
-                        <p className="text-sm text-foreground/40">MapTrifold unavailable for this location</p>
-                      </div>
                     )}
                     <a
                       href={
@@ -662,18 +660,18 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
                       }
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 mt-3 text-sm text-primary hover:text-primary/80 transition-colors font-medium"
+                      className="inline-flex items-center gap-2 mt-4 text-sm text-primary hover:text-primary/80 transition-colors font-medium"
                     >
                       <MapPin size={16} color="currentColor" weight="regular" />
                       Open in Google Maps
                     </a>
                   </div>
                 ) : (
-                  <div className="bg-white dark:bg-neutral-900 shadow-sm rounded-2xl border border-dashed border-foreground/20 p-6 flex items-start gap-4">
+                  <div className="flex items-start gap-4">
                     <MapTrifold size={24} color="currentColor" weight="regular" className="text-foreground/30 mt-0.5 shrink-0" />
                     <div>
-                      <p className="font-semibold text-foreground/60">Venue to be announced</p>
-                      <p className="text-sm text-foreground/40 mt-1">
+                      <p className="font-semibold text-foreground text-lg mb-0.5">Venue to be announced</p>
+                      <p className="text-foreground/60">
                         The organizer hasn&apos;t confirmed the venue yet. Registered attendees will receive an email as soon as it&apos;s set.
                       </p>
                     </div>
@@ -683,14 +681,14 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
             )}
 
             {/* Reviews Section */}
-            <div>
-              <div className="flex items-center justify-between mb-4">
+            <div className="pt-8 border-t border-foreground/10">
+              <div className="flex items-center justify-between mb-8">
                 <h2 className="text-2xl font-bold font-[family-name:var(--font-clash-display)] text-foreground">
                   Reviews ({reviewStats?.totalReviews || 0})
                 </h2>
                 {(
                   <Button
-                    variant="primary"
+                    variant="outline"
                     size="sm"
                     onClick={() => router.push(`/events/${eventId}/review`)}
                   >
@@ -701,8 +699,8 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
 
               {/* Rating Summary */}
               {reviewStats && (
-                <div className="bg-white dark:bg-neutral-900 shadow-sm rounded-2xl border border-foreground/10 p-6 mb-6">
-                  <div className="flex items-center gap-6 mb-4">
+                <div className="mb-10">
+                  <div className="flex items-center gap-8">
                     <div className="text-center">
                       <div className="text-5xl font-bold text-foreground mb-1">
                         {reviewStats.averageRating?.toFixed(1) || "0.0"}
@@ -717,22 +715,22 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
                             className={
                               star <= Math.round(reviewStats.averageRating || 0)
                                 ? "text-primary"
-                                : "text-foreground/30"
+                                : "text-foreground/20"
                             }
                           />
                         ))}
                       </div>
                       <p className="text-sm text-foreground/60 mt-2">
-                        Based on {reviewStats.totalReviews || 0} reviews
+                        {reviewStats.totalReviews || 0} reviews
                       </p>
                     </div>
-                    <div className="flex-1 space-y-2">
+                    <div className="flex-1 space-y-2 max-w-sm">
                       {[5, 4, 3, 2, 1].map((star) => {
                         const count = reviewStats.ratingDistribution?.[star as keyof typeof reviewStats.ratingDistribution] || 0;
                         const percentage = reviewStats.totalReviews > 0 ? (count / reviewStats.totalReviews) * 100 : 0;
                         return (
                           <div key={star} className="flex items-center gap-3">
-                            <div className="flex items-center gap-1 w-16">
+                            <div className="flex items-center gap-1 w-10">
                               <span className="text-sm font-semibold text-foreground">
                                 {star}
                               </span>
@@ -740,18 +738,15 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
                                 size={14}
                                 color="currentColor"
                                 weight="fill"
-                                className="text-primary"
+                                className="text-foreground/40"
                               />
                             </div>
                             <div className="flex-1 h-2 bg-foreground/10 rounded-full overflow-hidden">
                               <div
-                                className="h-full bg-primary rounded-full"
+                                className="h-full bg-foreground/80 rounded-full"
                                 style={{ width: `${percentage}%` }}
                               />
                             </div>
-                            <span className="text-sm text-foreground/60 w-12 text-right">
-                              {Math.round(percentage)}%
-                            </span>
                           </div>
                         );
                       })}
@@ -761,11 +756,11 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
               )}
 
               {/* Reviews List */}
-              <div className="space-y-4">
+              <div className="space-y-8">
                 {reviews.map((review: any) => (
                   <div
                     key={review.id}
-                    className="bg-white dark:bg-neutral-900 shadow-sm rounded-2xl border border-foreground/10 p-6"
+                    className="pb-8 border-b border-foreground/5 last:border-b-0"
                   >
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex items-start gap-4 flex-1">
@@ -876,7 +871,7 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
           {/* Right Column - Ticket Purchase (Desktop Only) */}
           <div className="hidden lg:block lg:col-span-1">
             <div className="sticky top-24">
-              <div className="bg-background border-2 border-foreground/10 rounded-2xl p-6 lg:p-8 shadow-lg">
+              <div className="bg-white dark:bg-neutral-900 border border-foreground/10 rounded-3xl p-6 lg:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgba(255,255,255,0.02)]">
                 <p className="text-sm text-foreground/60 mb-4">
                   {event.attendees.toLocaleString()} people going
                 </p>
@@ -1013,6 +1008,7 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
           </div>
         </div>
       </div>
+      </main>
     </div>
 
     {/* Live game overlay for attendees */}
