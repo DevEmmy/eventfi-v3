@@ -102,6 +102,15 @@ const satoshi = localFont({
 export const metadata: Metadata = {
   title: "EventFi",
   description: "The all-in-one platform for seamless events, trusted vendors, and live engagement.",
+  manifest: "/site.webmanifest",
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "48x48", type: "image/x-icon" },
+      { url: "/icon.svg", type: "image/svg+xml" },
+    ],
+    shortcut: "/favicon.ico",
+    apple: { url: "/apple-icon.png", sizes: "180x180", type: "image/png" },
+  },
   openGraph: {
     title: "EventFi",
     description: "The all-in-one platform for seamless events, trusted vendors, and live engagement.",
