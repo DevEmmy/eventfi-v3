@@ -527,22 +527,23 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
       {/* Header */}
       <div className="sticky top-0 z-40 bg-background/95 backdrop-blur-sm border-b border-foreground/10">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-3">
             <button
               onClick={() => router.back()}
-              className="flex items-center gap-2 text-foreground/70 hover:text-primary transition-colors"
+              className="flex items-center gap-2 text-foreground/70 hover:text-primary transition-colors shrink-0"
             >
               <CaretLeft size={20} color="currentColor" weight="regular" />
               <span>Back</span>
             </button>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <Button
                 variant="outline"
                 size="sm"
                 leftIcon={ShareNetwork}
                 onClick={() => router.push(`/events/${eventId}`)}
               >
-                View Public Page
+                <span className="hidden sm:inline">View Public Page</span>
+                <span className="sm:hidden">View</span>
               </Button>
               <Button
                 variant="primary"
@@ -550,7 +551,8 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                 leftIcon={PencilSimple}
                 onClick={handleEdit}
               >
-                Edit Event
+                <span className="hidden sm:inline">Edit Event</span>
+                <span className="sm:hidden">Edit</span>
               </Button>
             </div>
           </div>
@@ -560,9 +562,9 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
         {/* Event Header */}
         <div className="mb-8">
-          <div className="flex items-start gap-6 mb-6">
+          <div className="flex items-start gap-4 mb-6">
             {event.coverImage ? (
-              <div className="relative w-32 h-32 rounded-2xl overflow-hidden shrink-0">
+              <div className="relative w-20 h-20 sm:w-28 sm:h-28 rounded-2xl overflow-hidden shrink-0">
                 <Image
                   src={event.coverImage}
                   alt={event.title}
@@ -571,17 +573,18 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                 />
               </div>
             ) : (
-              <div className="w-32 h-32 rounded-2xl bg-primary/20 flex items-center justify-center shrink-0">
-                <CalendarBlank size={48} color="currentColor" weight="fill" className="text-primary" />
+              <div className="w-20 h-20 sm:w-28 sm:h-28 rounded-2xl bg-primary/20 flex items-center justify-center shrink-0">
+                <CalendarBlank size={36} color="currentColor" weight="fill" className="text-primary sm:hidden" />
+                <CalendarBlank size={48} color="currentColor" weight="fill" className="text-primary hidden sm:block" />
               </div>
             )}
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-3 mb-2">
-                <h1 className="text-3xl lg:text-4xl font-bold font-[family-name:var(--font-clash-display)] text-foreground">
+              <div className="flex flex-wrap items-center gap-2 mb-2">
+                <h1 className="text-xl sm:text-3xl lg:text-4xl font-bold font-[family-name:var(--font-clash-display)] text-foreground leading-tight">
                   {event.title}
                 </h1>
                 <span
-                  className={`px-3 py-1 rounded-full text-xs font-semibold ${event.status === "PUBLISHED"
+                  className={`px-3 py-1 rounded-full text-xs font-semibold shrink-0 ${event.status === "PUBLISHED"
                     ? "bg-green-500/10 text-green-500"
                     : event.status === "DRAFT"
                       ? "bg-yellow-500/10 text-yellow-500"
@@ -593,21 +596,21 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                   {event.status.charAt(0).toUpperCase() + event.status.slice(1).toLowerCase()}
                 </span>
               </div>
-              <div className="flex flex-wrap items-center gap-4 text-sm text-foreground/70 mb-4">
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-foreground/70 mb-3">
                 <div className="flex items-center gap-2">
-                  <CalendarBlank size={16} color="currentColor" weight="regular" />
+                  <CalendarBlank size={14} color="currentColor" weight="regular" />
                   <span>{new Date(event.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Clock size={16} color="currentColor" weight="regular" />
+                  <Clock size={14} color="currentColor" weight="regular" />
                   <span>{event.startTime} - {event.endTime}</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <MapPin size={16} color="currentColor" weight="regular" />
-                  <span>{event.venueName || event.address || 'Online Event'}</span>
+                <div className="flex items-center gap-2 min-w-0">
+                  <MapPin size={14} color="currentColor" weight="regular" className="shrink-0" />
+                  <span className="truncate">{event.venueName || event.address || 'Online Event'}</span>
                 </div>
               </div>
-              <p className="text-sm text-foreground/60">
+              <p className="text-xs text-foreground/60">
                 Created on {new Date(event.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
               </p>
             </div>
@@ -644,23 +647,19 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
 
         {/* Tabs */}
         <div className="mb-8">
-          <div className="flex flex-wrap gap-2 border-b border-foreground/10">
+          <div className="flex overflow-x-auto border-b border-foreground/10 scrollbar-none -mx-4 px-4 sm:mx-0 sm:px-0">
             {tabs.map((tab) => {
               const TabIcon = tab.icon;
               return (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-2 px-4 py-3 font-medium text-sm transition-all duration-200 border-b-2 ${activeTab === tab.id
+                  className={`flex items-center gap-2 px-3 sm:px-4 py-3 font-medium text-sm transition-all duration-200 border-b-2 whitespace-nowrap shrink-0 ${activeTab === tab.id
                     ? "border-primary text-primary"
                     : "border-transparent text-foreground/60 hover:text-foreground hover:border-foreground/20"
                     }`}
                 >
-                  <TabIcon
-                    size={18}
-                    color="currentColor"
-                    
-                  />
+                  <TabIcon size={16} color="currentColor" />
                   <span>{tab.label}</span>
                   {tab.count !== undefined && (
                     <span
@@ -947,7 +946,7 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
           {activeTab === "attendees" && (
             <div className="space-y-6">
               {/* Header Actions */}
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
                   <h3 className="text-xl font-bold font-[family-name:var(--font-clash-display)] text-foreground">
                     Attendees List
@@ -956,14 +955,15 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                     {filteredAttendees.length} of {attendeesTotal} attendees
                   </p>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
                   <Button
                     variant="primary"
                     size="sm"
                     leftIcon={Envelope}
                     onClick={() => setShowBulkEmailModal(true)}
                   >
-                    Send Bulk Email
+                    <span className="hidden sm:inline">Send Bulk Email</span>
+                    <span className="sm:hidden">Email</span>
                   </Button>
                   <Button
                     variant="outline"
@@ -977,10 +977,10 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
               </div>
 
               {/* Filters */}
-              <div className="bg-background border border-foreground/10 rounded-2xl p-6">
-                <div className="flex flex-wrap items-center gap-4">
+              <div className="bg-background border border-foreground/10 rounded-2xl p-4 sm:p-6">
+                <div className="flex flex-col gap-3">
                   {/* Search */}
-                  <div className="relative flex-1 min-w-[250px]">
+                  <div className="relative">
                     <input
                       type="text"
                       value={attendeeSearchQuery}
@@ -996,61 +996,63 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                     />
                   </div>
 
-                  {/* Status Funnel */}
-                  <div className="flex items-center gap-2">
-                    <label className="text-sm font-semibold text-foreground whitespace-nowrap">Status:</label>
-                    <div className="flex gap-2">
-                      {[
-                        { value: "all", label: "All" },
-                        { value: "checked_in", label: "Checked In" },
-                        { value: "not_checked_in", label: "Not Checked In" },
-                      ].map((option) => (
-                        <button
-                          key={option.value}
-                          onClick={() => setFilterStatus(option.value as typeof filterStatus)}
-                          className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${filterStatus === option.value
-                            ? "bg-primary text-white"
-                            : "bg-foreground/5 text-foreground/70 hover:bg-primary/10 hover:text-primary"
-                            }`}
-                        >
-                          {option.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Ticket Type Funnel */}
-                  {attendeeTicketTypes.length > 0 && (
+                  <div className="flex flex-wrap items-center gap-3">
+                    {/* Status Funnel */}
                     <div className="flex items-center gap-2">
-                      <label className="text-sm font-semibold text-foreground whitespace-nowrap">Ticket:</label>
-                      <select
-                        value={filterTicketType}
-                        onChange={(e) => setFilterTicketType(e.target.value)}
-                        className="px-4 py-2 bg-background border border-foreground/20 rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
-                      >
-                        <option value="all">All Types</option>
-                        {attendeeTicketTypes.map((type) => (
-                          <option key={type} value={type}>
-                            {type}
-                          </option>
+                      <label className="text-sm font-semibold text-foreground whitespace-nowrap">Status:</label>
+                      <div className="flex gap-1.5">
+                        {[
+                          { value: "all", label: "All" },
+                          { value: "checked_in", label: "Checked In" },
+                          { value: "not_checked_in", label: "Not Checked In" },
+                        ].map((option) => (
+                          <button
+                            key={option.value}
+                            onClick={() => setFilterStatus(option.value as typeof filterStatus)}
+                            className={`px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all whitespace-nowrap ${filterStatus === option.value
+                              ? "bg-primary text-white"
+                              : "bg-foreground/5 text-foreground/70 hover:bg-primary/10 hover:text-primary"
+                              }`}
+                          >
+                            {option.label}
+                          </button>
                         ))}
-                      </select>
+                      </div>
                     </div>
-                  )}
 
-                  {/* Clear Filters */}
-                  {(attendeeSearchQuery || filterStatus !== "all" || filterTicketType !== "all") && (
-                    <button
-                      onClick={() => {
-                        setAttendeeSearchQuery("");
-                        setFilterStatus("all");
-                        setFilterTicketType("all");
-                      }}
-                      className="px-4 py-2 text-sm text-foreground/60 hover:text-foreground transition-colors"
-                    >
-                      Clear Filters
-                    </button>
-                  )}
+                    {/* Ticket Type Funnel */}
+                    {attendeeTicketTypes.length > 0 && (
+                      <div className="flex items-center gap-2">
+                        <label className="text-sm font-semibold text-foreground whitespace-nowrap">Ticket:</label>
+                        <select
+                          value={filterTicketType}
+                          onChange={(e) => setFilterTicketType(e.target.value)}
+                          className="px-3 py-1.5 bg-background border border-foreground/20 rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
+                        >
+                          <option value="all">All Types</option>
+                          {attendeeTicketTypes.map((type) => (
+                            <option key={type} value={type}>
+                              {type}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+
+                    {/* Clear Filters */}
+                    {(attendeeSearchQuery || filterStatus !== "all" || filterTicketType !== "all") && (
+                      <button
+                        onClick={() => {
+                          setAttendeeSearchQuery("");
+                          setFilterStatus("all");
+                          setFilterTicketType("all");
+                        }}
+                        className="px-3 py-1.5 text-sm text-foreground/60 hover:text-foreground transition-colors"
+                      >
+                        Clear
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -1417,84 +1419,69 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                   {teamMembers.map((member) => (
                     <div
                       key={member.id}
-                      className="p-6 hover:bg-foreground/5 transition-colors"
+                      className="p-4 sm:p-6 hover:bg-foreground/5 transition-colors"
                     >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4 flex-1">
-                          {/* Avatar */}
-                          <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
-                            {member.avatar ? (
-                              <img
-                                src={member.avatar}
-                                alt={member.name}
-                                width={48}
-                                height={48}
-                                className="rounded-full"
-                              />
-                            ) : (
-                              <User size={24} color="currentColor" weight="fill" className="text-primary" />
-                            )}
-                          </div>
-
-                          {/* Member Info */}
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-1">
-                              <h4 className="font-semibold text-foreground">{member.name}</h4>
-                              <span
-                                className={`px-2 py-0.5 rounded-full text-xs font-semibold ${member.role === "organizer"
-                                  ? "bg-primary/10 text-primary"
-                                  : member.role === "co-host"
-                                    ? "bg-blue-500/10 text-blue-500"
-                                    : member.role === "manager"
-                                      ? "bg-green-500/10 text-green-500"
-                                      : "bg-yellow-500/10 text-yellow-500"
-                                  }`}
-                              >
-                                {member.role === "organizer"
-                                  ? "Organizer"
-                                  : member.role === "co-host"
-                                    ? "Co-Host"
-                                    : member.role === "manager"
-                                      ? "Manager"
-                                      : "Assistant"}
-                              </span>
-                              {member.status === "pending" && (
-                                <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-orange-500/10 text-orange-500">
-                                  Pending Invitation
-                                </span>
-                              )}
-                            </div>
-                            <p className="text-sm text-foreground/60">{member.email}</p>
-                            <p className="text-xs text-foreground/50 mt-1">
-                              {member.status === "pending"
-                                ? `Invited on ${member.addedDate} - Awaiting registration`
-                                : `Added on ${member.addedDate}`}
-                            </p>
-                          </div>
-
-                          {/* Permissions */}
-                          <div className="hidden lg:flex items-center gap-6 text-sm">
-                            <div className="space-y-1">
-                              <div className="text-xs text-foreground/60">Permissions</div>
-                              <div className="flex items-center gap-3">
-                                {member.permissions.canEdit && (
-                                  <span className="text-xs text-foreground/70">Edit Event</span>
-                                )}
-                                {member.permissions.canManageAttendees && (
-                                  <span className="text-xs text-foreground/70">Manage Attendees</span>
-                                )}
-                                {member.permissions.canViewAnalytics && (
-                                  <span className="text-xs text-foreground/70">View Analytics</span>
-                                )}
-                              </div>
-                            </div>
-                          </div>
+                      <div className="flex items-start gap-3 sm:gap-4">
+                        {/* Avatar */}
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
+                          {member.avatar ? (
+                            <img
+                              src={member.avatar}
+                              alt={member.name}
+                              width={48}
+                              height={48}
+                              className="rounded-full"
+                            />
+                          ) : (
+                            <User size={20} color="currentColor" weight="fill" className="text-primary" />
+                          )}
                         </div>
 
-                        {/* Actions */}
-                        <div className="flex items-center gap-2">
+                        {/* Member Info + Actions */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex flex-wrap items-center gap-2 mb-1">
+                            <h4 className="font-semibold text-foreground">{member.name}</h4>
+                            <span
+                              className={`px-2 py-0.5 rounded-full text-xs font-semibold shrink-0 ${member.role === "organizer"
+                                ? "bg-primary/10 text-primary"
+                                : member.role === "co-host"
+                                  ? "bg-blue-500/10 text-blue-500"
+                                  : member.role === "manager"
+                                    ? "bg-green-500/10 text-green-500"
+                                    : "bg-yellow-500/10 text-yellow-500"
+                                }`}
+                            >
+                              {member.role === "organizer"
+                                ? "Organizer"
+                                : member.role === "co-host"
+                                  ? "Co-Host"
+                                  : member.role === "manager"
+                                    ? "Manager"
+                                    : "Assistant"}
+                            </span>
+                            {member.status === "pending" && (
+                              <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-orange-500/10 text-orange-500 shrink-0">
+                                Pending
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-sm text-foreground/60 truncate">{member.email}</p>
+                          <p className="text-xs text-foreground/50 mt-0.5">
+                            {member.status === "pending"
+                              ? `Invited ${member.addedDate} · Awaiting registration`
+                              : `Added ${member.addedDate}`}
+                          </p>
+
+                          {/* Permissions — visible on lg+ */}
+                          <div className="hidden lg:flex items-center gap-3 mt-2 text-xs text-foreground/60">
+                            {member.permissions.canEdit && <span>Edit Event</span>}
+                            {member.permissions.canManageAttendees && <span>Manage Attendees</span>}
+                            {member.permissions.canViewAnalytics && <span>View Analytics</span>}
+                          </div>
+
+                          {/* Actions */}
                           {member.role !== "organizer" && (
-                            <>
+                            <div className="flex items-center gap-2 mt-3">
                               <select
                                 value={member.role}
                                 onChange={(e) =>
@@ -1514,9 +1501,9 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                                 className="p-2 hover:bg-red-500/10 text-red-500 rounded-lg transition-colors"
                                 title="Remove member"
                               >
-                                <Trash size={18} color="currentColor" weight="regular" />
+                                <Trash size={16} color="currentColor" weight="regular" />
                               </button>
-                            </>
+                            </div>
                           )}
                         </div>
                       </div>
@@ -1578,16 +1565,16 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
 
       {/* Add Member Modal */}
       {showAddMemberModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-background border border-foreground/10 rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
-            <div className="p-12">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+          <div className="bg-background border border-foreground/10 rounded-t-3xl sm:rounded-3xl max-w-2xl w-full max-h-[92vh] sm:max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div className="p-5 sm:p-10">
               {/* Header */}
-              <div className="flex items-center justify-between mb-10">
+              <div className="flex items-start justify-between mb-6 sm:mb-8">
                 <div>
-                  <h3 className="text-3xl font-bold font-[family-name:var(--font-clash-display)] text-foreground mb-2">
+                  <h3 className="text-xl sm:text-2xl font-bold font-[family-name:var(--font-clash-display)] text-foreground mb-1">
                     Add Team Member
                   </h3>
-                  <p className="text-foreground/60">Invite someone to help manage this event</p>
+                  <p className="text-sm text-foreground/60">Invite someone to help manage this event</p>
                 </div>
                 <button
                   onClick={() => {
@@ -1595,36 +1582,36 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                     setSearchQuery("");
                     setSearchResults([]);
                   }}
-                  className="p-2 hover:bg-foreground/10 rounded-lg transition-colors"
+                  className="p-2 hover:bg-foreground/10 rounded-lg transition-colors shrink-0 ml-4"
                 >
                   <XCircle size={24} color="currentColor" weight="regular" />
                 </button>
               </div>
 
               {/* Role Selection */}
-              <div className="mb-8">
-                <label className="block text-base font-semibold text-foreground mb-4">
+              <div className="mb-6">
+                <label className="block text-sm font-semibold text-foreground mb-3">
                   Select Role
                 </label>
-                <div className="flex gap-4">
+                <div className="flex gap-2 sm:gap-3">
                   {(["co-host", "manager", "assistant"] as const).map((role) => (
                     <button
                       key={role}
                       onClick={() => setSelectedRole(role)}
-                      className={`flex-1 px-6 py-4 rounded-xl border-2 transition-all text-center ${selectedRole === role
+                      className={`flex-1 px-3 py-3 rounded-xl border-2 transition-all text-center ${selectedRole === role
                         ? "border-primary bg-primary/10 text-primary font-semibold"
                         : "border-foreground/20 text-foreground/70 hover:border-primary/50 hover:text-foreground"
                         }`}
                     >
-                      <div className="text-base capitalize">{role.replace("-", " ")}</div>
+                      <div className="text-sm capitalize">{role.replace("-", " ")}</div>
                     </button>
                   ))}
                 </div>
               </div>
 
               {/* Search */}
-              <div className="mb-8">
-                <label className="block text-base font-semibold text-foreground mb-4">
+              <div className="mb-6">
+                <label className="block text-sm font-semibold text-foreground mb-3">
                   Search Users or Enter Email
                 </label>
                 <div className="relative">
@@ -1633,13 +1620,13 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                     value={searchQuery}
                     onChange={(e) => handleSearchUsers(e.target.value)}
                     placeholder="Search by name or enter email address..."
-                    className="w-full pl-12 pr-4 py-4 bg-background border-2 border-foreground/20 rounded-xl text-base text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200"
+                    className="w-full pl-10 pr-4 py-3 bg-background border-2 border-foreground/20 rounded-xl text-sm text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200"
                   />
                   <MagnifyingGlass
-                    size={24}
+                    size={20}
                     color="currentColor"
                     weight="regular"
-                    className="absolute left-4 top-1/2 -translate-y-1/2 text-foreground/40"
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground/40"
                   />
                 </div>
               </div>
@@ -1718,16 +1705,16 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
 
       {/* Bulk Email Modal */}
       {showBulkEmailModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-background border border-foreground/10 rounded-3xl max-w-3xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
-            <div className="p-12">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+          <div className="bg-background border border-foreground/10 rounded-t-3xl sm:rounded-3xl max-w-3xl w-full max-h-[92vh] sm:max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div className="p-5 sm:p-10">
               {/* Header */}
-              <div className="flex items-center justify-between mb-10">
+              <div className="flex items-start justify-between mb-6 sm:mb-8">
                 <div>
-                  <h3 className="text-3xl font-bold font-[family-name:var(--font-clash-display)] text-foreground mb-2">
+                  <h3 className="text-xl sm:text-2xl font-bold font-[family-name:var(--font-clash-display)] text-foreground mb-1">
                     Send Bulk Email
                   </h3>
-                  <p className="text-foreground/60">Send an email to your attendees</p>
+                  <p className="text-sm text-foreground/60">Send an email to your attendees</p>
                 </div>
                 <button
                   onClick={() => {
@@ -1737,18 +1724,18 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                     setEmailRecipients("all");
                     setSelectedAttendees([]);
                   }}
-                  className="p-2 hover:bg-foreground/10 rounded-lg transition-colors"
+                  className="p-2 hover:bg-foreground/10 rounded-lg transition-colors shrink-0 ml-4"
                 >
                   <XCircle size={24} color="currentColor" weight="regular" />
                 </button>
               </div>
 
               {/* Recipient Selection */}
-              <div className="mb-8">
-                <label className="block text-base font-semibold text-foreground mb-4">
+              <div className="mb-6">
+                <label className="block text-sm font-semibold text-foreground mb-3">
                   Select Recipients
                 </label>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-3">
                   {[
                     { value: "all", label: "All Attendees", count: attendeesTotal },
                     { value: "checked_in", label: "Checked In", count: stats.checkIns },
@@ -1768,8 +1755,8 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                         : "border-foreground/20 text-foreground/70 hover:border-primary/50 hover:text-foreground"
                         }`}
                     >
-                      <div className="font-semibold text-base mb-1">{option.label}</div>
-                      <div className="text-sm opacity-70">{option.count} recipients</div>
+                      <div className="font-semibold text-sm mb-0.5">{option.label}</div>
+                      <div className="text-xs opacity-70">{option.count} recipients</div>
                     </button>
                   ))}
                 </div>
@@ -1777,8 +1764,8 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
 
               {/* Custom Selection */}
               {emailRecipients === "custom" && (
-                <div className="mb-8 p-6 bg-foreground/5 rounded-xl border border-foreground/10">
-                  <label className="block text-base font-semibold text-foreground mb-4">
+                <div className="mb-5 p-4 bg-foreground/5 rounded-xl border border-foreground/10">
+                  <label className="block text-sm font-semibold text-foreground mb-3">
                     Select Attendees ({selectedAttendees.length} selected)
                   </label>
                   <div className="space-y-2 max-h-64 overflow-y-auto">
@@ -1810,8 +1797,8 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
               )}
 
               {/* Email Subject */}
-              <div className="mb-6">
-                <label className="block text-base font-semibold text-foreground mb-3">
+              <div className="mb-4">
+                <label className="block text-sm font-semibold text-foreground mb-2">
                   Subject
                 </label>
                 <input
@@ -1819,37 +1806,37 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                   value={emailSubject}
                   onChange={(e) => setEmailSubject(e.target.value)}
                   placeholder="Enter email subject..."
-                  className="w-full px-4 py-3 bg-background border-2 border-foreground/20 rounded-xl text-base text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200"
+                  className="w-full px-4 py-3 bg-background border-2 border-foreground/20 rounded-xl text-sm text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200"
                 />
               </div>
 
               {/* Email Body */}
-              <div className="mb-8">
-                <label className="block text-base font-semibold text-foreground mb-3">
+              <div className="mb-5">
+                <label className="block text-sm font-semibold text-foreground mb-2">
                   Message
                 </label>
                 <textarea
                   value={emailBody}
                   onChange={(e) => setEmailBody(e.target.value)}
                   placeholder="Write your message here..."
-                  rows={10}
-                  className="w-full px-4 py-3 bg-background border-2 border-foreground/20 rounded-xl text-base text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200 resize-none"
+                  rows={7}
+                  className="w-full px-4 py-3 bg-background border-2 border-foreground/20 rounded-xl text-sm text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200 resize-none"
                 />
-                <div className="mt-2 text-sm text-foreground/50">
+                <div className="mt-1.5 text-xs text-foreground/50">
                   {emailBody.length} characters
                 </div>
               </div>
 
               {/* Preview */}
               {(emailSubject || emailBody) && (
-                <div className="mb-8 p-6 bg-foreground/5 rounded-xl border border-foreground/10">
-                  <div className="flex items-center gap-2 mb-4">
-                    <FileText size={20} color="currentColor" weight="regular" />
-                    <h4 className="font-semibold text-foreground">Preview</h4>
+                <div className="mb-5 p-4 bg-foreground/5 rounded-xl border border-foreground/10">
+                  <div className="flex items-center gap-2 mb-3">
+                    <FileText size={16} color="currentColor" weight="regular" />
+                    <h4 className="text-sm font-semibold text-foreground">Preview</h4>
                   </div>
-                  <div className="space-y-3">
+                  <div className="space-y-2">
                     <div>
-                      <div className="text-xs text-foreground/50 mb-1">To:</div>
+                      <div className="text-xs text-foreground/50 mb-0.5">To:</div>
                       <div className="text-sm text-foreground/70">
                         {emailRecipients === "all" && `${attendeesTotal} attendees`}
                         {emailRecipients === "checked_in" && `${dashboardData?.stats.checkIns || 0} checked-in attendees`}
@@ -1858,13 +1845,13 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                       </div>
                     </div>
                     <div>
-                      <div className="text-xs text-foreground/50 mb-1">Subject:</div>
+                      <div className="text-xs text-foreground/50 mb-0.5">Subject:</div>
                       <div className="text-sm font-semibold text-foreground">
                         {emailSubject || "(No subject)"}
                       </div>
                     </div>
                     <div>
-                      <div className="text-xs text-foreground/50 mb-1">Message:</div>
+                      <div className="text-xs text-foreground/50 mb-0.5">Message:</div>
                       <div className="text-sm text-foreground/70 whitespace-pre-wrap">
                         {emailBody || "(No message)"}
                       </div>
@@ -1874,10 +1861,10 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
               )}
 
               {/* Actions */}
-              <div className="flex items-center justify-end gap-4">
+              <div className="flex items-center justify-end gap-3">
                 <Button
                   variant="outline"
-                  size="lg"
+                  size="md"
                   onClick={() => {
                     setShowBulkEmailModal(false);
                     setEmailSubject("");
@@ -1890,7 +1877,7 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                 </Button>
                 <Button
                   variant="primary"
-                  size="lg"
+                  size="md"
                   leftIcon={PaperPlaneRight}
                   onClick={async () => {
                     if (!emailSubject.trim()) {
