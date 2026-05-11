@@ -118,7 +118,7 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
                   });
                 }
               })
-              .catch(() => {/* silently fail — map section will be hidden */});
+              .catch(() => {/* silently fail — map section will be hidden */ });
           }
         }
 
@@ -201,656 +201,791 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
 
   return (
     <>
-    <div
-      className="min-h-screen bg-background relative overflow-hidden"
-      style={accent ? { '--primary': accent } as React.CSSProperties : undefined}
-    >
-      {/* Background Pattern */}
-      <div className="absolute inset-0 z-0 pointer-events-none text-foreground opacity-10 dark:opacity-10 bg-whatsapp-pattern" />
+      <div
+        className="min-h-screen bg-background relative overflow-hidden"
+        style={accent ? { '--primary': accent } as React.CSSProperties : undefined}
+      >
+        {/* Background Pattern */}
+        <div className="absolute inset-0 z-0 pointer-events-none text-foreground opacity-5 dark:opacity-10 bg-whatsapp-pattern" />
 
-      {/* Back Button */}
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-6 relative z-10">
-        <button
-          onClick={() => router.back()}
-          className="flex items-center gap-2 text-foreground/70 hover:text-primary transition-colors"
-        >
-          <CaretLeft size={20} color="currentColor" weight="regular" />
-          <span>Back to Events</span>
-        </button>
-      </div>
+        {/* Back Button */}
 
-      <main className="max-w-5xl mx-auto px-4 sm:px-6 py-6 lg:py-8 relative z-10">
-      {/* Hero Image Section */}
-      <div className="relative w-full aspect-video sm:h-[400px] rounded-3xl overflow-hidden shadow-sm bg-background bg-gradient-to-br from-primary/20 via-secondary/20 to-accent/20 mb-8 border border-foreground/10">
-        {event.image ? (
-          <Image
-            src={event.image}
-            alt={event.title}
-            fill
-            className="object-cover"
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <CalendarBlank
-              size={120}
-              color="currentColor"
-              weight="fill"
-              className="text-primary/30"
-            />
-          </div>
-        )}
 
-        {/* Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent"></div>
-
-        {/* Action Buttons */}
-        <div className="absolute top-4 right-4 flex gap-2">
-          {isOrganizer && (
-            <button
-              onClick={() => router.push(`/events/${eventId}/manage`)}
-              className="px-4 py-2 rounded-full bg-primary text-white text-sm font-semibold hover:bg-primary/90 transition-colors backdrop-blur-sm flex items-center gap-2 cursor-pointer"
-              aria-label="Manage event"
-            >
-              <ChartBar size={16} color="currentColor" weight="fill" />
-              Manage
-            </button>
-          )}
-          <button
-            onClick={() => setIsFavorite(!isFavorite)}
-            className="w-10 h-10 rounded-full bg-background/90 backdrop-blur-sm flex items-center justify-center hover:bg-background transition-colors cursor-pointer"
-            aria-label="Add to favorites"
-          >
-            <Heart
-              size={20}
-              color="currentColor"
-              
-              className={isFavorite ? "text-primary" : "text-foreground"}
-            />
-          </button>
-          <button
-            onClick={handleShare}
-            className="w-10 h-10 rounded-full bg-background/90 backdrop-blur-sm flex items-center justify-center hover:bg-background transition-colors cursor-pointer"
-            aria-label="ShareNetwork event"
-          >
-            <ShareNetwork size={20} color="currentColor" weight="regular" />
-          </button>
-        </div>
-
-        {/* Category Badge + Live Badge */}
-        <div className="absolute top-4 left-4 flex items-center gap-2">
-          <span className="px-4 py-2 bg-background/90 backdrop-blur-sm rounded-full text-sm font-semibold text-primary">
-            {event.category}
-          </span>
-          {event.isLive && (
-            <span className="flex items-center gap-1.5 px-3 py-2 bg-red-600 rounded-full text-sm font-bold text-white shadow-lg">
-              <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
-              LIVE
-            </span>
-          )}
-        </div>
-      </div>
-
-      {/* Main Content Split */}
-      <div>
-        <div className="grid lg:grid-cols-[1fr_360px] gap-8 lg:gap-12">
-          {/* Left Column - Main Content */}
-          <div className="space-y-8 min-w-0">
-            {/* Event Header */}
-            <div>
-              <h1 className="text-4xl lg:text-5xl font-bold font-[family-name:var(--font-clash-display)] tracking-tight mb-8 text-foreground break-words">
-                {event.title}
-              </h1>
-
-              {/* Event Meta */}
-              <div className="flex flex-col sm:flex-row gap-6 sm:gap-12 mb-8">
-                <div className="flex items-start gap-4">
-                  <div className="p-3 bg-foreground/5 rounded-2xl shrink-0">
-                    <CalendarBlank size={24} className="text-foreground" weight="fill" />
-                  </div>
-                  <div>
-                    <p className="font-semibold text-lg text-foreground">{event.date}</p>
-                    <p className="text-foreground/60">{event.time}</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-4">
-                  <div className="p-3 bg-foreground/5 rounded-2xl shrink-0">
-                    <MapPin size={24} className="text-foreground" weight="fill" />
-                  </div>
-                  <div>
-                    <p className="font-semibold text-lg text-foreground">{event.locationType === "ONLINE" ? "Online Event" : event.location}</p>
-                    <p className="text-foreground/60 flex items-center gap-1.5">
-                      <Users size={16} />
-                      {event.attendees.toLocaleString()} going
-                    </p>
-                  </div>
-                </div>
+        <main className="max-w-5xl mx-auto px-4 sm:px-6 py-6 lg:py-8 relative z-10">
+          {/* Hero Image Section */}
+          <div className="relative w-full aspect-video sm:h-[400px] rounded-3xl overflow-hidden bg-background bg-gradient-to-br from-primary/20 via-secondary/20 to-accent/20 mb-8 border border-foreground/10">
+            {event.image ? (
+              <Image
+                src={event.image}
+                alt={event.title}
+                fill
+                className="object-cover"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center">
+                <CalendarBlank
+                  size={120}
+                  color="currentColor"
+                  weight="fill"
+                  className="text-primary/30"
+                />
               </div>
+            )}
 
-              {/* Tags */}
-              {event.tags && event.tags.length > 0 && (
-                <div className="flex flex-wrap gap-2 mb-8">
-                  {event.tags.map((tag: any, index: number) => (
-                    <span
-                      key={index}
-                      className="px-3 py-1 bg-white dark:bg-neutral-900 border border-foreground/5 shadow-sm rounded-full text-sm text-foreground/70"
-                    >
-                      #{tag}
-                    </span>
-                  ))}
-                </div>
+            {/* Overlay */}
+            <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent"></div>
+
+            {/* Action Buttons */}
+            <div className="absolute top-4 right-4 flex gap-2">
+              {isOrganizer && (
+                <button
+                  onClick={() => router.push(`/events/${eventId}/manage`)}
+                  className="px-4 py-2 rounded-full bg-primary text-white text-sm font-semibold hover:bg-primary/90 transition-colors backdrop-blur-sm flex items-center gap-2 cursor-pointer"
+                  aria-label="Manage event"
+                >
+                  <ChartBar size={16} color="currentColor" weight="fill" />
+                  Manage
+                </button>
               )}
+              <button
+                onClick={() => setIsFavorite(!isFavorite)}
+                className="w-10 h-10 rounded-full bg-background/90 backdrop-blur-sm flex items-center justify-center hover:bg-background transition-colors cursor-pointer"
+                aria-label="Add to favorites"
+              >
+                <Heart
+                  size={20}
+                  color="currentColor"
+
+                  className={isFavorite ? "text-primary" : "text-foreground"}
+                />
+              </button>
+              <button
+                onClick={handleShare}
+                className="w-10 h-10 rounded-full bg-background/90 backdrop-blur-sm flex items-center justify-center hover:bg-background transition-colors cursor-pointer"
+                aria-label="ShareNetwork event"
+              >
+                <ShareNetwork size={20} color="currentColor" weight="regular" />
+              </button>
             </div>
 
-            {/* Ticket Purchase - Mobile Only (shown right after event details) */}
-            <div className="lg:hidden">
-              <div className="bg-white dark:bg-neutral-900 border border-foreground/10 rounded-3xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgba(255,255,255,0.02)]">
-                {/* Ticket Type Selector */}
+            {/* Category Badge + Live Badge */}
+            <div className="absolute top-4 left-4 flex items-center gap-2">
+              <span className="px-4 py-2 bg-background/90 backdrop-blur-sm rounded-full text-sm font-semibold text-primary">
+                {event.category}
+              </span>
+              {event.isLive && (
+                <span className="flex items-center gap-1.5 px-3 py-2 bg-red-600 rounded-full text-sm font-bold text-white shadow-lg">
+                  <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
+                  LIVE
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Main Content Split */}
+          <div>
+            <div className="grid lg:grid-cols-[1fr_360px] gap-8 lg:gap-12">
+              {/* Left Column - Main Content */}
+              <div className="space-y-8 min-w-0">
+                {/* Event Header */}
+                <div>
+                  <h1 className="text-4xl lg:text-5xl font-bold font-[family-name:var(--font-clash-display)] tracking-tight mb-8 text-foreground break-words">
+                    {event.title}
+                  </h1>
+
+                  {/* Event Meta */}
+                  <div className="flex flex-col sm:flex-row gap-6 sm:gap-12 mb-8">
+                    <div className="flex items-start gap-4">
+                      <div className="p-3 bg-foreground/5 rounded-2xl shrink-0">
+                        <CalendarBlank size={24} className="text-foreground" weight="fill" />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-lg text-foreground">{event.date}</p>
+                        <p className="text-foreground/60">{event.time}</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-4">
+                      <div className="p-3 bg-foreground/5 rounded-2xl shrink-0">
+                        <MapPin size={24} className="text-foreground" weight="fill" />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-lg text-foreground">{event.locationType === "ONLINE" ? "Online Event" : event.location}</p>
+                        <p className="text-foreground/60 flex items-center gap-1.5">
+                          <Users size={16} />
+                          {event.attendees.toLocaleString()} going
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Tags */}
+                  {event.tags && event.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mb-8">
+                      {event.tags.map((tag: any, index: number) => (
+                        <span
+                          key={index}
+                          className="px-3 py-1 bg-white dark:bg-neutral-900 border border-foreground/5 shadow-sm rounded-full text-sm text-foreground/70"
+                        >
+                          #{tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Ticket Purchase - Mobile Only (shown right after event details) */}
+                <div className="lg:hidden">
+                  <div className="bg-white dark:bg-neutral-900 border border-foreground/10 rounded-3xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgba(255,255,255,0.02)]">
+                    {/* Ticket Type Selector */}
+                    {event.tickets && event.tickets.length > 0 && (
+                      <div className="mb-6">
+                        <p className="text-sm font-semibold text-foreground mb-3">Select Ticket</p>
+                        <div className="space-y-2">
+                          {event.tickets.map((ticket: any) => {
+                            const isSoldOut = ticket.remaining === 0;
+                            const isFree = ticket.type === 'FREE' || ticket.price === 0;
+                            const isSelected = selectedTicketId === ticket.id;
+                            return (
+                              <button
+                                key={ticket.id}
+                                onClick={() => !isSoldOut && setSelectedTicketId(ticket.id)}
+                                disabled={isSoldOut}
+                                className={`w-full p-3 rounded-xl border-2 text-left transition-all ${isSelected
+                                    ? 'border-primary bg-primary/10'
+                                    : isSoldOut
+                                      ? 'border-foreground/10 opacity-50 cursor-not-allowed'
+                                      : 'border-foreground/15 hover:border-primary/50'
+                                  }`}
+                              >
+                                <div className="flex items-center justify-between gap-2">
+                                  <div className="flex items-center gap-2.5 min-w-0">
+                                    <div className={`w-4 h-4 rounded-full border-2 shrink-0 flex items-center justify-center ${isSelected ? 'border-primary bg-primary' : 'border-foreground/30'}`}>
+                                      {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                                    </div>
+                                    <div className="min-w-0">
+                                      <p className="text-sm font-semibold text-foreground truncate">{ticket.name}</p>
+                                      {isSoldOut && <p className="text-xs text-foreground/40">Sold out</p>}
+                                      {!isSoldOut && ticket.remaining <= 20 && (
+                                        <p className="text-xs text-red-500">Only {ticket.remaining} left</p>
+                                      )}
+                                    </div>
+                                  </div>
+                                  <span className="text-sm font-bold text-primary shrink-0">
+                                    {isFree ? 'Free' : `₦${ticket.price.toLocaleString()}`}
+                                  </span>
+                                </div>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Ticket Quantity */}
+                    <div className="mb-6">
+                      <label className="block text-sm font-semibold text-foreground mb-3">
+                        Number of Tickets
+                      </label>
+                      <div className="flex items-center gap-4">
+                        <button
+                          onClick={() => setTicketQuantity(Math.max(1, ticketQuantity - 1))}
+                          className="w-10 h-10 rounded-full border-2 border-foreground/20 flex items-center justify-center hover:border-primary hover:text-primary transition-colors"
+                        >
+                          -
+                        </button>
+                        <span className="text-xl font-bold text-foreground min-w-[3rem] text-center">
+                          {ticketQuantity}
+                        </span>
+                        <button
+                          onClick={() => setTicketQuantity(ticketQuantity + 1)}
+                          className="w-10 h-10 rounded-full border-2 border-foreground/20 flex items-center justify-center hover:border-primary hover:text-primary transition-colors"
+                        >
+                          +
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Total Price */}
+                    {(() => {
+                      const sel = event.tickets?.find((t: any) => t.id === selectedTicketId);
+                      const selPrice = sel?.price || 0;
+                      const selFree = sel?.type === 'FREE' || selPrice === 0;
+                      return !selFree && selPrice > 0 ? (
+                        <div className="mb-6 p-4 bg-primary/10 rounded-xl">
+                          <div className="flex justify-between items-center">
+                            <span className="text-foreground/70">Total</span>
+                            <span className="text-xl font-bold text-primary">
+                              ₦{(selPrice * ticketQuantity).toLocaleString()}
+                            </span>
+                          </div>
+                        </div>
+                      ) : null;
+                    })()}
+
+                    {/* CTA Button */}
+                    <Button
+                      variant="primary"
+                      size="lg"
+                      fullWidth
+                      onClick={() => {
+                        const params = new URLSearchParams({ qty: String(ticketQuantity) });
+                        if (selectedTicketId) params.set('typeId', selectedTicketId);
+                        window.location.href = `/events/${eventId}/checkout?${params}`;
+                      }}
+                    >
+                      <Ticket size={20} color="currentColor" weight="fill" />
+                      Get Tickets
+                    </Button>
+
+                    {/* Join Event Chat Button */}
+                    {(
+                      <Button
+                        variant="outline"
+                        size="md"
+                        fullWidth
+                        onClick={() => openEventChat(eventId)}
+                        className="mt-3"
+                      >
+                        <ChatText size={18} color="currentColor" weight="regular" />
+                        Join Event Chat
+                      </Button>
+                    )}
+
+                    {/* Additional Info */}
+                    <div className="mt-6 pt-6 border-t border-foreground/10 space-y-3 text-sm text-foreground/60">
+                      <div className="flex items-start gap-2">
+                        <Tag size={16} color="currentColor" weight="regular" />
+                        <span>Free cancellation up to 24 hours before event</span>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <Ticket size={16} color="currentColor" weight="regular" />
+                        <span>Mobile tickets accepted</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Organizer Info */}
+                <div
+                  onClick={() => {
+                    const profilePath = event.organizer.username
+                      ? `/profile/${event.organizer.username}`
+                      : `/profile/${event.organizer.id}`;
+                    router.push(profilePath)
+                  }}
+                  className="group flex items-center gap-4 cursor-pointer pt-6 pb-2"
+                >
+                  <div className="w-14 h-14 rounded-full bg-foreground/5 flex items-center justify-center overflow-hidden border border-foreground/10">
+                    <img
+                      src={event.organizer.avatar || "/placeholder.jpg"}
+                      alt={event.organizer.name}
+                      width={56}
+                      height={56}
+                      className="rounded-full object-cover"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm text-foreground/60 mb-0.5">Hosted by</p>
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors text-lg">
+                        {event.organizer.name}
+                      </h3>
+                      {event.organizer.verified && (
+                        <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 bg-primary/10 text-primary rounded-full font-bold">
+                          Verified
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Description */}
+                <div>
+                  <h2 className="text-2xl font-bold font-[family-name:var(--font-clash-display)] mb-4 text-foreground">
+                    About This Event
+                  </h2>
+                  <p className="text-foreground/70 leading-relaxed whitespace-pre-line">
+                    {event.description}
+                  </p>
+                </div>
+
+                {/* Tickets */}
                 {event.tickets && event.tickets.length > 0 && (
-                  <div className="mb-6">
-                    <p className="text-sm font-semibold text-foreground mb-3">Select Ticket</p>
-                    <div className="space-y-2">
+                  <div className="pt-8 border-t border-foreground/10">
+                    <h2 className="text-2xl font-bold font-[family-name:var(--font-clash-display)] mb-6 text-foreground">
+                      Tickets
+                    </h2>
+                    <div className="space-y-4">
                       {event.tickets.map((ticket: any) => {
                         const isSoldOut = ticket.remaining === 0;
                         const isFree = ticket.type === 'FREE' || ticket.price === 0;
-                        const isSelected = selectedTicketId === ticket.id;
                         return (
-                          <button
+                          <div
                             key={ticket.id}
-                            onClick={() => !isSoldOut && setSelectedTicketId(ticket.id)}
-                            disabled={isSoldOut}
-                            className={`w-full p-3 rounded-xl border-2 text-left transition-all ${
-                              isSelected
-                                ? 'border-primary bg-primary/10'
-                                : isSoldOut
-                                ? 'border-foreground/10 opacity-50 cursor-not-allowed'
-                                : 'border-foreground/15 hover:border-primary/50'
-                            }`}
+                            className={`pb-4 border-b border-foreground/5 transition-opacity ${isSoldOut ? 'opacity-60' : ''}`}
                           >
-                            <div className="flex items-center justify-between gap-2">
-                              <div className="flex items-center gap-2.5 min-w-0">
-                                <div className={`w-4 h-4 rounded-full border-2 shrink-0 flex items-center justify-center ${isSelected ? 'border-primary bg-primary' : 'border-foreground/30'}`}>
-                                  {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                            <div className="flex items-start justify-between gap-4">
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 mb-1 flex-wrap">
+                                  <h3 className="font-semibold text-lg text-foreground">{ticket.name}</h3>
+                                  {isSoldOut ? (
+                                    <span className="text-xs px-2 py-0.5 bg-foreground/10 text-foreground/50 rounded-full">Sold Out</span>
+                                  ) : ticket.remaining <= 20 ? (
+                                    <span className="text-xs px-2 py-0.5 bg-red-500/10 text-red-500 rounded-full">
+                                      Only {ticket.remaining} left
+                                    </span>
+                                  ) : null}
                                 </div>
-                                <div className="min-w-0">
-                                  <p className="text-sm font-semibold text-foreground truncate">{ticket.name}</p>
-                                  {isSoldOut && <p className="text-xs text-foreground/40">Sold out</p>}
-                                  {!isSoldOut && ticket.remaining <= 20 && (
-                                    <p className="text-xs text-red-500">Only {ticket.remaining} left</p>
-                                  )}
-                                </div>
+                                {ticket.description && (
+                                  <p className="text-sm text-foreground/60 mb-2">{ticket.description}</p>
+                                )}
                               </div>
-                              <span className="text-sm font-bold text-primary shrink-0">
-                                {isFree ? 'Free' : `₦${ticket.price.toLocaleString()}`}
-                              </span>
+                              <div className="text-right shrink-0">
+                                <p className="text-xl font-bold text-foreground">
+                                  {isFree ? 'Free' : `₦${ticket.price.toLocaleString()}`}
+                                </p>
+                              </div>
                             </div>
-                          </button>
+                          </div>
                         );
                       })}
                     </div>
                   </div>
                 )}
 
-                {/* Ticket Quantity */}
-                <div className="mb-6">
-                  <label className="block text-sm font-semibold text-foreground mb-3">
-                    Number of Tickets
-                  </label>
-                  <div className="flex items-center gap-4">
-                    <button
-                      onClick={() => setTicketQuantity(Math.max(1, ticketQuantity - 1))}
-                      className="w-10 h-10 rounded-full border-2 border-foreground/20 flex items-center justify-center hover:border-primary hover:text-primary transition-colors"
-                    >
-                      -
-                    </button>
-                    <span className="text-xl font-bold text-foreground min-w-[3rem] text-center">
-                      {ticketQuantity}
-                    </span>
-                    <button
-                      onClick={() => setTicketQuantity(ticketQuantity + 1)}
-                      className="w-10 h-10 rounded-full border-2 border-foreground/20 flex items-center justify-center hover:border-primary hover:text-primary transition-colors"
-                    >
-                      +
-                    </button>
-                  </div>
-                </div>
-
-                {/* Total Price */}
-                {(() => {
-                  const sel = event.tickets?.find((t: any) => t.id === selectedTicketId);
-                  const selPrice = sel?.price || 0;
-                  const selFree = sel?.type === 'FREE' || selPrice === 0;
-                  return !selFree && selPrice > 0 ? (
-                    <div className="mb-6 p-4 bg-primary/10 rounded-xl">
-                      <div className="flex justify-between items-center">
-                        <span className="text-foreground/70">Total</span>
-                        <span className="text-xl font-bold text-primary">
-                          ₦{(selPrice * ticketQuantity).toLocaleString()}
-                        </span>
-                      </div>
-                    </div>
-                  ) : null;
-                })()}
-
-                {/* CTA Button */}
-                <Button
-                  variant="primary"
-                  size="lg"
-                  fullWidth
-                  onClick={() => {
-                    const params = new URLSearchParams({ qty: String(ticketQuantity) });
-                    if (selectedTicketId) params.set('typeId', selectedTicketId);
-                    window.location.href = `/events/${eventId}/checkout?${params}`;
-                  }}
-                >
-                  <Ticket size={20} color="currentColor" weight="fill" />
-                  Get Tickets
-                </Button>
-
-                {/* Join Event Chat Button */}
-                {(
-                  <Button
-                    variant="outline"
-                    size="md"
-                    fullWidth
-                    onClick={() => openEventChat(eventId)}
-                    className="mt-3"
-                  >
-                    <ChatText size={18} color="currentColor" weight="regular" />
-                    Join Event Chat
-                  </Button>
-                )}
-
-                {/* Additional Info */}
-                <div className="mt-6 pt-6 border-t border-foreground/10 space-y-3 text-sm text-foreground/60">
-                  <div className="flex items-start gap-2">
-                    <Tag size={16} color="currentColor" weight="regular" />
-                    <span>Free cancellation up to 24 hours before event</span>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <Ticket size={16} color="currentColor" weight="regular" />
-                    <span>Mobile tickets accepted</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Organizer Info */}
-            <div
-              onClick={() => {
-                const profilePath = event.organizer.username
-                  ? `/profile/${event.organizer.username}`
-                  : `/profile/${event.organizer.id}`;
-                router.push(profilePath)
-              }}
-              className="group flex items-center gap-4 cursor-pointer pt-6 pb-2"
-            >
-              <div className="w-14 h-14 rounded-full bg-foreground/5 flex items-center justify-center overflow-hidden border border-foreground/10">
-                <img
-                  src={event.organizer.avatar || "/placeholder.jpg"}
-                  alt={event.organizer.name}
-                  width={56}
-                  height={56}
-                  className="rounded-full object-cover"
-                />
-              </div>
-              <div className="flex-1">
-                <p className="text-sm text-foreground/60 mb-0.5">Hosted by</p>
-                <div className="flex items-center gap-2">
-                  <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors text-lg">
-                    {event.organizer.name}
-                  </h3>
-                  {event.organizer.verified && (
-                    <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 bg-primary/10 text-primary rounded-full font-bold">
-                      Verified
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Description */}
-            <div>
-              <h2 className="text-2xl font-bold font-[family-name:var(--font-clash-display)] mb-4 text-foreground">
-                About This Event
-              </h2>
-              <p className="text-foreground/70 leading-relaxed whitespace-pre-line">
-                {event.description}
-              </p>
-            </div>
-
-            {/* Tickets */}
-            {event.tickets && event.tickets.length > 0 && (
-              <div className="pt-8 border-t border-foreground/10">
-                <h2 className="text-2xl font-bold font-[family-name:var(--font-clash-display)] mb-6 text-foreground">
-                  Tickets
-                </h2>
-                <div className="space-y-4">
-                  {event.tickets.map((ticket: any) => {
-                    const isSoldOut = ticket.remaining === 0;
-                    const isFree = ticket.type === 'FREE' || ticket.price === 0;
-                    return (
+                {/* Schedule */}
+                <div>
+                  <h2 className="text-2xl font-bold font-[family-name:var(--font-clash-display)] mb-6 text-foreground">
+                    Schedule
+                  </h2>
+                  <div className="space-y-6">
+                    {event.schedule.map((item: any, index: number) => (
                       <div
-                        key={ticket.id}
-                        className={`pb-4 border-b border-foreground/5 transition-opacity ${isSoldOut ? 'opacity-60' : ''}`}
+                        key={index}
+                        className="flex gap-6"
                       >
-                        <div className="flex items-start justify-between gap-4">
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-1 flex-wrap">
-                              <h3 className="font-semibold text-lg text-foreground">{ticket.name}</h3>
-                              {isSoldOut ? (
-                                <span className="text-xs px-2 py-0.5 bg-foreground/10 text-foreground/50 rounded-full">Sold Out</span>
-                              ) : ticket.remaining <= 20 ? (
-                                <span className="text-xs px-2 py-0.5 bg-red-500/10 text-red-500 rounded-full">
-                                  Only {ticket.remaining} left
-                                </span>
-                              ) : null}
-                            </div>
-                            {ticket.description && (
-                              <p className="text-sm text-foreground/60 mb-2">{ticket.description}</p>
-                            )}
-                          </div>
-                          <div className="text-right shrink-0">
-                            <p className="text-xl font-bold text-foreground">
-                              {isFree ? 'Free' : `₦${ticket.price.toLocaleString()}`}
-                            </p>
-                          </div>
+                        <div className="font-medium text-foreground/60 min-w-[100px] pt-0.5">
+                          {item.time}
+                        </div>
+                        <div>
+                          <div className="font-medium text-foreground text-lg">{item.activity}</div>
+                          {item.description && (
+                            <div className="text-sm text-foreground/60 mt-1">{item.description}</div>
+                          )}
                         </div>
                       </div>
-                    );
-                  })}
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
 
-            {/* Schedule */}
-            <div>
-              <h2 className="text-2xl font-bold font-[family-name:var(--font-clash-display)] mb-6 text-foreground">
-                Schedule
-              </h2>
-              <div className="space-y-6">
-                {event.schedule.map((item: any, index: number) => (
-                  <div
-                    key={index}
-                    className="flex gap-6"
-                  >
-                    <div className="font-medium text-foreground/60 min-w-[100px] pt-0.5">
-                      {item.time}
-                    </div>
-                    <div>
-                      <div className="font-medium text-foreground text-lg">{item.activity}</div>
-                      {item.description && (
-                        <div className="text-sm text-foreground/60 mt-1">{item.description}</div>
-                      )}
+                {/* Speakers */}
+                {speakers.length > 0 && (
+                  <div className="pt-8 border-t border-foreground/10">
+                    <h2 className="text-2xl font-bold font-[family-name:var(--font-clash-display)] mb-6 text-foreground">
+                      Speakers
+                    </h2>
+                    <div className="grid sm:grid-cols-2 gap-8">
+                      {speakers.map((speaker: any) => (
+                        <div key={speaker.id} className="flex items-start gap-4">
+                          {speaker.avatar ? (
+                            <div className="relative w-16 h-16 rounded-full overflow-hidden shrink-0 border border-foreground/10">
+                              <Image src={speaker.avatar} alt={speaker.name} fill className="object-cover" />
+                            </div>
+                          ) : (
+                            <div className="w-16 h-16 rounded-full bg-foreground/5 flex items-center justify-center shrink-0 border border-foreground/10">
+                              <User size={24} color="currentColor" weight="fill" className="text-foreground/40" />
+                            </div>
+                          )}
+                          <div className="flex-1 min-w-0 pt-1">
+                            <p className="font-semibold text-foreground text-lg">{speaker.name}</p>
+                            {speaker.title && <p className="text-sm text-foreground/60">{speaker.title}</p>}
+                            {speaker.bio && <p className="text-sm text-foreground/50 mt-2 line-clamp-3">{speaker.bio}</p>}
+                            <div className="flex items-center gap-3 mt-2">
+                              {speaker.twitterUrl && (
+                                <a href={speaker.twitterUrl} target="_blank" rel="noopener noreferrer"
+                                  className="text-xs text-primary hover:underline font-bold">𝕏</a>
+                              )}
+                              {speaker.linkedinUrl && (
+                                <a href={speaker.linkedinUrl} target="_blank" rel="noopener noreferrer"
+                                  className="text-xs text-primary hover:underline font-bold">in</a>
+                              )}
+                              {speaker.websiteUrl && (
+                                <a href={speaker.websiteUrl} target="_blank" rel="noopener noreferrer"
+                                  className="text-xs text-primary hover:underline">
+                                  <Globe size={12} color="currentColor" weight="regular" className="inline" />
+                                </a>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
-                ))}
-              </div>
-            </div>
+                )}
 
-            {/* Speakers */}
-            {speakers.length > 0 && (
-              <div className="pt-8 border-t border-foreground/10">
-                <h2 className="text-2xl font-bold font-[family-name:var(--font-clash-display)] mb-6 text-foreground">
-                  Speakers
-                </h2>
-                <div className="grid sm:grid-cols-2 gap-8">
-                  {speakers.map((speaker: any) => (
-                    <div key={speaker.id} className="flex items-start gap-4">
-                      {speaker.avatar ? (
-                        <div className="relative w-16 h-16 rounded-full overflow-hidden shrink-0 border border-foreground/10">
-                          <Image src={speaker.avatar} alt={speaker.name} fill className="object-cover" />
-                        </div>
-                      ) : (
-                        <div className="w-16 h-16 rounded-full bg-foreground/5 flex items-center justify-center shrink-0 border border-foreground/10">
-                          <User size={24} color="currentColor" weight="fill" className="text-foreground/40" />
-                        </div>
-                      )}
-                      <div className="flex-1 min-w-0 pt-1">
-                        <p className="font-semibold text-foreground text-lg">{speaker.name}</p>
-                        {speaker.title && <p className="text-sm text-foreground/60">{speaker.title}</p>}
-                        {speaker.bio && <p className="text-sm text-foreground/50 mt-2 line-clamp-3">{speaker.bio}</p>}
-                        <div className="flex items-center gap-3 mt-2">
-                          {speaker.twitterUrl && (
-                            <a href={speaker.twitterUrl} target="_blank" rel="noopener noreferrer"
-                              className="text-xs text-primary hover:underline font-bold">𝕏</a>
-                          )}
-                          {speaker.linkedinUrl && (
-                            <a href={speaker.linkedinUrl} target="_blank" rel="noopener noreferrer"
-                              className="text-xs text-primary hover:underline font-bold">in</a>
-                          )}
-                          {speaker.websiteUrl && (
-                            <a href={speaker.websiteUrl} target="_blank" rel="noopener noreferrer"
-                              className="text-xs text-primary hover:underline">
-                              <Globe size={12} color="currentColor" weight="regular" className="inline" />
-                            </a>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Location — Only for physical events */}
-            {event.locationType !== "ONLINE" && (
-              <div className="pt-8 border-t border-foreground/10">
-                <h2 className="text-2xl font-bold font-[family-name:var(--font-clash-display)] mb-6 text-foreground">
-                  Location
-                </h2>
-                {event.address || event.location !== "Online" ? (
-                  <div>
-                    <div className="flex items-start gap-4 mb-6">
-                      <MapTrifold size={24} color="currentColor" weight="fill" className="text-foreground/40 mt-0.5" />
+                {/* Location — Only for physical events */}
+                {event.locationType !== "ONLINE" && (
+                  <div className="pt-8 border-t border-foreground/10">
+                    <h2 className="text-2xl font-bold font-[family-name:var(--font-clash-display)] mb-6 text-foreground">
+                      Location
+                    </h2>
+                    {event.address || event.location !== "Online" ? (
                       <div>
-                        <p className="font-semibold text-foreground text-lg mb-0.5">{event.location}</p>
-                        <p className="text-foreground/60">{event.address}</p>
-                      </div>
-                    </div>
-                    {mapCoords && (
-                      <iframe
-                        className="w-full h-64 rounded-2xl border border-foreground/10"
-                        loading="lazy"
-                        referrerPolicy="no-referrer-when-downgrade"
-                        src={`https://www.openstreetmap.org/export/embed.html?bbox=${mapCoords.lng - 0.01},${mapCoords.lat - 0.01},${mapCoords.lng + 0.01},${mapCoords.lat + 0.01}&layer=mapnik&marker=${mapCoords.lat},${mapCoords.lng}`}
-                        title="Event location map"
-                      />
-                    )}
-                    <a
-                      href={
-                        mapCoords
-                          ? `https://www.google.com/maps/search/?api=1&query=${mapCoords.lat},${mapCoords.lng}`
-                          : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.address || event.location)}`
-                      }
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 mt-4 text-sm text-primary hover:text-primary/80 transition-colors font-medium"
-                    >
-                      <MapPin size={16} color="currentColor" weight="regular" />
-                      Open in Google Maps
-                    </a>
-                  </div>
-                ) : (
-                  <div className="flex items-start gap-4">
-                    <MapTrifold size={24} color="currentColor" weight="regular" className="text-foreground/30 mt-0.5 shrink-0" />
-                    <div>
-                      <p className="font-semibold text-foreground text-lg mb-0.5">Venue to be announced</p>
-                      <p className="text-foreground/60">
-                        The organizer hasn&apos;t confirmed the venue yet. Registered attendees will receive an email as soon as it&apos;s set.
-                      </p>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Reviews Section */}
-            <div className="pt-8 border-t border-foreground/10">
-              <div className="flex items-center justify-between mb-8">
-                <h2 className="text-2xl font-bold font-[family-name:var(--font-clash-display)] text-foreground">
-                  Reviews ({reviewStats?.totalReviews || 0})
-                </h2>
-                {(
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => router.push(`/events/${eventId}/review`)}
-                  >
-                    Write a Review
-                  </Button>
-                )}
-              </div>
-
-              {/* Rating Summary */}
-              {reviewStats && (
-                <div className="mb-10">
-                  <div className="flex items-center gap-8">
-                    <div className="text-center">
-                      <div className="text-5xl font-bold text-foreground mb-1">
-                        {reviewStats.averageRating?.toFixed(1) || "0.0"}
-                      </div>
-                      <div className="flex items-center justify-center gap-1">
-                        {[1, 2, 3, 4, 5].map((star) => (
-                          <Star
-                            key={star}
-                            size={20}
-                            color="currentColor"
-                            
-                            className={
-                              star <= Math.round(reviewStats.averageRating || 0)
-                                ? "text-primary"
-                                : "text-foreground/20"
-                            }
-                          />
-                        ))}
-                      </div>
-                      <p className="text-sm text-foreground/60 mt-2">
-                        {reviewStats.totalReviews || 0} reviews
-                      </p>
-                    </div>
-                    <div className="flex-1 space-y-2 max-w-sm">
-                      {[5, 4, 3, 2, 1].map((star) => {
-                        const count = reviewStats.ratingDistribution?.[star as keyof typeof reviewStats.ratingDistribution] || 0;
-                        const percentage = reviewStats.totalReviews > 0 ? (count / reviewStats.totalReviews) * 100 : 0;
-                        return (
-                          <div key={star} className="flex items-center gap-3">
-                            <div className="flex items-center gap-1 w-10">
-                              <span className="text-sm font-semibold text-foreground">
-                                {star}
-                              </span>
-                              <Star
-                                size={14}
-                                color="currentColor"
-                                weight="fill"
-                                className="text-foreground/40"
-                              />
-                            </div>
-                            <div className="flex-1 h-2 bg-foreground/10 rounded-full overflow-hidden">
-                              <div
-                                className="h-full bg-foreground/80 rounded-full"
-                                style={{ width: `${percentage}%` }}
-                              />
-                            </div>
+                        <div className="flex items-start gap-4 mb-6">
+                          <MapTrifold size={24} color="currentColor" weight="fill" className="text-foreground/40 mt-0.5" />
+                          <div>
+                            <p className="font-semibold text-foreground text-lg mb-0.5">{event.location}</p>
+                            <p className="text-foreground/60">{event.address}</p>
                           </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Reviews List */}
-              <div className="space-y-8">
-                {reviews.map((review: any) => (
-                  <div
-                    key={review.id}
-                    className="pb-8 border-b border-foreground/5 last:border-b-0"
-                  >
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex items-start gap-4 flex-1">
-                        {review.userAvatar ? (
-                          <img
-                            src={review.userAvatar}
-                            alt={review.userName}
-                            className="w-12 h-12 rounded-full"
+                        </div>
+                        {mapCoords && (
+                          <iframe
+                            className="w-full h-64 rounded-2xl border border-foreground/10"
+                            loading="lazy"
+                            referrerPolicy="no-referrer-when-downgrade"
+                            src={`https://www.openstreetmap.org/export/embed.html?bbox=${mapCoords.lng - 0.01},${mapCoords.lat - 0.01},${mapCoords.lng + 0.01},${mapCoords.lat + 0.01}&layer=mapnik&marker=${mapCoords.lat},${mapCoords.lng}`}
+                            title="Event location map"
                           />
-                        ) : (
-                          <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                            <User size={24} color="currentColor" weight="fill" className="text-primary" />
-                          </div>
                         )}
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <h4 className="font-semibold text-foreground">
-                              {review.userName}
-                            </h4>
-                            <div className="flex items-center gap-1">
-                              {[1, 2, 3, 4, 5].map((star) => (
-                                <Star
-                                  key={star}
-                                  size={16}
-                                  color="currentColor"
-                                  
-                                  className={
-                                    star <= review.rating
-                                      ? "text-primary"
-                                      : "text-foreground/30"
-                                  }
-                                />
-                              ))}
-                            </div>
-                          </div>
-                          {review.title && (
-                            <h5 className="font-medium text-foreground mb-1">
-                              {review.title}
-                            </h5>
-                          )}
-                          <p className="text-sm text-foreground/60">
-                            {new Date(review.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                        <a
+                          href={
+                            mapCoords
+                              ? `https://www.google.com/maps/search/?api=1&query=${mapCoords.lat},${mapCoords.lng}`
+                              : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.address || event.location)}`
+                          }
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-2 mt-4 text-sm text-primary hover:text-primary/80 transition-colors font-medium"
+                        >
+                          <MapPin size={16} color="currentColor" weight="regular" />
+                          Open in Google Maps
+                        </a>
+                      </div>
+                    ) : (
+                      <div className="flex items-start gap-4">
+                        <MapTrifold size={24} color="currentColor" weight="regular" className="text-foreground/30 mt-0.5 shrink-0" />
+                        <div>
+                          <p className="font-semibold text-foreground text-lg mb-0.5">Venue to be announced</p>
+                          <p className="text-foreground/60">
+                            The organizer hasn&apos;t confirmed the venue yet. Registered attendees will receive an email as soon as it&apos;s set.
                           </p>
                         </div>
                       </div>
-                    </div>
-                    <p className="text-foreground/70 mb-4 leading-relaxed">
-                      {review.comment}
-                    </p>
-                    {review.photos && review.photos.length > 0 && (
-                      <div className="grid grid-cols-3 gap-2 mb-4">
-                        {review.photos.map((photo: string, index: number) => (
-                          <div
-                            key={index}
-                            className="aspect-square rounded-xl overflow-hidden border border-foreground/10"
-                          >
-                            <img
-                              src={photo}
-                              alt={`Review photo ${index + 1}`}
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
-                        ))}
-                      </div>
                     )}
-                    <div className="flex items-center gap-4 pt-4 border-t border-foreground/10">
-                      <button className="flex items-center gap-2 text-sm text-foreground/60 hover:text-primary transition-colors">
-                        <CheckCircle size={16} color="currentColor" weight="regular" />
-                        <span>Helpful ({review.helpfulCount || 0})</span>
-                      </button>
-                    </div>
                   </div>
-                ))}
+                )}
+
+                {/* Reviews Section */}
+                <div className="pt-8 border-t border-foreground/10">
+                  <div className="flex items-center justify-between mb-8">
+                    <h2 className="text-2xl font-bold font-[family-name:var(--font-clash-display)] text-foreground">
+                      Reviews ({reviewStats?.totalReviews || 0})
+                    </h2>
+                    {(
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => router.push(`/events/${eventId}/review`)}
+                      >
+                        Write a Review
+                      </Button>
+                    )}
+                  </div>
+
+                  {/* Rating Summary */}
+                  {reviewStats && (
+                    <div className="mb-10">
+                      <div className="flex items-center gap-8">
+                        <div className="text-center">
+                          <div className="text-5xl font-bold text-foreground mb-1">
+                            {reviewStats.averageRating?.toFixed(1) || "0.0"}
+                          </div>
+                          <div className="flex items-center justify-center gap-1">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                              <Star
+                                key={star}
+                                size={20}
+                                color="currentColor"
+
+                                className={
+                                  star <= Math.round(reviewStats.averageRating || 0)
+                                    ? "text-primary"
+                                    : "text-foreground/20"
+                                }
+                              />
+                            ))}
+                          </div>
+                          <p className="text-sm text-foreground/60 mt-2">
+                            {reviewStats.totalReviews || 0} reviews
+                          </p>
+                        </div>
+                        <div className="flex-1 space-y-2 max-w-sm">
+                          {[5, 4, 3, 2, 1].map((star) => {
+                            const count = reviewStats.ratingDistribution?.[star as keyof typeof reviewStats.ratingDistribution] || 0;
+                            const percentage = reviewStats.totalReviews > 0 ? (count / reviewStats.totalReviews) * 100 : 0;
+                            return (
+                              <div key={star} className="flex items-center gap-3">
+                                <div className="flex items-center gap-1 w-10">
+                                  <span className="text-sm font-semibold text-foreground">
+                                    {star}
+                                  </span>
+                                  <Star
+                                    size={14}
+                                    color="currentColor"
+                                    weight="fill"
+                                    className="text-foreground/40"
+                                  />
+                                </div>
+                                <div className="flex-1 h-2 bg-foreground/10 rounded-full overflow-hidden">
+                                  <div
+                                    className="h-full bg-foreground/80 rounded-full"
+                                    style={{ width: `${percentage}%` }}
+                                  />
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Reviews List */}
+                  <div className="space-y-8">
+                    {reviews.map((review: any) => (
+                      <div
+                        key={review.id}
+                        className="pb-8 border-b border-foreground/5 last:border-b-0"
+                      >
+                        <div className="flex items-start justify-between mb-4">
+                          <div className="flex items-start gap-4 flex-1">
+                            {review.userAvatar ? (
+                              <img
+                                src={review.userAvatar}
+                                alt={review.userName}
+                                className="w-12 h-12 rounded-full"
+                              />
+                            ) : (
+                              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                                <User size={24} color="currentColor" weight="fill" className="text-primary" />
+                              </div>
+                            )}
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-2">
+                                <h4 className="font-semibold text-foreground">
+                                  {review.userName}
+                                </h4>
+                                <div className="flex items-center gap-1">
+                                  {[1, 2, 3, 4, 5].map((star) => (
+                                    <Star
+                                      key={star}
+                                      size={16}
+                                      color="currentColor"
+
+                                      className={
+                                        star <= review.rating
+                                          ? "text-primary"
+                                          : "text-foreground/30"
+                                      }
+                                    />
+                                  ))}
+                                </div>
+                              </div>
+                              {review.title && (
+                                <h5 className="font-medium text-foreground mb-1">
+                                  {review.title}
+                                </h5>
+                              )}
+                              <p className="text-sm text-foreground/60">
+                                {new Date(review.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                        <p className="text-foreground/70 mb-4 leading-relaxed">
+                          {review.comment}
+                        </p>
+                        {review.photos && review.photos.length > 0 && (
+                          <div className="grid grid-cols-3 gap-2 mb-4">
+                            {review.photos.map((photo: string, index: number) => (
+                              <div
+                                key={index}
+                                className="aspect-square rounded-xl overflow-hidden border border-foreground/10"
+                              >
+                                <img
+                                  src={photo}
+                                  alt={`Review photo ${index + 1}`}
+                                  className="w-full h-full object-cover"
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        <div className="flex items-center gap-4 pt-4 border-t border-foreground/10">
+                          <button className="flex items-center gap-2 text-sm text-foreground/60 hover:text-primary transition-colors">
+                            <CheckCircle size={16} color="currentColor" weight="regular" />
+                            <span>Helpful ({review.helpfulCount || 0})</span>
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Load DotsThree */}
+                  {reviewStats?.totalReviews > 5 && (
+                    <div className="text-center mt-6">
+                      <Button variant="outline" size="md">
+                        Load DotsThree Reviews
+                      </Button>
+                    </div>
+                  )}
+                </div>
+
+
               </div>
 
-              {/* Load DotsThree */}
-              {reviewStats?.totalReviews > 5 && (
-                <div className="text-center mt-6">
-                  <Button variant="outline" size="md">
-                    Load DotsThree Reviews
-                  </Button>
-                </div>
-              )}
-            </div>
+              {/* Right Column - Ticket Purchase (Desktop Only) */}
+              <div className="hidden lg:block lg:col-span-1">
+                <div className="sticky top-24">
+                  <div className="bg-white dark:bg-neutral-900 border border-foreground/10 rounded-3xl p-6 lg:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgba(255,255,255,0.02)]">
+                    <p className="text-sm text-foreground/60 mb-4">
+                      {event.attendees.toLocaleString()} people going
+                    </p>
 
+                    {/* Ticket Type Selector */}
+                    {event.tickets && event.tickets.length > 0 && (
+                      <div className="mb-6">
+                        <p className="text-sm font-semibold text-foreground mb-3">Select Ticket</p>
+                        <div className="space-y-2">
+                          {event.tickets.map((ticket: any) => {
+                            const isSoldOut = ticket.remaining === 0;
+                            const isFree = ticket.type === 'FREE' || ticket.price === 0;
+                            const isSelected = selectedTicketId === ticket.id;
+                            return (
+                              <button
+                                key={ticket.id}
+                                onClick={() => !isSoldOut && setSelectedTicketId(ticket.id)}
+                                disabled={isSoldOut}
+                                className={`w-full p-3 rounded-xl border-2 text-left transition-all ${isSelected
+                                    ? 'border-primary bg-primary/10'
+                                    : isSoldOut
+                                      ? 'border-foreground/10 opacity-50 cursor-not-allowed'
+                                      : 'border-foreground/15 hover:border-primary/50'
+                                  }`}
+                              >
+                                <div className="flex items-center justify-between gap-2">
+                                  <div className="flex items-center gap-2.5 min-w-0">
+                                    <div className={`w-4 h-4 rounded-full border-2 shrink-0 flex items-center justify-center ${isSelected ? 'border-primary bg-primary' : 'border-foreground/30'}`}>
+                                      {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                                    </div>
+                                    <div className="min-w-0">
+                                      <p className="text-sm font-semibold text-foreground truncate">{ticket.name}</p>
+                                      {isSoldOut && <p className="text-xs text-foreground/40">Sold out</p>}
+                                      {!isSoldOut && ticket.remaining <= 20 && (
+                                        <p className="text-xs text-red-500">Only {ticket.remaining} left</p>
+                                      )}
+                                    </div>
+                                  </div>
+                                  <span className="text-sm font-bold text-primary shrink-0">
+                                    {isFree ? 'Free' : `₦${ticket.price.toLocaleString()}`}
+                                  </span>
+                                </div>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Ticket Quantity */}
+                    <div className="mb-6">
+                      <label className="block text-sm font-semibold text-foreground mb-3">
+                        Number of Tickets
+                      </label>
+                      <div className="flex items-center gap-4">
+                        <button
+                          onClick={() => setTicketQuantity(Math.max(1, ticketQuantity - 1))}
+                          className="w-10 h-10 rounded-full border-2 border-foreground/20 flex items-center justify-center hover:border-primary hover:text-primary transition-colors"
+                        >
+                          -
+                        </button>
+                        <span className="text-xl font-bold text-foreground min-w-[3rem] text-center">
+                          {ticketQuantity}
+                        </span>
+                        <button
+                          onClick={() => setTicketQuantity(ticketQuantity + 1)}
+                          className="w-10 h-10 rounded-full border-2 border-foreground/20 flex items-center justify-center hover:border-primary hover:text-primary transition-colors"
+                        >
+                          +
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Total Price */}
+                    {(() => {
+                      const sel = event.tickets?.find((t: any) => t.id === selectedTicketId);
+                      const selPrice = sel?.price || 0;
+                      const selFree = sel?.type === 'FREE' || selPrice === 0;
+                      return !selFree && selPrice > 0 ? (
+                        <div className="mb-6 p-4 bg-primary/10 rounded-xl">
+                          <div className="flex justify-between items-center">
+                            <span className="text-foreground/70">Total</span>
+                            <span className="text-xl font-bold text-primary">
+                              ₦{(selPrice * ticketQuantity).toLocaleString()}
+                            </span>
+                          </div>
+                        </div>
+                      ) : null;
+                    })()}
+
+                    {/* CTA Button */}
+                    <Button
+                      variant="primary"
+                      size="lg"
+                      fullWidth
+                      onClick={() => {
+                        const params = new URLSearchParams({ qty: String(ticketQuantity) });
+                        if (selectedTicketId) params.set('typeId', selectedTicketId);
+                        window.location.href = `/events/${eventId}/checkout?${params}`;
+                      }}
+                    >
+                      <Ticket size={20} color="currentColor" weight="fill" />
+                      Get Tickets
+                    </Button>
+
+                    {/* Join Event Chat Button - Only show if user has ticket or is organizer */}
+                    {(
+                      <Button
+                        variant="outline"
+                        size="md"
+                        fullWidth
+                        onClick={() => openEventChat(eventId)}
+                        className="mt-3"
+                      >
+                        <ChatText size={18} color="currentColor" weight="regular" />
+                        Join Event Chat
+                      </Button>
+                    )}
+
+                    {/* Additional Info */}
+                    <div className="mt-6 pt-6 border-t border-foreground/10 space-y-3 text-sm text-foreground/60">
+                      <div className="flex items-start gap-2">
+                        <Tag size={16} color="currentColor" weight="regular" />
+                        <span>Free cancellation up to 24 hours before event</span>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <Ticket size={16} color="currentColor" weight="regular" />
+                        <span>Mobile tickets accepted</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-10">
             {/* Related Events */}
             {relatedEvents.length > 0 && (
               <div>
@@ -872,152 +1007,11 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
               </div>
             )}
           </div>
-
-          {/* Right Column - Ticket Purchase (Desktop Only) */}
-          <div className="hidden lg:block lg:col-span-1">
-            <div className="sticky top-24">
-              <div className="bg-white dark:bg-neutral-900 border border-foreground/10 rounded-3xl p-6 lg:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgba(255,255,255,0.02)]">
-                <p className="text-sm text-foreground/60 mb-4">
-                  {event.attendees.toLocaleString()} people going
-                </p>
-
-                {/* Ticket Type Selector */}
-                {event.tickets && event.tickets.length > 0 && (
-                  <div className="mb-6">
-                    <p className="text-sm font-semibold text-foreground mb-3">Select Ticket</p>
-                    <div className="space-y-2">
-                      {event.tickets.map((ticket: any) => {
-                        const isSoldOut = ticket.remaining === 0;
-                        const isFree = ticket.type === 'FREE' || ticket.price === 0;
-                        const isSelected = selectedTicketId === ticket.id;
-                        return (
-                          <button
-                            key={ticket.id}
-                            onClick={() => !isSoldOut && setSelectedTicketId(ticket.id)}
-                            disabled={isSoldOut}
-                            className={`w-full p-3 rounded-xl border-2 text-left transition-all ${
-                              isSelected
-                                ? 'border-primary bg-primary/10'
-                                : isSoldOut
-                                ? 'border-foreground/10 opacity-50 cursor-not-allowed'
-                                : 'border-foreground/15 hover:border-primary/50'
-                            }`}
-                          >
-                            <div className="flex items-center justify-between gap-2">
-                              <div className="flex items-center gap-2.5 min-w-0">
-                                <div className={`w-4 h-4 rounded-full border-2 shrink-0 flex items-center justify-center ${isSelected ? 'border-primary bg-primary' : 'border-foreground/30'}`}>
-                                  {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
-                                </div>
-                                <div className="min-w-0">
-                                  <p className="text-sm font-semibold text-foreground truncate">{ticket.name}</p>
-                                  {isSoldOut && <p className="text-xs text-foreground/40">Sold out</p>}
-                                  {!isSoldOut && ticket.remaining <= 20 && (
-                                    <p className="text-xs text-red-500">Only {ticket.remaining} left</p>
-                                  )}
-                                </div>
-                              </div>
-                              <span className="text-sm font-bold text-primary shrink-0">
-                                {isFree ? 'Free' : `₦${ticket.price.toLocaleString()}`}
-                              </span>
-                            </div>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-
-                {/* Ticket Quantity */}
-                <div className="mb-6">
-                  <label className="block text-sm font-semibold text-foreground mb-3">
-                    Number of Tickets
-                  </label>
-                  <div className="flex items-center gap-4">
-                    <button
-                      onClick={() => setTicketQuantity(Math.max(1, ticketQuantity - 1))}
-                      className="w-10 h-10 rounded-full border-2 border-foreground/20 flex items-center justify-center hover:border-primary hover:text-primary transition-colors"
-                    >
-                      -
-                    </button>
-                    <span className="text-xl font-bold text-foreground min-w-[3rem] text-center">
-                      {ticketQuantity}
-                    </span>
-                    <button
-                      onClick={() => setTicketQuantity(ticketQuantity + 1)}
-                      className="w-10 h-10 rounded-full border-2 border-foreground/20 flex items-center justify-center hover:border-primary hover:text-primary transition-colors"
-                    >
-                      +
-                    </button>
-                  </div>
-                </div>
-
-                {/* Total Price */}
-                {(() => {
-                  const sel = event.tickets?.find((t: any) => t.id === selectedTicketId);
-                  const selPrice = sel?.price || 0;
-                  const selFree = sel?.type === 'FREE' || selPrice === 0;
-                  return !selFree && selPrice > 0 ? (
-                    <div className="mb-6 p-4 bg-primary/10 rounded-xl">
-                      <div className="flex justify-between items-center">
-                        <span className="text-foreground/70">Total</span>
-                        <span className="text-xl font-bold text-primary">
-                          ₦{(selPrice * ticketQuantity).toLocaleString()}
-                        </span>
-                      </div>
-                    </div>
-                  ) : null;
-                })()}
-
-                {/* CTA Button */}
-                <Button
-                  variant="primary"
-                  size="lg"
-                  fullWidth
-                  onClick={() => {
-                    const params = new URLSearchParams({ qty: String(ticketQuantity) });
-                    if (selectedTicketId) params.set('typeId', selectedTicketId);
-                    window.location.href = `/events/${eventId}/checkout?${params}`;
-                  }}
-                >
-                  <Ticket size={20} color="currentColor" weight="fill" />
-                  Get Tickets
-                </Button>
-
-                {/* Join Event Chat Button - Only show if user has ticket or is organizer */}
-                {(
-                  <Button
-                    variant="outline"
-                    size="md"
-                    fullWidth
-                    onClick={() => openEventChat(eventId)}
-                    className="mt-3"
-                  >
-                    <ChatText size={18} color="currentColor" weight="regular" />
-                    Join Event Chat
-                  </Button>
-                )}
-
-                {/* Additional Info */}
-                <div className="mt-6 pt-6 border-t border-foreground/10 space-y-3 text-sm text-foreground/60">
-                  <div className="flex items-start gap-2">
-                    <Tag size={16} color="currentColor" weight="regular" />
-                    <span>Free cancellation up to 24 hours before event</span>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <Ticket size={16} color="currentColor" weight="regular" />
-                    <span>Mobile tickets accepted</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        </main>
       </div>
-      </main>
-    </div>
 
-    {/* Live game overlay for attendees */}
-    <AttendeeGameView eventId={eventId} />
+      {/* Live game overlay for attendees */}
+      <AttendeeGameView eventId={eventId} />
     </>
   );
 };
