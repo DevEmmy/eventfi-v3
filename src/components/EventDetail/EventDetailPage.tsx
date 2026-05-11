@@ -25,6 +25,7 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
   const [selectedTicketId, setSelectedTicketId] = useState<string>("");
 
   const [event, setEvent] = useState<any>(null);
+  const [accent, setAccent] = useState<string | undefined>(undefined);
   const [reviews, setReviews] = useState<any[]>([]);
   const [reviewStats, setReviewStats] = useState<any>(null);
   const [relatedEvents, setRelatedEvents] = useState<any[]>([]);
@@ -91,6 +92,7 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
         setEvent(mappedEvent);
         setSpeakers(data.speakers || []);
         setOrganizerId(data.organizerId || data.organizer?.id || null);
+        if (data.colorPalette?.accent) setAccent(data.colorPalette.accent);
         setHasTicket(data.hasTicket || data.userHasTicket || false);
 
         // Pre-select the first available ticket type
@@ -199,12 +201,15 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
 
   return (
     <>
-    <div className="min-h-screen bg-background relative overflow-hidden">
+    <div
+      className="min-h-screen bg-background relative overflow-hidden"
+      style={accent ? { '--primary': accent } as React.CSSProperties : undefined}
+    >
       {/* Background Pattern */}
       <div className="absolute inset-0 z-0 pointer-events-none text-foreground opacity-10 dark:opacity-10 bg-whatsapp-pattern" />
 
       {/* Back Button */}
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-6 relative z-10">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-6 relative z-10">
         <button
           onClick={() => router.back()}
           className="flex items-center gap-2 text-foreground/70 hover:text-primary transition-colors"
@@ -214,7 +219,7 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
         </button>
       </div>
 
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 py-6 lg:py-8 relative z-10">
+      <main className="max-w-5xl mx-auto px-4 sm:px-6 py-6 lg:py-8 relative z-10">
       {/* Hero Image Section */}
       <div className="relative w-full aspect-video sm:h-[400px] rounded-3xl overflow-hidden shadow-sm bg-background bg-gradient-to-br from-primary/20 via-secondary/20 to-accent/20 mb-8 border border-foreground/10">
         {event.image ? (
@@ -287,12 +292,12 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
 
       {/* Main Content Split */}
       <div>
-        <div className="grid lg:grid-cols-[1fr_340px] gap-8 lg:gap-12">
+        <div className="grid lg:grid-cols-[1fr_360px] gap-8 lg:gap-12">
           {/* Left Column - Main Content */}
-          <div className="space-y-8">
+          <div className="space-y-8 min-w-0">
             {/* Event Header */}
             <div>
-              <h1 className="text-4xl lg:text-5xl font-bold font-[family-name:var(--font-clash-display)] tracking-tight mb-8 text-foreground">
+              <h1 className="text-4xl lg:text-5xl font-bold font-[family-name:var(--font-clash-display)] tracking-tight mb-8 text-foreground break-words">
                 {event.title}
               </h1>
 
