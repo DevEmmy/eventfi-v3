@@ -162,7 +162,7 @@ const PayoutPage: React.FC = () => {
             toast.success("Account verified successfully!");
             setStep("overview");
         } catch (err: any) {
-            toast.error(err.response?.data?.message || "Verification failed — name does not match");
+            toast.error(err.response?.data?.message || "Verification failed, name does not match");
         } finally {
             setActionLoading(false);
         }

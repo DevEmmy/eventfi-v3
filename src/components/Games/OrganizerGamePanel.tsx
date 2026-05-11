@@ -247,7 +247,7 @@ const OrganizerGamePanel: React.FC<OrganizerGamePanelProps> = ({ eventId }) => {
               </p>
             </div>
             <ul className="text-xs text-foreground/50 space-y-1">
-              <li className="flex items-center gap-1.5"><span className="w-1 h-1 rounded-full bg-primary inline-block" />Set a time window — game auto-ends</li>
+              <li className="flex items-center gap-1.5"><span className="w-1 h-1 rounded-full bg-primary inline-block" />Set a time window, game auto-ends</li>
               <li className="flex items-center gap-1.5"><span className="w-1 h-1 rounded-full bg-primary inline-block" />Live top-5 leaderboard as taps roll in</li>
               <li className="flex items-center gap-1.5"><span className="w-1 h-1 rounded-full bg-primary inline-block" />Attendees see their own tap count</li>
             </ul>
@@ -276,7 +276,7 @@ const OrganizerGamePanel: React.FC<OrganizerGamePanelProps> = ({ eventId }) => {
             </div>
 
             <Button variant="outline" size="sm" leftIcon={Lightning} onClick={handleLaunchApplause} disabled={!!launching}>
-              {launching === "APPLAUSE_METER" ? "Launching…" : `Launch — ${DURATION_OPTIONS.find((o) => o.value === selectedDuration)?.label}`}
+              {launching === "APPLAUSE_METER" ? "Launching…" : `Launch, ${DURATION_OPTIONS.find((o) => o.value === selectedDuration)?.label}`}
             </Button>
           </div>
         </div>
@@ -299,7 +299,7 @@ const OrganizerGamePanel: React.FC<OrganizerGamePanelProps> = ({ eventId }) => {
               <Gift size={20} color="#f59e0b" weight="fill" />
             </div>
             <div>
-              <h3 className="font-bold text-foreground">Lucky Draw — Live</h3>
+              <h3 className="font-bold text-foreground">Lucky Draw, Live</h3>
               <p className="text-xs text-foreground/50">
                 {drawTotalPool > 0 ? `${drawTotalPool} eligible ticket holders` : "Fetching participant count…"}
               </p>
@@ -321,7 +321,7 @@ const OrganizerGamePanel: React.FC<OrganizerGamePanelProps> = ({ eventId }) => {
                 <span className="text-4xl font-bold text-yellow-400 tabular-nums">{drawCountdown}</span>
               </div>
             </div>
-            <p className="text-sm font-semibold text-foreground/70">Drawing winner — attendees are watching…</p>
+            <p className="text-sm font-semibold text-foreground/70">Drawing winner, attendees are watching…</p>
           </div>
         )}
 
@@ -403,7 +403,7 @@ const OrganizerGamePanel: React.FC<OrganizerGamePanelProps> = ({ eventId }) => {
               <MusicNote size={20} color="currentColor" weight="fill" className="text-primary" />
             </div>
             <div>
-              <h3 className="font-bold text-foreground">Applause Meter — Live</h3>
+              <h3 className="font-bold text-foreground">Applause Meter, Live</h3>
               <p className="text-xs text-foreground/50">
                 {participantCount} participant{participantCount !== 1 ? "s" : ""} tapping
               </p>

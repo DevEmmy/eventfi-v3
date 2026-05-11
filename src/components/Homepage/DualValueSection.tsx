@@ -38,7 +38,7 @@ const DualValueSection = () => {
                 Planning an Event?
               </h2>
               <p className="text-lg text-foreground/70 mb-8 leading-relaxed">
-                Handle ticketing, book vendors, and engage your audience—all in
+                Handle ticketing, book vendors, and engage your audience, all in
                 one dashboard.
               </p>
 

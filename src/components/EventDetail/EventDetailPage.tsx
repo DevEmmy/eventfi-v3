@@ -992,7 +992,7 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
                 <h2 className="text-2xl font-bold font-[family-name:var(--font-clash-display)] mb-6 text-foreground">
                   You Might Also Like
                 </h2>
-                <div className="grid sm:grid-cols-2 gap-6">
+                <div className="grid md:grid-cols-3 gap-6">
                   {relatedEvents.map((relatedEvent) => (
                     <div
                       key={relatedEvent.id}

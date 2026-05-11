@@ -10,7 +10,7 @@ const HowItWorksSection = () => {
       number: "01",
       title: "Create & Customize",
       description:
-        "Set up your event page, define ticket tiers, and add your brand colors—no coding needed.",
+        "Set up your event page, define ticket tiers, and add your brand colors, no coding needed.",
       icon: FileText,
       color: "primary",
     },

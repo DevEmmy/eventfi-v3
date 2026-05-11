@@ -131,7 +131,7 @@ export const AIAssistPanel: React.FC<AIAssistPanelProps> = ({ onGenerated }) => 
           <div>
             <h2 className="text-lg font-bold text-foreground">AI Event Assistant</h2>
             <p className="text-sm text-foreground/55 mt-0.5">
-              Describe, upload a flyer, or attach a document — AI will fill everything in for you.
+              Describe, upload a flyer, or attach a document, AI will fill everything in for you.
             </p>
           </div>
         </div>
@@ -253,7 +253,7 @@ export const AIAssistPanel: React.FC<AIAssistPanelProps> = ({ onGenerated }) => 
                 type="text"
                 value={extraContext}
                 onChange={(e) => setExtraContext(e.target.value)}
-                placeholder="e.g. Tickets are ₦5,000 — not shown on flyer"
+                placeholder="e.g. Tickets are ₦5,000, not shown on flyer"
                 disabled={loading}
                 className="w-full px-3.5 py-2.5 bg-background/80 border border-foreground/15 rounded-xl text-sm text-foreground placeholder:text-foreground/30 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200"
               />

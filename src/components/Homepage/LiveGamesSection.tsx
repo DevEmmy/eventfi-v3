@@ -123,7 +123,7 @@ const games = [
     title: "Lucky Draw",
     tagline: "Zero-config raffles, instant drama",
     description:
-      "Randomly pick winner(s) from your registered attendees with one tap. No spreadsheets, no manual entry — EventFi sources the pool automatically from ticket holders.",
+      "Randomly pick winner(s) from your registered attendees with one tap. No spreadsheets, no manual entry, EventFi sources the pool automatically from ticket holders.",
     icon: Gift,
     iconColor: "#f59e0b",
     iconBg: "bg-yellow-500/10",
@@ -153,7 +153,7 @@ const games = [
     accentText: "text-primary",
     perks: [
       "Live counter updates for the whole room",
-      "Rate-limited taps — no bots",
+      "Rate-limited taps, no bots",
       "Works on any device, no app install",
     ],
     mockup: <ApplauseMockup />,
@@ -177,7 +177,7 @@ const LiveGamesSection = () => {
             <span className="text-primary">an Experience</span>
           </h2>
           <p className="text-lg lg:text-xl text-foreground/70 leading-relaxed">
-            Launch interactive activities for your attendees in seconds — no
+            Launch interactive activities for your attendees in seconds, no
             setup, no config. Just pick a game and go live.
           </p>
         </div>

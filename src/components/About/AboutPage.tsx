@@ -45,7 +45,7 @@ const AboutPage = () => {
               About EventFi
             </h1>
             <p className="text-xl lg:text-2xl text-foreground/70 mb-8 leading-relaxed">
-              We're building the future of event management—one seamless experience at a time.
+              We're building the future of event management, one seamless experience at a time.
             </p>
           </div>
         </div>
@@ -60,7 +60,7 @@ const AboutPage = () => {
             </h2>
             <div className="space-y-6 text-lg text-foreground/70 leading-relaxed">
               <p>
-                EventFi was born from a simple observation: organizing events shouldn't require juggling multiple tools, unreliable vendors, or disconnected experiences. We believe every event—from intimate meetups to large conferences—deserves professional-grade tools that are accessible, intuitive, and powerful.
+                EventFi was born from a simple observation: organizing events shouldn't require juggling multiple tools, unreliable vendors, or disconnected experiences. We believe every event, from intimate meetups to large conferences, deserves professional-grade tools that are accessible, intuitive, and powerful.
               </p>
               <p>
                 Our mission is to empower organizers with an all-in-one platform that handles everything from ticketing and vendor bookings to in-event engagement, while creating unforgettable experiences for attendees through gamification, rewards, and seamless discovery.
@@ -183,7 +183,7 @@ const AboutPage = () => {
                 EventFi started in 2024 when a group of event organizers and tech enthusiasts came together with a shared frustration: the event management landscape was fragmented, expensive, and unnecessarily complex.
               </p>
               <p>
-                After organizing hundreds of events between us—from tech meetups to music festivals—we knew there had to be a better way. We envisioned a platform that would bring together ticketing, vendor management, attendee engagement, and community building under one roof.
+                After organizing hundreds of events between us, from tech meetups to music festivals, we knew there had to be a better way. We envisioned a platform that would bring together ticketing, vendor management, attendee engagement, and community building under one roof.
               </p>
               <p>
                 Today, EventFi serves organizers across Nigeria and beyond, helping them create memorable events while building a vibrant community of event-goers, vendors, and creators. We're just getting started.

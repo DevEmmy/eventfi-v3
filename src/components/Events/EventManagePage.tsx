@@ -286,7 +286,7 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
     try {
       await ChatService.updateSettings(eventId, { isActive: !chatActive });
       setChatActive((prev) => !prev);
-      customToast.success(chatActive ? "Chat paused — attendees can read but not send messages" : "Chat enabled");
+      customToast.success(chatActive ? "Chat paused, attendees can read but not send messages" : "Chat enabled");
     } catch (error: any) {
       customToast.error(error.response?.data?.message || "Failed to update chat settings");
     } finally {

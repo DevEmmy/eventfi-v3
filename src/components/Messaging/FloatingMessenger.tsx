@@ -605,7 +605,7 @@ const FloatingMessenger: React.FC = () => {
                 <div className="px-4 py-1 bg-amber-500/10 border-b border-amber-500/20 shrink-0">
                   <p className="text-xs text-amber-600 dark:text-amber-400">
                     Slow mode: {slowModeSeconds}s between messages
-                    {slowModeRemaining > 0 && ` — wait ${slowModeRemaining}s`}
+                    {slowModeRemaining > 0 && `, wait ${slowModeRemaining}s`}
                   </p>
                 </div>
               )}
@@ -739,7 +739,7 @@ const FloatingMessenger: React.FC = () => {
                   <div className="p-4 border-t border-foreground/10 bg-background shrink-0">
                     {isReadOnly ? (
                       <div className="text-center text-sm text-foreground/50 py-3 px-4 bg-foreground/5 rounded-xl">
-                        💬 Chat is paused — you can read messages but cannot send new ones
+                        💬 Chat is paused, you can read messages but cannot send new ones
                       </div>
                     ) : chatStore.isMuted ? (
                       <div className="text-center text-sm text-foreground/60 py-3">

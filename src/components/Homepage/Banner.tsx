@@ -31,7 +31,7 @@ const Banner = () => {
       </>
     ),
     subheadline:
-      "The complete toolkit for organizers: Ticketing, logistics, vendor bookings, and live engagement—all in one place.",
+      "The complete toolkit for organizers: Ticketing, logistics, vendor bookings, and live engagement, all in one place.",
     primaryCTA: {
       label: "Create Event",
       icon: CalendarPlus,

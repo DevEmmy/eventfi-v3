@@ -276,7 +276,7 @@ const AttendeeGameView: React.FC<AttendeeGameViewProps> = ({ eventId }) => {
           </div>
           <div className="flex-1">
             <p className="font-bold text-foreground text-sm">Lucky Draw is Live!</p>
-            <p className="text-xs text-foreground/50 mt-0.5">Stay tuned — the organizer is about to draw a winner</p>
+            <p className="text-xs text-foreground/50 mt-0.5">Stay tuned, the organizer is about to draw a winner</p>
           </div>
           <span className="flex items-center gap-1 px-2 py-1 rounded-full bg-green-500/10 text-green-500 text-xs font-semibold shrink-0">
             <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block animate-pulse" />

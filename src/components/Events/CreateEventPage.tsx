@@ -223,7 +223,7 @@ const CreateEventPage = () => {
 
     setAiFilledFields(filled);
     setShowAIPanel(false);
-    customToast.success(`AI filled ${filled} fields — review and publish when ready!`);
+    customToast.success(`AI filled ${filled} fields, review and publish when ready!`);
   };
 
   const handleSaveDraft = async () => {
@@ -883,7 +883,7 @@ const CreateEventPage = () => {
                   <>
                     <div>
                       <label className="block text-sm font-semibold text-foreground mb-2">
-                        Venue Name <span className="text-foreground/40 font-normal">(optional — can be added later)</span>
+                        Venue Name <span className="text-foreground/40 font-normal">(optional, can be added later)</span>
                       </label>
                       <input
                         type="text"
@@ -896,7 +896,7 @@ const CreateEventPage = () => {
                     </div>
                     <div>
                       <label className="block text-sm font-semibold text-foreground mb-2">
-                        Address <span className="text-foreground/40 font-normal">(optional — attendees will be notified when added)</span>
+                        Address <span className="text-foreground/40 font-normal">(optional, attendees will be notified when added)</span>
                       </label>
                       <input
                         type="text"
@@ -1116,7 +1116,7 @@ const CreateEventPage = () => {
                   onClick={() => setShowAIPanel(false)}
                   className="text-xs text-foreground/40 hover:text-foreground/60 transition-colors whitespace-nowrap"
                 >
-                  Skip — fill manually
+                  Skip, fill manually
                 </button>
                 <div className="flex-1 h-px bg-foreground/10" />
               </div>
@@ -1127,7 +1127,7 @@ const CreateEventPage = () => {
                 <div className="flex items-center gap-2 px-3 py-1.5 bg-green-500/10 border border-green-500/20 rounded-full">
                   <span className="w-2 h-2 rounded-full bg-green-500" />
                   <span className="text-xs font-medium text-green-600 dark:text-green-400">
-                    AI filled {aiFilledFields} fields — review below
+                    AI filled {aiFilledFields} fields, review below
                   </span>
                 </div>
               )}

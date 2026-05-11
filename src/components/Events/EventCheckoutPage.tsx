@@ -667,7 +667,7 @@ const EventCheckoutPage: React.FC<EventCheckoutPageProps> = ({ eventId }) => {
                         Secured by Paystack
                       </p>
                       <p className="text-xs text-foreground/60">
-                        256-bit SSL encryption — your payment is safe
+                        256-bit SSL encryption, your payment is safe
                       </p>
                     </div>
                   </div>
