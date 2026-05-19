@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Button from "@/components/Button";
-import { CaretLeft, CalendarBlank, MapPin, Clock, Users, Ticket, Coins, ChartBar, PencilSimple, Trash, ShareNetwork, Copy, DotsThree, CaretUp, CaretDown, User, Envelope, Phone, Export, Eye, Plus, MagnifyingGlass, XCircle, PaperPlaneRight, FileText, CheckCircle, Gift, ChatText, Minus, Link, QrCode } from '@phosphor-icons/react';
+import { CaretLeft, CalendarBlank, MapPin, Clock, Users, Ticket, Coins, ChartBar, PencilSimple, Trash, ShareNetwork, Copy, DotsThree, CaretUp, CaretDown, User, Envelope, Phone, Export, Eye, Plus, MagnifyingGlass, XCircle, PaperPlaneRight, FileText, CheckCircle, Gift, ChatText, Minus, Link, QrCode, UploadSimple } from '@phosphor-icons/react';
 import { QRCodeCanvas } from "qrcode.react";
 import { ManageEventService } from "@/services/manage";
 import { ChatService } from "@/services/chat";
@@ -972,6 +972,14 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                     onClick={handleExport}
                   >
                     Export
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    leftIcon={UploadSimple}
+                    onClick={() => router.push(`/events/${eventId}/import`)}
+                  >
+                    Import
                   </Button>
                 </div>
               </div>
