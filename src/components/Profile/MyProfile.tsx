@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import ProfileHeader from "./ProfileHeader";
 import ProfileTabs from "./ProfileTabs";
 import QuickActions from "./QuickActions";
-import MyEvents from "./MyEvents";
+import MyEvents, { MyEventItem } from "./MyEvents";
 import MyTickets from "./MyTickets";
 import VendorProfileSection from "./VendorProfileSection";
 import SettingsSection from "./SettingsSection";
@@ -14,7 +14,7 @@ import VendorDashboardContent from "./VendorDashboardContent";
 import SavedEvents from "./SavedEvents";
 import { CalendarBlank, Ticket, Storefront, Gear, House, ChartBar, Heart, Wallet } from '@phosphor-icons/react';
 import PayoutPage from "@/components/Organizer/PayoutPage";
-import EventCard, { EventCardProps } from "@/components/Homepage/EventCard";
+import EventCard from "@/components/Homepage/EventCard";
 import { useUserStore } from "@/store/useUserStore";
 import { getTicketPriceInfo } from "@/utils/ticket-pricing";
 
@@ -94,7 +94,7 @@ const MyProfile: React.FC<MyProfileProps> = ({ userData }) => {
   const isOrganizer = true;
 
   // State for events, tickets, and dashboard
-  const [myEvents, setMyEvents] = useState<EventCardProps[]>([]);
+  const [myEvents, setMyEvents] = useState<MyEventItem[]>([]);
   const [myTickets, setMyTickets] = useState<any[]>([]);
   const [eventsLoading, setEventsLoading] = useState(true);
   const [ticketsLoading, setTicketsLoading] = useState(true);
@@ -126,6 +126,8 @@ const MyProfile: React.FC<MyProfileProps> = ({ userData }) => {
             category: event.category,
             attendees: event.attendeesCount || 0,
             image: event.coverImage,
+            // userRole is 'organizer' for own events, or the team role for invited events
+            userRole: event.userRole !== 'organizer' ? event.userRole : undefined,
           };
         });
 
@@ -388,16 +390,26 @@ const MyProfile: React.FC<MyProfileProps> = ({ userData }) => {
                   </button>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                  {myEvents.slice(0, 4).map((event) => (
-                    <div
-                      key={event.id}
-                      onClick={() => {
-                        window.location.href = `/events/${event.id}`;
-                      }}
-                    >
-                      <EventCard {...event} />
-                    </div>
-                  ))}
+                  {myEvents.slice(0, 4).map((event) => {
+                    const roleLabels: Record<string, string> = { "co-host": "Co-host", manager: "Manager", assistant: "Assistant" };
+                    const roleLabel = event.userRole ? roleLabels[event.userRole] : null;
+                    return (
+                      <div
+                        key={event.id}
+                        className="relative"
+                        onClick={() => { window.location.href = `/events/${event.id}`; }}
+                      >
+                        <EventCard {...event} />
+                        {roleLabel && (
+                          <div className="absolute top-2 left-2 pointer-events-none">
+                            <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-secondary/90 text-secondary-foreground backdrop-blur-sm">
+                              {roleLabel}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}

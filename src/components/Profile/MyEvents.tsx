@@ -5,10 +5,21 @@ import EventCard, { EventCardProps } from "@/components/Homepage/EventCard";
 import Button from "@/components/Button";
 import { CalendarPlus, FileText, ChartBar, Eye } from '@phosphor-icons/react';
 
+export interface MyEventItem extends EventCardProps {
+  /** Role this user holds on the event. Absent means organizer. */
+  userRole?: string;
+}
+
 interface MyEventsProps {
-  events: EventCardProps[];
+  events: MyEventItem[];
   onCreateEvent?: () => void;
 }
+
+const ROLE_LABELS: Record<string, string> = {
+  "co-host": "Co-host",
+  manager: "Manager",
+  assistant: "Assistant",
+};
 
 const MyEvents: React.FC<MyEventsProps> = ({ events, onCreateEvent }) => {
   if (events.length === 0) {
@@ -49,7 +60,7 @@ const MyEvents: React.FC<MyEventsProps> = ({ events, onCreateEvent }) => {
             My Events
           </h3>
           <p className="text-foreground/60 mt-1">
-            {events.length} {events.length === 1 ? "event" : "events"} created
+            {events.length} {events.length === 1 ? "event" : "events"}
           </p>
         </div>
         <Button
@@ -64,45 +75,55 @@ const MyEvents: React.FC<MyEventsProps> = ({ events, onCreateEvent }) => {
 
       {/* Events Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {events.map((event) => (
-          <div key={event.id} className="group relative">
-          <div
-            onClick={() => {
-              window.location.href = `/events/${event.id}`;
-            }}
-              className="cursor-pointer"
-          >
-            <EventCard {...event} />
-            </div>
-            {/* Quick Actions Overlay */}
-            <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  window.location.href = `/events/${event.id}/manage`;
-                }}
-                className="p-2 bg-background/90 backdrop-blur-sm rounded-lg hover:bg-background transition-colors shadow-lg"
-                title="Manage Event"
+        {events.map((event) => {
+          const roleLabel = event.userRole ? ROLE_LABELS[event.userRole] : null;
+          return (
+            <div key={event.id} className="group relative">
+              <div
+                onClick={() => { window.location.href = `/events/${event.id}`; }}
+                className="cursor-pointer"
               >
-                <ChartBar size={18} color="currentColor" weight="fill" className="text-primary" />
-              </button>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  window.location.href = `/events/${event.id}`;
-                }}
-                className="p-2 bg-background/90 backdrop-blur-sm rounded-lg hover:bg-background transition-colors shadow-lg"
-                title="View Public Page"
-              >
-                <Eye size={18} color="currentColor" weight="regular" />
-              </button>
+                <EventCard {...event} />
+              </div>
+
+              {/* Role badge for team-member events */}
+              {roleLabel && (
+                <div className="absolute top-2 left-2 pointer-events-none">
+                  <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-secondary/90 text-secondary-foreground backdrop-blur-sm">
+                    {roleLabel}
+                  </span>
+                </div>
+              )}
+
+              {/* Quick Actions Overlay */}
+              <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    window.location.href = `/events/${event.id}/manage`;
+                  }}
+                  className="p-2 bg-background/90 backdrop-blur-sm rounded-lg hover:bg-background transition-colors shadow-lg"
+                  title="Manage Event"
+                >
+                  <ChartBar size={18} color="currentColor" weight="fill" className="text-primary" />
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    window.location.href = `/events/${event.id}`;
+                  }}
+                  className="p-2 bg-background/90 backdrop-blur-sm rounded-lg hover:bg-background transition-colors shadow-lg"
+                  title="View Public Page"
+                >
+                  <Eye size={18} color="currentColor" weight="regular" />
+                </button>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
 };
 
 export default MyEvents;
-
