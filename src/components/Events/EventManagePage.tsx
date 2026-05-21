@@ -129,7 +129,7 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
   };
   const ticketTypes = dashboardData?.ticketBreakdown || [];
   const userRole = dashboardData?.userRole || "assistant";
-  const canEdit = userRole === "organizer" || userRole === "co_host";
+  const canEdit = userRole === "organizer" || userRole === "co-host";
   const salesData = analyticsData?.salesOverTime || [];
   const eventCategoryLabel = (() => {
     const raw = (event as any)?.category || "";
