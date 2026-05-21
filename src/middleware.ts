@@ -27,7 +27,9 @@ export function middleware(request: NextRequest) {
 
     if (isProtected && !token) {
         const loginUrl = new URL('/auth/login', request.url);
-        loginUrl.searchParams.set('redirect', pathname);
+        // Preserve the full path + query string so tokens survive the round-trip
+        const search = request.nextUrl.search;
+        loginUrl.searchParams.set('redirect', `${pathname}${search}`);
         return NextResponse.redirect(loginUrl);
     }
 

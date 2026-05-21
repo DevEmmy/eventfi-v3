@@ -43,6 +43,7 @@ export function useEventChat(eventId: string) {
             // Setup event handlers
             chatSocket.on("chat:joined", (data) => {
                 store.setMessages(data.recentMessages);
+                store.setHasMoreMessages(data.hasMore);
                 store.setConnected(true);
                 hasJoined.current = true;
             });

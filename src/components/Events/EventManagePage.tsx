@@ -129,6 +129,7 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
   };
   const ticketTypes = dashboardData?.ticketBreakdown || [];
   const userRole = dashboardData?.userRole || "assistant";
+  const canEdit = userRole === "organizer" || userRole === "co_host";
   const salesData = analyticsData?.salesOverTime || [];
   const eventCategoryLabel = (() => {
     const raw = (event as any)?.category || "";
@@ -545,15 +546,17 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                 <span className="hidden sm:inline">View Public Page</span>
                 <span className="sm:hidden">View</span>
               </Button>
-              <Button
-                variant="primary"
-                size="sm"
-                leftIcon={PencilSimple}
-                onClick={handleEdit}
-              >
-                <span className="hidden sm:inline">Edit Event</span>
-                <span className="sm:hidden">Edit</span>
-              </Button>
+              {canEdit && (
+                <Button
+                  variant="primary"
+                  size="sm"
+                  leftIcon={PencilSimple}
+                  onClick={handleEdit}
+                >
+                  <span className="hidden sm:inline">Edit Event</span>
+                  <span className="sm:hidden">Edit</span>
+                </Button>
+              )}
             </div>
           </div>
         </div>
@@ -856,24 +859,28 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                   Event Actions
                 </h3>
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  <Button
-                    variant="outline"
-                    size="md"
-                    fullWidth
-                    leftIcon={PencilSimple}
-                    onClick={handleEdit}
-                  >
-                    Edit Event
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="md"
-                    fullWidth
-                    leftIcon={Copy}
-                    onClick={handleDuplicate}
-                  >
-                    Duplicate
-                  </Button>
+                  {canEdit && (
+                    <Button
+                      variant="outline"
+                      size="md"
+                      fullWidth
+                      leftIcon={PencilSimple}
+                      onClick={handleEdit}
+                    >
+                      Edit Event
+                    </Button>
+                  )}
+                  {canEdit && (
+                    <Button
+                      variant="outline"
+                      size="md"
+                      fullWidth
+                      leftIcon={Copy}
+                      onClick={handleDuplicate}
+                    >
+                      Duplicate
+                    </Button>
+                  )}
                   <Button
                     variant="outline"
                     size="md"
@@ -883,31 +890,35 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                   >
                     View Public
                   </Button>
-                  <Button
-                    variant="outline"
-                    size="md"
-                    fullWidth
-                    leftIcon={MapPin}
-                    onClick={() => {
-                      setLocationForm({
-                        venue: dashboardData?.event?.venueName || "",
-                        address: dashboardData?.event?.address || "",
-                      });
-                      setShowLocationModal(true);
-                    }}
-                    className={!dashboardData?.event?.address && !dashboardData?.event?.venueName ? "border-amber-500/30 text-amber-600 hover:bg-amber-500/10" : ""}
-                  >
-                    {!dashboardData?.event?.address && !dashboardData?.event?.venueName ? "Set Venue" : "Update Venue"}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="md"
-                    fullWidth
-                    leftIcon={Link}
-                    onClick={() => setShowSlugModal(true)}
-                  >
-                    Custom URL
-                  </Button>
+                  {canEdit && (
+                    <Button
+                      variant="outline"
+                      size="md"
+                      fullWidth
+                      leftIcon={MapPin}
+                      onClick={() => {
+                        setLocationForm({
+                          venue: dashboardData?.event?.venueName || "",
+                          address: dashboardData?.event?.address || "",
+                        });
+                        setShowLocationModal(true);
+                      }}
+                      className={!dashboardData?.event?.address && !dashboardData?.event?.venueName ? "border-amber-500/30 text-amber-600 hover:bg-amber-500/10" : ""}
+                    >
+                      {!dashboardData?.event?.address && !dashboardData?.event?.venueName ? "Set Venue" : "Update Venue"}
+                    </Button>
+                  )}
+                  {canEdit && (
+                    <Button
+                      variant="outline"
+                      size="md"
+                      fullWidth
+                      leftIcon={Link}
+                      onClick={() => setShowSlugModal(true)}
+                    >
+                      Custom URL
+                    </Button>
+                  )}
                   <Button
                     variant="outline"
                     size="md"
@@ -917,27 +928,31 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                   >
                     QR Code
                   </Button>
-                  <Button
-                    variant="outline"
-                    size="md"
-                    fullWidth
-                    leftIcon={chatActive ? Minus : ChatText}
-                    onClick={handleToggleChat}
-                    disabled={togglingChat}
-                    className={chatActive ? "border-amber-500/20 text-amber-600 hover:bg-amber-500/10" : "border-green-500/20 text-green-600 hover:bg-green-500/10"}
-                  >
-                    {togglingChat ? "Updating…" : chatActive ? "Pause Chat" : "Enable Chat"}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="md"
-                    fullWidth
-                    leftIcon={Trash}
-                    onClick={handleCancel}
-                    className="border-red-500/20 text-red-500 hover:bg-red-500/10"
-                  >
-                    Cancel Event
-                  </Button>
+                  {canEdit && (
+                    <Button
+                      variant="outline"
+                      size="md"
+                      fullWidth
+                      leftIcon={chatActive ? Minus : ChatText}
+                      onClick={handleToggleChat}
+                      disabled={togglingChat}
+                      className={chatActive ? "border-amber-500/20 text-amber-600 hover:bg-amber-500/10" : "border-green-500/20 text-green-600 hover:bg-green-500/10"}
+                    >
+                      {togglingChat ? "Updating…" : chatActive ? "Pause Chat" : "Enable Chat"}
+                    </Button>
+                  )}
+                  {canEdit && (
+                    <Button
+                      variant="outline"
+                      size="md"
+                      fullWidth
+                      leftIcon={Trash}
+                      onClick={handleCancel}
+                      className="border-red-500/20 text-red-500 hover:bg-red-500/10"
+                    >
+                      Cancel Event
+                    </Button>
+                  )}
                 </div>
               </div>
             </div>

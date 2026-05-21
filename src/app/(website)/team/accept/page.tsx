@@ -23,6 +23,15 @@ function AcceptInvitationContent() {
       return;
     }
 
+    // If the user is not logged in, redirect to login and come back here after
+    const storedToken =
+      typeof window !== "undefined" ? localStorage.getItem("token") : null;
+    if (!storedToken) {
+      const returnUrl = encodeURIComponent(`/team/accept?token=${token}`);
+      router.replace(`/auth/login?redirect=${returnUrl}`);
+      return;
+    }
+
     axiosInstance
       .post("/team/accept", { token })
       .then((res) => {
@@ -38,7 +47,7 @@ function AcceptInvitationContent() {
             "This invitation is invalid or has already been used."
         );
       });
-  }, [token]);
+  }, [token, router]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-4">

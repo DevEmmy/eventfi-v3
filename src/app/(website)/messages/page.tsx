@@ -27,6 +27,7 @@ const MessagesPage = () => {
   const [typingUsers, setTypingUsers] = useState<Array<{ id: string; name: string }>>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const activeEventIdRef = useRef<string | null>(null);
+  const prevFirstMessageIdRef = useRef<string | null>(null);
 
   // Keep ref in sync
   useEffect(() => {
@@ -88,9 +89,20 @@ const MessagesPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
-  // Scroll to bottom when new messages arrive
+  // Reset scroll anchor when switching chats
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    prevFirstMessageIdRef.current = null;
+  }, [activeEventId]);
+
+  // Scroll to bottom only for new messages, not when loading older ones
+  useEffect(() => {
+    const firstMessageId = messages[0]?.id ?? null;
+    const firstMessageUnchanged = prevFirstMessageIdRef.current === firstMessageId;
+    prevFirstMessageIdRef.current = firstMessageId;
+
+    if (firstMessageUnchanged) {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
   }, [messages]);
 
   // Join chat room when selecting an event

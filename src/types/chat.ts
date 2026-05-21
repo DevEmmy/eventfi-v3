@@ -146,6 +146,7 @@ export interface ChatReadPayload {
 export interface ChatJoinedEvent {
     chat: EventChatInfo;
     recentMessages: ChatMessage[];
+    hasMore: boolean;
 }
 
 export interface ChatMessageEvent {

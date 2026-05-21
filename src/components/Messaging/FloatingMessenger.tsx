@@ -67,6 +67,7 @@ const FloatingMessenger: React.FC = () => {
   const inputRef = useRef<HTMLInputElement>(null);
   const isTypingRef = useRef(false);
   const typingDebounceRef = useRef<NodeJS.Timeout | null>(null);
+  const prevFirstMessageIdRef = useRef<string | null>(null);
 
   const totalUnreadCount = eventChats.reduce((sum, chat) => sum + chat.unreadCount, 0);
   const activeEventChat = eventChats.find((c) => c.eventId === activeEventId);
@@ -87,6 +88,7 @@ const FloatingMessenger: React.FC = () => {
 
     chatSocket.on("chat:joined", (data) => {
       chatStore.setMessages(data.recentMessages);
+      chatStore.setHasMoreMessages(data.hasMore);
       chatStore.setChatInfo(data.chat);
       chatStore.setOnlineCount(data.chat.onlineCount);
       chatStore.setConnected(true);
@@ -220,10 +222,22 @@ const FloatingMessenger: React.FC = () => {
     };
   }, [activeEventId]);
 
-  // ── Auto-scroll on new messages ───────────────────────────────────────────
+  // Reset scroll anchor when switching chats
+  useEffect(() => {
+    prevFirstMessageIdRef.current = null;
+  }, [activeEventId]);
+
+  // ── Auto-scroll on new messages (not when loading older ones) ────────────
 
   useEffect(() => {
-    if (activeEventId && messagesEndRef.current) {
+    const firstMessageId = chatStore.messages[0]?.id ?? null;
+    const firstMessageUnchanged = prevFirstMessageIdRef.current === firstMessageId;
+    prevFirstMessageIdRef.current = firstMessageId;
+
+    // Only scroll to bottom when a new message is appended (first message unchanged)
+    // or when the chat is first opened (prev was null). Skip when older messages
+    // are prepended (first message ID changes to an older one).
+    if (firstMessageUnchanged && activeEventId && messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [chatStore.messages.length, activeEventId]);
