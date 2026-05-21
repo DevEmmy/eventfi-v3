@@ -5,7 +5,6 @@ import confetti from "canvas-confetti";
 import { useActivity } from "@/hooks/useActivity";
 import Button from "@/components/Button";
 import { Gift, Users, Play, Stop, Crown, XCircle, ArrowsClockwise, MusicNote, Lightning, Timer } from '@phosphor-icons/react';
-import Image from "next/image";
 import { LeaderboardEntry } from "@/store/useActivityStore";
 import GameHistoryPanel from "./GameHistoryPanel";
 

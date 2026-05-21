@@ -4,7 +4,6 @@ import React, { useEffect, useRef } from "react";
 import confetti from "canvas-confetti";
 import { useActivity } from "@/hooks/useActivity";
 import { Gift, Crown, XCircle, MusicNote, Timer } from '@phosphor-icons/react';
-import Image from "next/image";
 import { LeaderboardEntry } from "@/store/useActivityStore";
 import { useUserStore } from "@/store/useUserStore";
 
@@ -102,11 +101,10 @@ function ApplausePodium({
                       className={`relative w-12 h-12 rounded-full ring-2 ${PODIUM_RING[rank]} overflow-hidden bg-foreground/10`}
                     >
                       {entry.avatar ? (
-                        <Image
+                        <img
                           src={entry.avatar}
                           alt={entry.name}
-                          fill
-                          className="object-cover"
+                          className="absolute inset-0 w-full h-full object-cover"
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center font-bold text-sm text-foreground/60">
@@ -260,11 +258,10 @@ const AttendeeGameView: React.FC<AttendeeGameViewProps> = ({ eventId }) => {
                   <div key={winner.userId} className={`flex flex-col items-center gap-2 ${isMe ? "scale-105" : ""}`}>
                     <div className="relative w-20 h-20">
                       {winner.avatar ? (
-                        <Image
+                        <img
                           src={winner.avatar}
                           alt={winner.name}
-                          fill
-                          className={`rounded-full object-cover ring-4 ${isMe ? "ring-green-400" : "ring-yellow-400"}`}
+                          className={`absolute inset-0 w-full h-full rounded-full object-cover ring-4 ${isMe ? "ring-green-400" : "ring-yellow-400"}`}
                         />
                       ) : (
                         <div className={`w-20 h-20 rounded-full flex items-center justify-center text-2xl font-bold ring-4 ${isMe ? "bg-green-500/20 ring-green-400 text-green-400" : "bg-yellow-500/20 ring-yellow-400 text-yellow-500"}`}>
