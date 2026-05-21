@@ -6,6 +6,7 @@ import { useActivity } from "@/hooks/useActivity";
 import { Gift, Crown, XCircle, MusicNote, Timer } from '@phosphor-icons/react';
 import Image from "next/image";
 import { LeaderboardEntry } from "@/store/useActivityStore";
+import { useUserStore } from "@/store/useUserStore";
 
 interface AttendeeGameViewProps {
   eventId: string;
@@ -153,6 +154,7 @@ function ApplausePodium({
 }
 
 const AttendeeGameView: React.FC<AttendeeGameViewProps> = ({ eventId }) => {
+  const { user } = useUserStore();
   const {
     activeActivity,
     drawWinners,
@@ -232,36 +234,57 @@ const AttendeeGameView: React.FC<AttendeeGameViewProps> = ({ eventId }) => {
     }
 
     if (showDrawReveal && drawWinners.length > 0) {
+      const iWon = drawWinners.some((w) => w.userId === user?.id);
       return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-          <div className="bg-background border border-yellow-500/30 rounded-2xl shadow-2xl p-8 w-full max-w-sm text-center relative">
+          <div className={`bg-background rounded-2xl shadow-2xl p-8 w-full max-w-sm text-center relative border ${iWon ? "border-green-400/60" : "border-yellow-500/30"}`}>
             <button onClick={hideReveal} className="absolute top-3 right-3 text-foreground/40 hover:text-foreground/70 transition-colors cursor-pointer">
               <XCircle size={20} color="currentColor" weight="fill" />
             </button>
-            <Crown size={40} color="#f59e0b" weight="fill" className="mx-auto mb-3" />
+            <Crown size={40} color={iWon ? "#4ade80" : "#f59e0b"} weight="fill" className="mx-auto mb-3" />
             <h3 className="text-2xl font-bold font-[family-name:var(--font-clash-display)] text-foreground mb-1">
-              {drawWinners.length === 1 ? "🎉 Winner!" : `🎉 ${drawWinners.length} Winners!`}
+              {iWon
+                ? "🎉 You Won the Raffle!"
+                : drawWinners.length === 1
+                ? "🎉 Winner!"
+                : `🎉 ${drawWinners.length} Winners!`}
             </h3>
+            {iWon && (
+              <p className="text-sm font-semibold text-green-400 mb-1">Congratulations, you were selected!</p>
+            )}
             <p className="text-xs text-foreground/50 mb-6">Drawn from {drawTotalPool} participants</p>
             <div className="flex flex-wrap justify-center gap-4">
-              {drawWinners.map((winner, i) => (
-                <div key={winner.userId} className="flex flex-col items-center gap-2">
-                  <div className="relative w-20 h-20">
-                    {winner.avatar ? (
-                      <Image src={winner.avatar} alt={winner.name} fill className="rounded-full object-cover ring-4 ring-yellow-400" />
-                    ) : (
-                      <div className="w-20 h-20 rounded-full bg-yellow-500/20 ring-4 ring-yellow-400 flex items-center justify-center text-2xl font-bold text-yellow-500">
-                        {winner.name.charAt(0)}
-                      </div>
-                    )}
-                    <span className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-yellow-400 text-xs font-bold text-white flex items-center justify-center">{i + 1}</span>
+              {drawWinners.map((winner, i) => {
+                const isMe = winner.userId === user?.id;
+                return (
+                  <div key={winner.userId} className={`flex flex-col items-center gap-2 ${isMe ? "scale-105" : ""}`}>
+                    <div className="relative w-20 h-20">
+                      {winner.avatar ? (
+                        <Image
+                          src={winner.avatar}
+                          alt={winner.name}
+                          fill
+                          className={`rounded-full object-cover ring-4 ${isMe ? "ring-green-400" : "ring-yellow-400"}`}
+                        />
+                      ) : (
+                        <div className={`w-20 h-20 rounded-full flex items-center justify-center text-2xl font-bold ring-4 ${isMe ? "bg-green-500/20 ring-green-400 text-green-400" : "bg-yellow-500/20 ring-yellow-400 text-yellow-500"}`}>
+                          {winner.name.charAt(0)}
+                        </div>
+                      )}
+                      <span className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-yellow-400 text-xs font-bold text-white flex items-center justify-center">{i + 1}</span>
+                    </div>
+                    <div>
+                      <p className="font-bold text-foreground text-sm">{winner.name}</p>
+                      {winner.username && <p className="text-xs text-foreground/50">@{winner.username}</p>}
+                      {isMe && (
+                        <span className="inline-block mt-1 px-2 py-0.5 rounded-full bg-green-500/20 text-green-400 text-xs font-bold">
+                          You won! 🎉
+                        </span>
+                      )}
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-bold text-foreground text-sm">{winner.name}</p>
-                    {winner.username && <p className="text-xs text-foreground/50">@{winner.username}</p>}
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </div>
