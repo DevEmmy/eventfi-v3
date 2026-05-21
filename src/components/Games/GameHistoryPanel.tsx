@@ -7,7 +7,6 @@ import {
   ActivityDetail,
 } from "@/services/activity";
 import { Gift, MusicNote, Crown, ArrowLeft, Users, CalendarBlank, Timer } from '@phosphor-icons/react';
-
 interface GameHistoryPanelProps {
   eventId: string;
 }
@@ -179,7 +178,7 @@ function DetailView({
                 </span>
                 <div className="w-8 h-8 rounded-full bg-foreground/10 overflow-hidden shrink-0">
                   {w.avatar ? (
-                    <Image src={w.avatar} alt={w.name} width={32} height={32} className="object-cover w-full h-full" />
+                    <img src={w.avatar} alt={w.name} className="w-full h-full object-cover" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-xs font-bold text-foreground/50">
                       {w.name.charAt(0)}
@@ -220,7 +219,7 @@ function DetailView({
                 </span>
                 <div className="w-8 h-8 rounded-full bg-foreground/10 overflow-hidden shrink-0">
                   {entry.avatar ? (
-                    <Image src={entry.avatar} alt={entry.name} width={32} height={32} className="object-cover w-full h-full" />
+                    <img src={entry.avatar} alt={entry.name} className="w-full h-full object-cover" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-xs font-bold text-foreground/50">
                       {entry.name.charAt(0)}
