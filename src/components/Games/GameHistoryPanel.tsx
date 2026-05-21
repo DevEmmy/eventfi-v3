@@ -7,7 +7,6 @@ import {
   ActivityDetail,
 } from "@/services/activity";
 import { Gift, MusicNote, Crown, ArrowLeft, Users, CalendarBlank, Timer } from '@phosphor-icons/react';
-import Image from "next/image";
 
 interface GameHistoryPanelProps {
   eventId: string;

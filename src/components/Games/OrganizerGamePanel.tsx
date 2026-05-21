@@ -87,7 +87,7 @@ function ApplausePodium({
                   <>
                     <div className={`relative w-14 h-14 rounded-full ring-2 ${PODIUM_RING[rank]} overflow-hidden bg-foreground/10`}>
                       {entry.avatar ? (
-                        <Image src={entry.avatar} alt={entry.name} fill className="object-cover" />
+                        <img src={entry.avatar} alt={entry.name} className="absolute inset-0 w-full h-full object-cover" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center font-bold text-sm text-foreground/60">
                           {entry.name.charAt(0)}
@@ -342,7 +342,7 @@ const OrganizerGamePanel: React.FC<OrganizerGamePanelProps> = ({ eventId }) => {
                 <div key={winner.userId} className="flex flex-col items-center gap-2">
                   <div className="relative w-16 h-16">
                     {winner.avatar ? (
-                      <Image src={winner.avatar} alt={winner.name} fill className="rounded-full object-cover ring-2 ring-yellow-400" />
+                      <img src={winner.avatar} alt={winner.name} className="absolute inset-0 w-full h-full rounded-full object-cover ring-2 ring-yellow-400" />
                     ) : (
                       <div className="w-16 h-16 rounded-full bg-yellow-500/20 ring-2 ring-yellow-400 flex items-center justify-center text-xl font-bold text-yellow-500">
                         {winner.name.charAt(0)}
@@ -468,7 +468,7 @@ const OrganizerGamePanel: React.FC<OrganizerGamePanelProps> = ({ eventId }) => {
                   </span>
                   <div className="w-8 h-8 rounded-full bg-foreground/10 overflow-hidden shrink-0">
                     {entry.avatar ? (
-                      <Image src={entry.avatar} alt={entry.name} width={32} height={32} className="object-cover w-full h-full" />
+                      <img src={entry.avatar} alt={entry.name} className="w-full h-full object-cover" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-xs font-bold text-foreground/50">
                         {entry.name.charAt(0)}
