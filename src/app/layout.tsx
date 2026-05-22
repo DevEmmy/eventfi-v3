@@ -100,8 +100,27 @@ const satoshi = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "EventFi",
-  description: "The all-in-one platform for seamless events, trusted vendors, and live engagement.",
+  metadataBase: new URL("https://eventfi.live"),
+  title: {
+    default: "EventFi — All-in-One Event Platform",
+    template: "%s | EventFi",
+  },
+  description: "The all-in-one platform for seamless events, trusted vendors, and live engagement. Discover, create, and book events across Nigeria.",
+  keywords: ["events", "event management", "event tickets", "event planning", "vendors", "marketplace", "Nigeria", "live events", "book tickets", "EventFi"],
+  authors: [{ name: "EventFi", url: "https://eventfi.live" }],
+  creator: "EventFi",
+  publisher: "EventFi",
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
   manifest: "/site.webmanifest",
   icons: {
     icon: [
@@ -112,14 +131,17 @@ export const metadata: Metadata = {
     apple: { url: "/apple-icon.png", sizes: "180x180", type: "image/png" },
   },
   openGraph: {
-    title: "EventFi",
+    title: "EventFi — All-in-One Event Platform",
     description: "The all-in-one platform for seamless events, trusted vendors, and live engagement.",
-    images: ["/ogp.png"],
+    url: "https://eventfi.live",
+    siteName: "EventFi",
+    images: [{ url: "/ogp.png", width: 1200, height: 630, alt: "EventFi" }],
+    locale: "en_NG",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "EventFi",
+    title: "EventFi — All-in-One Event Platform",
     description: "The all-in-one platform for seamless events, trusted vendors, and live engagement.",
     images: ["/ogp.png"],
   },
