@@ -10,7 +10,9 @@ async function fetchPublicEvents() {
     });
     if (!res.ok) return [];
     const json = await res.json();
-    return json?.data?.events ?? json?.data ?? [];
+    // API returns { data: { meta: {...}, data: [...] } }
+    const items = json?.data?.data ?? json?.data ?? json?.events ?? [];
+    return Array.isArray(items) ? items : [];
   } catch {
     return [];
   }
@@ -23,7 +25,9 @@ async function fetchPublicVendors() {
     });
     if (!res.ok) return [];
     const json = await res.json();
-    return json?.data?.vendors ?? json?.data ?? [];
+    // API returns { data: { meta: {...}, data: [...] } }
+    const items = json?.data?.data ?? json?.data ?? json?.vendors ?? [];
+    return Array.isArray(items) ? items : [];
   } catch {
     return [];
   }
