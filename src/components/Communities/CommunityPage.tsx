@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Users, PlusCircle, CheckCircle, CalendarBlank } from '@phosphor-icons/react';
+import { Users, PlusCircle, CheckCircle, CalendarBlank, Gear } from '@phosphor-icons/react';
 import { CommunityService } from "@/services/community";
 import { CommunityPublic } from "@/types/community";
 import { useUserStore } from "@/store/useUserStore";
@@ -151,7 +151,14 @@ const CommunityPage: React.FC<CommunityPageProps> = ({ slug, initialData }) => {
               </div>
             </div>
 
-            <div className="sm:pb-2">
+            <div className="sm:pb-2 flex items-center gap-2">
+              {community.myRole && (
+                <Link href={`/communities/${community.id}/manage`}>
+                  <Button variant="outline" size="md" leftIcon={Gear}>
+                    Manage
+                  </Button>
+                </Link>
+              )}
               <Button
                 variant={community.isFollowing ? "outline" : "primary"}
                 size="md"

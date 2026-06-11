@@ -7,7 +7,7 @@ import {
   TicketType as ApiTicketType,
   CreateEventPayload
 } from "@/types/event";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Button from "@/components/Button";
 import customToast from "@/lib/toast";
 import { Plus, CaretLeft, CaretRight, CalendarPlus, Camera, Clock, Trash, XCircle } from '@phosphor-icons/react';
@@ -15,6 +15,8 @@ import { EVENT_CATEGORIES, getApiCategoryFromLabel } from "@/utils/event-categor
 import SpeakerManager, { hasSpeakers } from "./SpeakerManager";
 import { EventSpeaker } from "@/services/events";
 import AIAssistPanel, { AIEventResult } from "./AIAssistPanel";
+import { CommunityService } from "@/services/community";
+import { CommunityChapter, CommunityRole, MyCommunity } from "@/types/community";
 // ... existing imports
 
 interface TicketType {
@@ -70,11 +72,47 @@ const CreateEventPage = () => {
     visibility: "public" as "public" | "private",
     lat: null as number | null,
     lng: null as number | null,
+    communityId: "",
+    chapterId: "",
   });
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState("");
   // Local speaker list — persisted to DB after event creation
   const [localSpeakers, setLocalSpeakers] = useState<EventSpeaker[]>([]);
+
+  // Communities the user can attach this event to
+  const [myCommunities, setMyCommunities] = useState<MyCommunity[]>([]);
+  const [communityChapters, setCommunityChapters] = useState<CommunityChapter[]>([]);
+  const [loadingChapters, setLoadingChapters] = useState(false);
+
+  useEffect(() => {
+    CommunityService.listMine()
+      .then(setMyCommunities)
+      .catch((err) => console.error("Failed to fetch communities:", err));
+  }, []);
+
+  useEffect(() => {
+    if (!formData.communityId) {
+      setCommunityChapters([]);
+      return;
+    }
+
+    const community = myCommunities.find((c) => c.id === formData.communityId);
+    const isAdmin = community?.roles.some((r) => r.role === CommunityRole.OWNER || r.role === CommunityRole.ADMIN);
+
+    if (isAdmin) {
+      setLoadingChapters(true);
+      CommunityService.getOne(formData.communityId)
+        .then((detail) => setCommunityChapters(detail.chapters))
+        .catch((err) => console.error("Failed to fetch chapters:", err))
+        .finally(() => setLoadingChapters(false));
+    } else {
+      const ledChapters = (community?.roles || [])
+        .filter((r) => r.role === CommunityRole.CHAPTER_LEAD && r.chapter)
+        .map((r) => r.chapter as CommunityChapter);
+      setCommunityChapters(ledChapters);
+    }
+  }, [formData.communityId, myCommunities]);
 
   const [ticketTypes, setTicketTypes] = useState<TicketType[]>([
     { id: '1', name: '', price: '', quantity: 0, description: '' }
@@ -425,6 +463,8 @@ const CreateEventPage = () => {
 
         privacy: formData.visibility === "public" ? EventPrivacy.PUBLIC : EventPrivacy.PRIVATE,
         tags: tags.length > 0 ? tags : [formData.category],
+        ...(formData.communityId && { communityId: formData.communityId }),
+        ...(formData.communityId && formData.chapterId && { chapterId: formData.chapterId }),
         ...(agendaItems.length > 0 && {
           scheduleItems: agendaItems
             .filter(item => item.time && item.activity)
@@ -1077,6 +1117,52 @@ const CreateEventPage = () => {
                 </label>
               </div>
             </div>
+
+            {/* Community linkage */}
+            {myCommunities.length > 0 && (
+              <div className="pt-6 border-t border-foreground/10">
+                <h3 className="text-lg font-semibold text-foreground mb-1">Community</h3>
+                <p className="text-sm text-foreground/50 mb-4">
+                  Optionally attach this event to one of your communities and chapters.
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-foreground mb-2">Community</label>
+                    <select
+                      value={formData.communityId}
+                      onChange={(e) => setFormData((prev) => ({ ...prev, communityId: e.target.value, chapterId: "" }))}
+                      className="w-full px-4 py-3 bg-background border border-foreground/20 rounded-xl text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200"
+                    >
+                      <option value="">No community</option>
+                      {myCommunities.map((community) => (
+                        <option key={community.id} value={community.id}>
+                          {community.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {formData.communityId && (
+                    <div>
+                      <label className="block text-sm font-semibold text-foreground mb-2">Chapter</label>
+                      <select
+                        value={formData.chapterId}
+                        onChange={(e) => setFormData((prev) => ({ ...prev, chapterId: e.target.value }))}
+                        disabled={loadingChapters}
+                        className="w-full px-4 py-3 bg-background border border-foreground/20 rounded-xl text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200"
+                      >
+                        <option value="">No chapter</option>
+                        {communityChapters.map((chapter) => (
+                          <option key={chapter.id} value={chapter.id}>
+                            {chapter.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         );
 

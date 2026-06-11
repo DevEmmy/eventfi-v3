@@ -12,11 +12,14 @@ import SettingsSection from "./SettingsSection";
 import DashboardContent from "./DashboardContent";
 import VendorDashboardContent from "./VendorDashboardContent";
 import SavedEvents from "./SavedEvents";
-import { CalendarBlank, Ticket, Storefront, Gear, House, ChartBar, Heart, Wallet } from '@phosphor-icons/react';
+import { CalendarBlank, Ticket, Storefront, Gear, House, ChartBar, Heart, Wallet, UsersThree } from '@phosphor-icons/react';
 import PayoutPage from "@/components/Organizer/PayoutPage";
 import EventCard from "@/components/Homepage/EventCard";
+import MyCommunities from "@/components/Communities/MyCommunities";
 import { useUserStore } from "@/store/useUserStore";
 import { getTicketPriceInfo } from "@/utils/ticket-pricing";
+import { CommunityService } from "@/services/community";
+import { MyCommunity } from "@/types/community";
 
 interface MyProfileProps {
   // Optional prop to override user data (for testing or server-side)
@@ -100,6 +103,8 @@ const MyProfile: React.FC<MyProfileProps> = ({ userData }) => {
   const [ticketsLoading, setTicketsLoading] = useState(true);
   const [dashboardData, setDashboardData] = useState<import("@/services/events").OrganizerDashboardData | null>(null);
   const [dashboardLoading, setDashboardLoading] = useState(false);
+  const [myCommunities, setMyCommunities] = useState<MyCommunity[]>([]);
+  const [communitiesLoading, setCommunitiesLoading] = useState(false);
 
   // Fetch user's events
   useEffect(() => {
@@ -207,6 +212,25 @@ const MyProfile: React.FC<MyProfileProps> = ({ userData }) => {
     fetchDashboard();
   }, [activeTab, dashboardData]);
 
+  // Fetch communities when the communities tab is active
+  useEffect(() => {
+    if (activeTab !== "communities") return;
+
+    const fetchCommunities = async () => {
+      try {
+        setCommunitiesLoading(true);
+        const data = await CommunityService.listMine();
+        setMyCommunities(data);
+      } catch (error) {
+        console.error("Failed to fetch communities:", error);
+      } finally {
+        setCommunitiesLoading(false);
+      }
+    };
+
+    fetchCommunities();
+  }, [activeTab]);
+
   const tabs: {
     id: string;
     label: string;
@@ -264,6 +288,11 @@ const MyProfile: React.FC<MyProfileProps> = ({ userData }) => {
       id: "saved",
       label: "Saved Events",
       icon: Heart,
+    },
+    {
+      id: "communities",
+      label: "Communities",
+      icon: UsersThree,
     }
   );
 
@@ -483,6 +512,21 @@ const MyProfile: React.FC<MyProfileProps> = ({ userData }) => {
 
       case "saved":
         return <SavedEvents />;
+
+      case "communities":
+        if (communitiesLoading) {
+          return (
+            <div className="flex items-center justify-center py-16">
+              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary" />
+            </div>
+          );
+        }
+        return (
+          <MyCommunities
+            communities={myCommunities}
+            onCreateCommunity={() => { window.location.href = "/communities/new"; }}
+          />
+        );
 
       case "vendor":
         return (

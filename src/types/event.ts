@@ -134,6 +134,10 @@ export interface Event {
     organizerId: string;
     organizer: EventOrganizer;
 
+    // Community linkage
+    communityId?: string | null;
+    chapterId?: string | null;
+
     // Metadata
     isFeatured?: boolean;
     attendeesCount?: number;
@@ -162,6 +166,10 @@ export interface CreateEventPayload {
         description?: string;
         order?: number;
     }[];
+
+    // Community linkage (optional)
+    communityId?: string;
+    chapterId?: string;
 }
 
 export interface EventQueryParams {
