@@ -105,3 +105,49 @@ export interface ChapterEventsResult {
     page: number;
     totalPages: number;
 }
+
+export interface CommunityPostAuthor {
+    id: string;
+    displayName: string;
+    email: string;
+    avatar?: string | null;
+}
+
+export interface CommunityPost {
+    id: string;
+    communityId: string;
+    author: CommunityPostAuthor;
+    content: string;
+    images: string[];
+    commentsCount: number;
+    likesCount: number;
+    isLiked: boolean;
+    createdAt: string;
+}
+
+export interface CommunityPostComment {
+    id: string;
+    postId: string;
+    author: CommunityPostAuthor;
+    content: string;
+    createdAt: string;
+}
+
+export interface CreatePostInput {
+    content: string;
+    images?: string[];
+}
+
+export interface PostsResult {
+    posts: CommunityPost[];
+    total: number;
+    page: number;
+    totalPages: number;
+}
+
+export interface CommentsResult {
+    comments: CommunityPostComment[];
+    total: number;
+    page: number;
+    totalPages: number;
+}

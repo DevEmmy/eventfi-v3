@@ -2,14 +2,19 @@ import axiosInstance from "@/lib/axios";
 import { ApiResponse } from "@/types/event";
 import {
     ChapterEventsResult,
+    CommentsResult,
     CommunityChapter,
     CommunityDetail,
     CommunityMember,
     CommunityOverview,
+    CommunityPost,
+    CommunityPostComment,
     CommunityPublic,
     CreateCommunityInput,
+    CreatePostInput,
     InviteMemberInput,
     MyCommunity,
+    PostsResult,
     UpdateMemberInput,
 } from "@/types/community";
 
@@ -160,5 +165,67 @@ export const CommunityService = {
     getOverview: async (communityId: string): Promise<CommunityOverview> => {
         const response = await axiosInstance.get<ApiResponse<CommunityOverview>>(`/communities/${communityId}/overview`);
         return response.data.data;
+    },
+
+    // ==================== DISCUSSIONS ====================
+
+    /**
+     * Paginated discussion feed for a community.
+     */
+    listPosts: async (communityId: string, params?: { page?: number; limit?: number }): Promise<PostsResult> => {
+        const response = await axiosInstance.get<ApiResponse<PostsResult>>(`/communities/${communityId}/posts`, { params });
+        return response.data.data;
+    },
+
+    /**
+     * Create a discussion post. Requires the user to follow or belong to the community.
+     */
+    createPost: async (communityId: string, data: CreatePostInput): Promise<CommunityPost> => {
+        const response = await axiosInstance.post<ApiResponse<CommunityPost>>(`/communities/${communityId}/posts`, data);
+        return response.data.data;
+    },
+
+    /**
+     * Delete a post. Allowed for the post's author or an OWNER/ADMIN.
+     */
+    deletePost: async (communityId: string, postId: string): Promise<void> => {
+        await axiosInstance.delete(`/communities/${communityId}/posts/${postId}`);
+    },
+
+    /**
+     * Like a post.
+     */
+    likePost: async (communityId: string, postId: string): Promise<void> => {
+        await axiosInstance.post(`/communities/${communityId}/posts/${postId}/like`);
+    },
+
+    /**
+     * Unlike a post.
+     */
+    unlikePost: async (communityId: string, postId: string): Promise<void> => {
+        await axiosInstance.delete(`/communities/${communityId}/posts/${postId}/like`);
+    },
+
+    /**
+     * Paginated comments for a post.
+     */
+    listComments: async (communityId: string, postId: string, params?: { page?: number; limit?: number }): Promise<CommentsResult> => {
+        const response = await axiosInstance.get<ApiResponse<CommentsResult>>(`/communities/${communityId}/posts/${postId}/comments`, { params });
+        return response.data.data;
+    },
+
+    /**
+     * Add a comment to a post. Requires the user to follow or belong to the community.
+     */
+    addComment: async (communityId: string, postId: string, data: { content: string }): Promise<CommunityPostComment> => {
+        const response = await axiosInstance.post<ApiResponse<CommunityPostComment>>(`/communities/${communityId}/posts/${postId}/comments`, data);
+        return response.data.data;
+    },
+
+    /**
+     * Delete a comment. Allowed for the comment's author or an OWNER/ADMIN.
+     */
+    deleteComment: async (communityId: string, postId: string, commentId: string): Promise<void> => {
+        await axiosInstance.delete(`/communities/${communityId}/posts/${postId}/comments/${commentId}`);
     },
 };

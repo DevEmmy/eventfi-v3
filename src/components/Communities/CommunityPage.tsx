@@ -12,6 +12,7 @@ import { getTicketPriceInfo } from "@/utils/ticket-pricing";
 import EventCard from "@/components/Homepage/EventCard";
 import Button from "@/components/Button";
 import customToast from "@/lib/toast";
+import CommunityDiscussions from "./CommunityDiscussions";
 
 interface CommunityPageProps {
   slug: string;
@@ -25,6 +26,7 @@ const CommunityPage: React.FC<CommunityPageProps> = ({ slug, initialData }) => {
   const [loading, setLoading] = useState(!initialData);
   const [notFound, setNotFound] = useState(false);
   const [followLoading, setFollowLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState<"events" | "discussions">("events");
 
   useEffect(() => {
     const fetchCommunity = async () => {
@@ -190,24 +192,51 @@ const CommunityPage: React.FC<CommunityPageProps> = ({ slug, initialData }) => {
             </div>
           )}
 
-          {/* Upcoming Events */}
-          <div className="mt-10 pb-16">
-            <h2 className="text-xl font-bold text-foreground mb-4">Upcoming Events</h2>
-            {mappedEvents.length === 0 ? (
-              <div className="py-12 text-center border border-dashed border-foreground/10 rounded-2xl">
-                <CalendarBlank size={40} color="currentColor" weight="regular" className="text-foreground/20 mx-auto mb-3" />
-                <p className="text-foreground/60">No upcoming events yet. Check back soon!</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {mappedEvents.map((event) => (
-                  <Link key={event.id} href={event.slug ? `/${event.slug}` : `/events/${event.id}`}>
-                    <EventCard {...event} />
-                  </Link>
-                ))}
-              </div>
-            )}
+          {/* Tabs */}
+          <div className="flex gap-2 mt-10 border-b border-foreground/10">
+            {(["events", "discussions"] as const).map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`px-4 py-3 text-sm font-semibold capitalize border-b-2 transition-colors ${
+                  activeTab === tab
+                    ? "border-primary text-primary"
+                    : "border-transparent text-foreground/60 hover:text-foreground"
+                }`}
+              >
+                {tab === "events" ? "Events" : "Discussions"}
+              </button>
+            ))}
           </div>
+
+          {activeTab === "events" ? (
+            <div className="mt-8 pb-16">
+              {mappedEvents.length === 0 ? (
+                <div className="py-12 text-center border border-dashed border-foreground/10 rounded-2xl">
+                  <CalendarBlank size={40} color="currentColor" weight="regular" className="text-foreground/20 mx-auto mb-3" />
+                  <p className="text-foreground/60">No upcoming events yet. Check back soon!</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {mappedEvents.map((event) => (
+                    <Link key={event.id} href={event.slug ? `/${event.slug}` : `/events/${event.id}`}>
+                      <EventCard {...event} />
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="mt-8 pb-16">
+              <CommunityDiscussions
+                communityId={community.id}
+                canParticipate={community.isFollowing || !!community.myRole}
+                myRole={community.myRole}
+                onRequestFollow={handleFollow}
+                followLoading={followLoading}
+              />
+            </div>
+          )}
         </div>
       </div>
     </div>
