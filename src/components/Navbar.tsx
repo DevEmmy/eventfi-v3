@@ -46,7 +46,7 @@ export default function Navbar() {
   const navLinks = [
     { label: "Explore Events", href: "/explore-events" },
     // { label: "Marketplace", href: "/marketplace" },
-    // { label: "Community", href: "/community" },
+    // { label: "Community", href: "/hub" },
     { label: "About", href: "/about" },
   ];
 
