@@ -143,6 +143,22 @@ export interface BulkEmailResponse {
     message: string;
 }
 
+// Bulk SMS
+export type SmsMessageType = 'reminder' | 'custom';
+
+export interface BulkSmsPayload {
+    recipients: EmailRecipientType;
+    attendeeIds?: string[];
+    messageType: SmsMessageType;
+    message?: string;
+}
+
+export interface BulkSmsResponse {
+    smsSent: number;
+    messagePreview: string;
+    message: string;
+}
+
 // Team Members Response
 export interface TeamMembersResponse {
     members: TeamMember[];

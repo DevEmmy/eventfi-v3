@@ -5,6 +5,8 @@ import {
     AttendeesListResponse,
     CheckInResponse,
     BulkEmailResponse,
+    BulkSmsPayload,
+    BulkSmsResponse,
     TeamMembersResponse,
     AddTeamMemberResponse,
     TeamMember,
@@ -91,6 +93,20 @@ export const ManageEventService = {
     ): Promise<BulkEmailResponse> => {
         const response = await axiosInstance.post<ApiResponse<BulkEmailResponse>>(
             `/events/${eventId}/attendees/email`,
+            payload
+        );
+        return response.data.data;
+    },
+
+    /**
+     * Send bulk SMS to attendees
+     */
+    sendBulkSms: async (
+        eventId: string,
+        payload: BulkSmsPayload
+    ): Promise<BulkSmsResponse> => {
+        const response = await axiosInstance.post<ApiResponse<BulkSmsResponse>>(
+            `/events/${eventId}/attendees/sms`,
             payload
         );
         return response.data.data;

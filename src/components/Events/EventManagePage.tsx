@@ -76,6 +76,14 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
   const [emailBody, setEmailBody] = useState("");
   const [isSendingEmail, setIsSendingEmail] = useState(false);
 
+  // Bulk SMS state
+  const [showBulkSmsModal, setShowBulkSmsModal] = useState(false);
+  const [smsRecipients, setSmsRecipients] = useState<"all" | "checked_in" | "not_checked_in" | "custom">("all");
+  const [smsSelectedAttendees, setSmsSelectedAttendees] = useState<string[]>([]);
+  const [smsMessageType, setSmsMessageType] = useState<"reminder" | "custom">("reminder");
+  const [smsCustomMessage, setSmsCustomMessage] = useState("");
+  const [isSendingSms, setIsSendingSms] = useState(false);
+
   // Attendees filter state
   const [attendeeSearchQuery, setAttendeeSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<"all" | "checked_in" | "not_checked_in">("all");
@@ -979,6 +987,15 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                   >
                     <span className="hidden sm:inline">Send Bulk Email</span>
                     <span className="sm:hidden">Email</span>
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    leftIcon={Phone}
+                    onClick={() => setShowBulkSmsModal(true)}
+                  >
+                    <span className="hidden sm:inline">Send Bulk SMS</span>
+                    <span className="sm:hidden">SMS</span>
                   </Button>
                   <Button
                     variant="outline"
@@ -1948,6 +1965,263 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
           </div>
         </div>
       )}
+      {/* Bulk SMS Modal */}
+      {showBulkSmsModal && (() => {
+        const resetSmsModal = () => {
+          setShowBulkSmsModal(false);
+          setSmsRecipients("all");
+          setSmsSelectedAttendees([]);
+          setSmsMessageType("reminder");
+          setSmsCustomMessage("");
+        };
+
+        const reminderPreview = (() => {
+          if (!event) return 'Reminder: [Event Name] is on [Date] @ [Venue]. - EventFi';
+          const date = new Date(event.startDate).toLocaleDateString('en-US', {
+            weekday: 'short', month: 'short', day: 'numeric',
+          });
+          const time = event.startTime ? ` at ${event.startTime}` : '';
+          const venue = event.venueName || 'the venue';
+          const full = `Reminder: ${event.title} is on ${date}${time} @ ${venue}. - EventFi`;
+          if (full.length <= 120) return full;
+          const overhead = ` is on ${date}${time} @ ${venue}. - EventFi`.length + 'Reminder: '.length;
+          const maxTitle = 120 - overhead - 3;
+          return `Reminder: ${event.title.slice(0, maxTitle)}... is on ${date}${time} @ ${venue}. - EventFi`;
+        })();
+
+        const previewMessage = smsMessageType === 'reminder' ? reminderPreview : smsCustomMessage;
+        const charCount = smsCustomMessage.length;
+        const charLimitReached = charCount > 120;
+
+        return (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+            <div className="bg-background border border-foreground/10 rounded-t-3xl sm:rounded-3xl max-w-3xl w-full max-h-[92vh] sm:max-h-[90vh] overflow-y-auto shadow-2xl">
+              <div className="p-5 sm:p-10">
+                {/* Header */}
+                <div className="flex items-start justify-between mb-6 sm:mb-8">
+                  <div>
+                    <h3 className="text-xl sm:text-2xl font-bold font-[family-name:var(--font-clash-display)] text-foreground mb-1">
+                      Send Bulk SMS
+                    </h3>
+                    <p className="text-sm text-foreground/60">Send an SMS to your attendees</p>
+                  </div>
+                  <button
+                    onClick={resetSmsModal}
+                    className="p-2 hover:bg-foreground/10 rounded-lg transition-colors shrink-0 ml-4"
+                  >
+                    <XCircle size={24} color="currentColor" weight="regular" />
+                  </button>
+                </div>
+
+                {/* Recipient Selection */}
+                <div className="mb-6">
+                  <label className="block text-sm font-semibold text-foreground mb-3">
+                    Select Recipients
+                  </label>
+                  <div className="grid grid-cols-2 gap-3">
+                    {[
+                      { value: "all", label: "All Attendees", count: attendeesTotal },
+                      { value: "checked_in", label: "Checked In", count: stats.checkIns },
+                      { value: "not_checked_in", label: "Not Checked In", count: attendeesTotal - stats.checkIns },
+                      { value: "custom", label: "Custom Selection", count: smsSelectedAttendees.length },
+                    ].map((option) => (
+                      <button
+                        key={option.value}
+                        onClick={() => {
+                          setSmsRecipients(option.value as typeof smsRecipients);
+                          if (option.value !== "custom") setSmsSelectedAttendees([]);
+                        }}
+                        className={`p-4 rounded-xl border-2 transition-all text-left ${smsRecipients === option.value
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-foreground/20 text-foreground/70 hover:border-primary/50 hover:text-foreground"
+                          }`}
+                      >
+                        <div className="font-semibold text-sm mb-0.5">{option.label}</div>
+                        <div className="text-xs opacity-70">{option.count} recipients</div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Custom Attendee Selection */}
+                {smsRecipients === "custom" && (
+                  <div className="mb-5 p-4 bg-foreground/5 rounded-xl border border-foreground/10">
+                    <label className="block text-sm font-semibold text-foreground mb-3">
+                      Select Attendees ({smsSelectedAttendees.length} selected)
+                    </label>
+                    <div className="space-y-2 max-h-64 overflow-y-auto">
+                      {attendeesList.map((attendee) => (
+                        <label
+                          key={attendee.id}
+                          className="flex items-center gap-3 p-3 bg-background rounded-lg hover:bg-foreground/5 transition-colors cursor-pointer border border-foreground/10"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={smsSelectedAttendees.includes(attendee.id)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setSmsSelectedAttendees([...smsSelectedAttendees, attendee.id]);
+                              } else {
+                                setSmsSelectedAttendees(smsSelectedAttendees.filter(id => id !== attendee.id));
+                              }
+                            }}
+                            className="w-5 h-5 rounded border-foreground/20 text-primary focus:ring-primary"
+                          />
+                          <div className="flex-1">
+                            <div className="font-medium text-foreground">{attendee.name}</div>
+                            <div className="text-sm text-foreground/60">{attendee.phone || attendee.email}</div>
+                          </div>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Message Type Toggle */}
+                <div className="mb-5">
+                  <label className="block text-sm font-semibold text-foreground mb-3">
+                    Message Type
+                  </label>
+                  <div className="flex gap-2">
+                    {[
+                      { value: "reminder", label: "Send Reminder" },
+                      { value: "custom", label: "Custom Message" },
+                    ].map((opt) => (
+                      <button
+                        key={opt.value}
+                        onClick={() => setSmsMessageType(opt.value as "reminder" | "custom")}
+                        className={`flex-1 py-2.5 px-4 rounded-xl border-2 text-sm font-semibold transition-all ${smsMessageType === opt.value
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-foreground/20 text-foreground/60 hover:border-primary/50 hover:text-foreground"
+                          }`}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Reminder info */}
+                {smsMessageType === "reminder" && (
+                  <div className="mb-5 p-4 bg-foreground/5 rounded-xl border border-foreground/10">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Phone size={16} color="currentColor" weight="regular" className="text-primary" />
+                      <span className="text-sm font-semibold text-foreground">Auto-generated reminder</span>
+                    </div>
+                    <p className="text-xs text-foreground/60 mb-3">
+                      The message below will be sent to attendees with a phone number on their ticket.
+                    </p>
+                    <div className="bg-background rounded-lg p-3 border border-foreground/10 text-sm text-foreground font-mono break-words">
+                      {reminderPreview}
+                    </div>
+                    <div className="mt-2 text-xs text-foreground/50 text-right">
+                      {reminderPreview.length} / 120 characters
+                    </div>
+                  </div>
+                )}
+
+                {/* Custom message textarea */}
+                {smsMessageType === "custom" && (
+                  <div className="mb-5">
+                    <label className="block text-sm font-semibold text-foreground mb-2">
+                      Message
+                    </label>
+                    <textarea
+                      value={smsCustomMessage}
+                      onChange={(e) => setSmsCustomMessage(e.target.value.slice(0, 120))}
+                      placeholder="Write your SMS message here... (max 120 characters)"
+                      rows={4}
+                      className={`w-full px-4 py-3 bg-background border-2 rounded-xl text-sm text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 transition-all duration-200 resize-none ${charLimitReached
+                        ? "border-red-500 focus:ring-red-400 focus:border-red-500"
+                        : charCount > 100
+                          ? "border-amber-400 focus:ring-amber-300 focus:border-amber-400"
+                          : "border-foreground/20 focus:ring-primary focus:border-primary"
+                        }`}
+                    />
+                    <div className={`mt-1.5 text-xs text-right font-medium ${charLimitReached ? "text-red-500" : charCount > 100 ? "text-amber-500" : "text-foreground/50"}`}>
+                      {charCount} / 120
+                    </div>
+                  </div>
+                )}
+
+                {/* Preview */}
+                {previewMessage && (
+                  <div className="mb-5 p-4 bg-foreground/5 rounded-xl border border-foreground/10">
+                    <div className="flex items-center gap-2 mb-3">
+                      <FileText size={16} color="currentColor" weight="regular" />
+                      <h4 className="text-sm font-semibold text-foreground">Preview</h4>
+                    </div>
+                    <div className="space-y-2">
+                      <div>
+                        <div className="text-xs text-foreground/50 mb-0.5">To:</div>
+                        <div className="text-sm text-foreground/70">
+                          {smsRecipients === "all" && `${attendeesTotal} attendees`}
+                          {smsRecipients === "checked_in" && `${stats.checkIns} checked-in attendees`}
+                          {smsRecipients === "not_checked_in" && `${attendeesTotal - stats.checkIns} not checked-in attendees`}
+                          {smsRecipients === "custom" && `${smsSelectedAttendees.length} selected attendees`}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-xs text-foreground/50 mb-0.5">Message:</div>
+                        <div className="text-sm text-foreground/70 whitespace-pre-wrap break-words">
+                          {previewMessage}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Actions */}
+                <div className="flex items-center justify-end gap-3">
+                  <Button variant="outline" size="md" onClick={resetSmsModal}>
+                    Cancel
+                  </Button>
+                  <Button
+                    variant="primary"
+                    size="md"
+                    leftIcon={PaperPlaneRight}
+                    onClick={async () => {
+                      if (smsMessageType === "custom" && !smsCustomMessage.trim()) {
+                        customToast.error("Please enter a message");
+                        return;
+                      }
+                      if (smsRecipients === "custom" && smsSelectedAttendees.length === 0) {
+                        customToast.error("Please select at least one attendee");
+                        return;
+                      }
+
+                      setIsSendingSms(true);
+                      try {
+                        const response = await ManageEventService.sendBulkSms(eventId, {
+                          recipients: smsRecipients,
+                          attendeeIds: smsRecipients === "custom" ? smsSelectedAttendees : undefined,
+                          messageType: smsMessageType,
+                          message: smsMessageType === "custom" ? smsCustomMessage : undefined,
+                        });
+
+                        customToast.success(
+                          response.message || `SMS sent to ${response.smsSent} attendee(s)!`
+                        );
+                        resetSmsModal();
+                      } catch (error: any) {
+                        customToast.error(
+                          error.response?.data?.message || "Failed to send bulk SMS"
+                        );
+                      } finally {
+                        setIsSendingSms(false);
+                      }
+                    }}
+                    disabled={isSendingSms || (smsMessageType === "custom" && charLimitReached)}
+                  >
+                    {isSendingSms ? "Sending..." : "Send SMS"}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
       {/* QR Code Modal */}
       {showQrModal && (() => {
         const shareUrl = getEventShareUrl({ slug: dashboardData?.event?.slug, id: eventId });
