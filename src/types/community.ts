@@ -6,6 +6,11 @@ export enum CommunityRole {
     CHAPTER_LEAD = 'CHAPTER_LEAD',
 }
 
+export enum CommunityVisibility {
+    PUBLIC = 'PUBLIC',
+    PRIVATE = 'PRIVATE',
+}
+
 export interface CommunityChapter {
     id: string;
     name: string;
@@ -60,6 +65,7 @@ export interface CommunityDetail {
     description?: string | null;
     logo?: string | null;
     bannerImage?: string | null;
+    visibility: CommunityVisibility;
     chapters: CommunityChapter[];
     myRole: CommunityRole | null;
     members?: CommunityMember[];
@@ -86,6 +92,7 @@ export interface CreateCommunityInput {
     description?: string;
     logo?: string;
     bannerImage?: string;
+    visibility?: CommunityVisibility;
 }
 
 export interface InviteMemberInput {
@@ -147,6 +154,24 @@ export interface PostsResult {
 
 export interface CommentsResult {
     comments: CommunityPostComment[];
+    total: number;
+    page: number;
+    totalPages: number;
+}
+
+export interface CommunityListItem {
+    id: string;
+    name: string;
+    slug: string;
+    description?: string | null;
+    logo?: string | null;
+    bannerImage?: string | null;
+    followersCount: number;
+    eventsCount: number;
+}
+
+export interface CommunityListResult {
+    communities: CommunityListItem[];
     total: number;
     page: number;
     totalPages: number;

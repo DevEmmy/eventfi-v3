@@ -29,6 +29,7 @@ import {
   CommunityMember,
   CommunityOverview,
   CommunityRole,
+  CommunityVisibility,
 } from "@/types/community";
 import { Event } from "@/types/event";
 
@@ -137,6 +138,7 @@ const CommunityManagePage: React.FC<CommunityManagePageProps> = ({ communityId }
     description: "",
     logo: null as string | null,
     bannerImage: null as string | null,
+    visibility: CommunityVisibility.PUBLIC,
   });
   const [savingSettings, setSavingSettings] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
@@ -163,6 +165,7 @@ const CommunityManagePage: React.FC<CommunityManagePageProps> = ({ communityId }
           description: detail.description || "",
           logo: detail.logo || null,
           bannerImage: detail.bannerImage || null,
+          visibility: detail.visibility || CommunityVisibility.PUBLIC,
         });
 
         const mineEntry = mine.find((c) => c.id === communityId);
@@ -409,6 +412,7 @@ const CommunityManagePage: React.FC<CommunityManagePageProps> = ({ communityId }
         description: settingsForm.description.trim() || undefined,
         logo: settingsForm.logo || undefined,
         bannerImage: settingsForm.bannerImage || undefined,
+        visibility: settingsForm.visibility,
       });
       setCommunity((prev) => (prev ? { ...prev, ...updated } : prev));
       customToast.success("Community updated");
@@ -885,6 +889,29 @@ const CommunityManagePage: React.FC<CommunityManagePageProps> = ({ communityId }
                   rows={4}
                   className="w-full px-4 py-3 bg-background border border-foreground/20 rounded-xl text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200 resize-none"
                 />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-foreground mb-2">Visibility</label>
+                <div className="flex gap-3">
+                  {[CommunityVisibility.PUBLIC, CommunityVisibility.PRIVATE].map((option) => (
+                    <button
+                      key={option}
+                      type="button"
+                      onClick={() => setSettingsForm((prev) => ({ ...prev, visibility: option }))}
+                      className={`flex-1 px-4 py-3 rounded-xl border font-semibold text-sm transition-all duration-200 ${
+                        settingsForm.visibility === option
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-foreground/20 text-foreground/60 hover:border-foreground/30"
+                      }`}
+                    >
+                      {option === CommunityVisibility.PUBLIC ? "Public" : "Private"}
+                    </button>
+                  ))}
+                </div>
+                <p className="text-xs text-foreground/50 mt-2">
+                  Private communities won&apos;t appear in the public directory, but anyone with the link can still view and follow them.
+                </p>
               </div>
 
               <div className="flex justify-end">

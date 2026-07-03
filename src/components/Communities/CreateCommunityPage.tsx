@@ -6,6 +6,7 @@ import Image from "next/image";
 import { CaretLeft, UploadSimple, X, UsersThree } from '@phosphor-icons/react';
 import Button from "@/components/Button";
 import { CommunityService } from "@/services/community";
+import { CommunityVisibility } from "@/types/community";
 import customToast from "@/lib/toast";
 
 const uploadImage = async (file: File): Promise<string | null> => {
@@ -38,6 +39,7 @@ const CreateCommunityPage: React.FC = () => {
     description: "",
     logo: null as string | null,
     bannerImage: null as string | null,
+    visibility: CommunityVisibility.PUBLIC,
   });
 
   const handleInputChange = (
@@ -86,6 +88,7 @@ const CreateCommunityPage: React.FC = () => {
         description: formData.description.trim() || undefined,
         logo: formData.logo || undefined,
         bannerImage: formData.bannerImage || undefined,
+        visibility: formData.visibility,
       });
       customToast.success("Community created successfully!");
       router.push(`/communities/${community.id}/manage`);
@@ -206,6 +209,30 @@ const CreateCommunityPage: React.FC = () => {
                 rows={4}
                 className="w-full px-4 py-3 bg-background border border-foreground/20 rounded-xl text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200 resize-none"
               />
+            </div>
+
+            {/* Visibility */}
+            <div>
+              <label className="block text-sm font-semibold text-foreground mb-2">Visibility</label>
+              <div className="flex gap-3">
+                {[CommunityVisibility.PUBLIC, CommunityVisibility.PRIVATE].map((option) => (
+                  <button
+                    key={option}
+                    type="button"
+                    onClick={() => setFormData((prev) => ({ ...prev, visibility: option }))}
+                    className={`flex-1 px-4 py-3 rounded-xl border font-semibold text-sm transition-all duration-200 ${
+                      formData.visibility === option
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "border-foreground/20 text-foreground/60 hover:border-foreground/30"
+                    }`}
+                  >
+                    {option === CommunityVisibility.PUBLIC ? "Public" : "Private"}
+                  </button>
+                ))}
+              </div>
+              <p className="text-xs text-foreground/50 mt-2">
+                Private communities won&apos;t appear in the public directory, but anyone with the link can still view and follow them.
+              </p>
             </div>
 
             <div className="flex justify-end pt-2">

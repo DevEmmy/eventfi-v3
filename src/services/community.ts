@@ -5,6 +5,7 @@ import {
     CommentsResult,
     CommunityChapter,
     CommunityDetail,
+    CommunityListResult,
     CommunityMember,
     CommunityOverview,
     CommunityPost,
@@ -22,6 +23,19 @@ import {
  * Service to handle Community API calls (public + organizer-facing)
  */
 export const CommunityService = {
+    /**
+     * Public directory of communities: searchable, sortable, paginated.
+     */
+    listPublic: async (params?: {
+        page?: number;
+        limit?: number;
+        search?: string;
+        sort?: "followers" | "events" | "newest";
+    }): Promise<CommunityListResult> => {
+        const response = await axiosInstance.get<ApiResponse<CommunityListResult>>(`/communities`, { params });
+        return response.data.data;
+    },
+
     /**
      * Fetch a community's public page data by its slug.
      */

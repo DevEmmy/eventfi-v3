@@ -31,9 +31,14 @@ const MyCommunities: React.FC<MyCommunitiesProps> = ({ communities, onCreateComm
         <p className="text-foreground/60 mb-6 max-w-md mx-auto">
           Create a community to organize your events into chapters and bring chapter leads on board.
         </p>
-        <Button variant="primary" size="lg" leftIcon={Plus} onClick={onCreateCommunity}>
-          Create a Community
-        </Button>
+        <div className="flex items-center justify-center gap-3">
+          <Button variant="primary" size="lg" leftIcon={Plus} onClick={onCreateCommunity}>
+            Create a Community
+          </Button>
+          <Link href="/communities">
+            <Button variant="outline" size="lg">Browse Communities</Button>
+          </Link>
+        </div>
       </div>
     );
   }
@@ -49,9 +54,14 @@ const MyCommunities: React.FC<MyCommunitiesProps> = ({ communities, onCreateComm
             {communities.length} {communities.length === 1 ? "community" : "communities"}
           </p>
         </div>
-        <Button variant="primary" size="md" leftIcon={Plus} onClick={onCreateCommunity}>
-          Create Community
-        </Button>
+        <div className="flex items-center gap-2">
+          <Link href="/communities">
+            <Button variant="outline" size="md">Browse Communities</Button>
+          </Link>
+          <Button variant="primary" size="md" leftIcon={Plus} onClick={onCreateCommunity}>
+            Create Community
+          </Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
