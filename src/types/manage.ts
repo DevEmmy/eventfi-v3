@@ -151,6 +151,7 @@ export interface BulkSmsPayload {
     attendeeIds?: string[];
     messageType: SmsMessageType;
     message?: string;
+    ticketType?: string;
 }
 
 export interface BulkSmsResponse {
@@ -196,6 +197,7 @@ export interface BulkEmailPayload {
     attendeeIds?: string[];
     subject: string;
     body: string;
+    ticketType?: string;
 }
 
 export interface AddTeamMemberPayload {

@@ -72,6 +72,7 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
   // Bulk email state
   const [emailRecipients, setEmailRecipients] = useState<"all" | "checked_in" | "not_checked_in" | "custom">("all");
   const [selectedAttendees, setSelectedAttendees] = useState<string[]>([]);
+  const [emailTicketType, setEmailTicketType] = useState<string>("all");
   const [emailSubject, setEmailSubject] = useState("");
   const [emailBody, setEmailBody] = useState("");
   const [isSendingEmail, setIsSendingEmail] = useState(false);
@@ -80,6 +81,7 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
   const [showBulkSmsModal, setShowBulkSmsModal] = useState(false);
   const [smsRecipients, setSmsRecipients] = useState<"all" | "checked_in" | "not_checked_in" | "custom">("all");
   const [smsSelectedAttendees, setSmsSelectedAttendees] = useState<string[]>([]);
+  const [smsTicketType, setSmsTicketType] = useState<string>("all");
   const [smsMessageType, setSmsMessageType] = useState<"reminder" | "custom">("reminder");
   const [smsCustomMessage, setSmsCustomMessage] = useState("");
   const [isSendingSms, setIsSendingSms] = useState(false);
@@ -241,8 +243,9 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
     }
   }, [activeTab, eventId, dashboardData, analyticsPeriod]);
 
-  // Get unique ticket types for filter
-  const attendeeTicketTypes = Array.from(new Set(attendeesList.map(a => a.ticketTypeName)));
+  // Ticket types available for filtering (id + name), sourced from the dashboard's ticket breakdown
+  // so filters work correctly against the backend's ticketId-based query, independent of pagination.
+  const eventTicketTypes = ticketTypes.map(t => ({ id: t.ticketTypeId, name: t.name }));
 
   // Funnel attendees (client-side additional filtering if needed)
   const filteredAttendees = attendeesList;
@@ -1061,7 +1064,7 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                     </div>
 
                     {/* Ticket Type Funnel */}
-                    {attendeeTicketTypes.length > 0 && (
+                    {eventTicketTypes.length > 0 && (
                       <div className="flex items-center gap-2">
                         <label className="text-sm font-semibold text-foreground whitespace-nowrap">Ticket:</label>
                         <select
@@ -1070,9 +1073,9 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                           className="px-3 py-1.5 bg-background border border-foreground/20 rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
                         >
                           <option value="all">All Types</option>
-                          {attendeeTicketTypes.map((type) => (
-                            <option key={type} value={type}>
-                              {type}
+                          {eventTicketTypes.map((type) => (
+                            <option key={type.id} value={type.id}>
+                              {type.name}
                             </option>
                           ))}
                         </select>
@@ -1763,6 +1766,7 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                     setEmailBody("");
                     setEmailRecipients("all");
                     setSelectedAttendees([]);
+                    setEmailTicketType("all");
                   }}
                   className="p-2 hover:bg-foreground/10 rounded-lg transition-colors shrink-0 ml-4"
                 >
@@ -1801,6 +1805,27 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                   ))}
                 </div>
               </div>
+
+              {/* Ticket Type Filter */}
+              {eventTicketTypes.length > 0 && emailRecipients !== "custom" && (
+                <div className="mb-6">
+                  <label className="block text-sm font-semibold text-foreground mb-3">
+                    Filter by Ticket Type (optional)
+                  </label>
+                  <select
+                    value={emailTicketType}
+                    onChange={(e) => setEmailTicketType(e.target.value)}
+                    className="w-full px-4 py-3 bg-background border-2 border-foreground/20 rounded-xl text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200"
+                  >
+                    <option value="all">All Ticket Types</option>
+                    {eventTicketTypes.map((type) => (
+                      <option key={type.id} value={type.id}>
+                        {type.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
 
               {/* Custom Selection */}
               {emailRecipients === "custom" && (
@@ -1882,6 +1907,8 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                         {emailRecipients === "checked_in" && `${dashboardData?.stats.checkIns || 0} checked-in attendees`}
                         {emailRecipients === "not_checked_in" && `${attendeesTotal - (dashboardData?.stats.checkIns || 0)} not checked-in attendees`}
                         {emailRecipients === "custom" && `${selectedAttendees.length} selected attendees`}
+                        {emailRecipients !== "custom" && emailTicketType !== "all" &&
+                          ` holding "${eventTicketTypes.find(t => t.id === emailTicketType)?.name}" tickets`}
                       </div>
                     </div>
                     <div>
@@ -1911,6 +1938,7 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                     setEmailBody("");
                     setEmailRecipients("all");
                     setSelectedAttendees([]);
+                    setEmailTicketType("all");
                   }}
                 >
                   Cancel
@@ -1936,6 +1964,7 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                         attendeeIds: emailRecipients === "custom" ? selectedAttendees : undefined,
                         subject: emailSubject,
                         body: emailBody,
+                        ticketType: emailRecipients !== "custom" && emailTicketType !== "all" ? emailTicketType : undefined,
                       });
 
                       customToast.success(
@@ -1947,6 +1976,7 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                       setEmailBody("");
                       setEmailRecipients("all");
                       setSelectedAttendees([]);
+                      setEmailTicketType("all");
                     } catch (error: any) {
                       console.error("Failed to send bulk email:", error);
                       customToast.error(
@@ -1971,6 +2001,7 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
           setShowBulkSmsModal(false);
           setSmsRecipients("all");
           setSmsSelectedAttendees([]);
+          setSmsTicketType("all");
           setSmsMessageType("reminder");
           setSmsCustomMessage("");
         };
@@ -2042,6 +2073,27 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                     ))}
                   </div>
                 </div>
+
+                {/* Ticket Type Filter */}
+                {eventTicketTypes.length > 0 && smsRecipients !== "custom" && (
+                  <div className="mb-6">
+                    <label className="block text-sm font-semibold text-foreground mb-3">
+                      Filter by Ticket Type (optional)
+                    </label>
+                    <select
+                      value={smsTicketType}
+                      onChange={(e) => setSmsTicketType(e.target.value)}
+                      className="w-full px-4 py-3 bg-background border-2 border-foreground/20 rounded-xl text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200"
+                    >
+                      <option value="all">All Ticket Types</option>
+                      {eventTicketTypes.map((type) => (
+                        <option key={type.id} value={type.id}>
+                          {type.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
 
                 {/* Custom Attendee Selection */}
                 {smsRecipients === "custom" && (
@@ -2159,6 +2211,8 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                           {smsRecipients === "checked_in" && `${stats.checkIns} checked-in attendees`}
                           {smsRecipients === "not_checked_in" && `${attendeesTotal - stats.checkIns} not checked-in attendees`}
                           {smsRecipients === "custom" && `${smsSelectedAttendees.length} selected attendees`}
+                          {smsRecipients !== "custom" && smsTicketType !== "all" &&
+                            ` holding "${eventTicketTypes.find(t => t.id === smsTicketType)?.name}" tickets`}
                         </div>
                       </div>
                       <div>
@@ -2197,6 +2251,7 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                           attendeeIds: smsRecipients === "custom" ? smsSelectedAttendees : undefined,
                           messageType: smsMessageType,
                           message: smsMessageType === "custom" ? smsCustomMessage : undefined,
+                          ticketType: smsRecipients !== "custom" && smsTicketType !== "all" ? smsTicketType : undefined,
                         });
 
                         customToast.success(
