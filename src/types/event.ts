@@ -68,6 +68,8 @@ export interface EventTicket {
     maxPerUser?: number;
     salesStart?: string; // ISO 8601
     salesEnd?: string; // ISO 8601
+    allowInstallments?: boolean;
+    maxInstallments?: number;
 }
 
 export interface EventMedia {

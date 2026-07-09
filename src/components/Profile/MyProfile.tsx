@@ -7,6 +7,7 @@ import ProfileTabs from "./ProfileTabs";
 import QuickActions from "./QuickActions";
 import MyEvents, { MyEventItem } from "./MyEvents";
 import MyTickets from "./MyTickets";
+import PaymentPlans from "./PaymentPlans";
 import VendorProfileSection from "./VendorProfileSection";
 import SettingsSection from "./SettingsSection";
 import DashboardContent from "./DashboardContent";
@@ -20,6 +21,8 @@ import { useUserStore } from "@/store/useUserStore";
 import { getTicketPriceInfo } from "@/utils/ticket-pricing";
 import { CommunityService } from "@/services/community";
 import { MyCommunity } from "@/types/community";
+import { BookingService } from "@/services/booking";
+import { BookingOrder } from "@/types/booking";
 
 interface MyProfileProps {
   // Optional prop to override user data (for testing or server-side)
@@ -105,6 +108,8 @@ const MyProfile: React.FC<MyProfileProps> = ({ userData }) => {
   const [dashboardLoading, setDashboardLoading] = useState(false);
   const [myCommunities, setMyCommunities] = useState<MyCommunity[]>([]);
   const [communitiesLoading, setCommunitiesLoading] = useState(false);
+  const [installmentOrders, setInstallmentOrders] = useState<BookingOrder[]>([]);
+  const [installmentOrdersLoading, setInstallmentOrdersLoading] = useState(true);
 
   // Fetch user's events
   useEffect(() => {
@@ -188,6 +193,25 @@ const MyProfile: React.FC<MyProfileProps> = ({ userData }) => {
 
     if (user || userData) {
       fetchUserTickets();
+    }
+  }, [user, userData]);
+
+  // Fetch orders with an installment plan (pending or past — not just confirmed tickets)
+  useEffect(() => {
+    const fetchInstallmentOrders = async () => {
+      try {
+        setInstallmentOrdersLoading(true);
+        const response = await BookingService.getUserOrders({ limit: 20 });
+        setInstallmentOrders(response.data.filter((o) => !!o.installmentPlan));
+      } catch (error) {
+        console.error("Failed to fetch installment orders:", error);
+      } finally {
+        setInstallmentOrdersLoading(false);
+      }
+    };
+
+    if (user || userData) {
+      fetchInstallmentOrders();
     }
   }, [user, userData]);
 
@@ -295,6 +319,15 @@ const MyProfile: React.FC<MyProfileProps> = ({ userData }) => {
       icon: UsersThree,
     }
   );
+
+  if (installmentOrders.length > 0) {
+    tabs.push({
+      id: "payments",
+      label: "Payment Plans",
+      icon: Wallet,
+      count: installmentOrders.filter((o) => o.installmentPlan?.status === "active").length,
+    });
+  }
 
   // Add vendor tab if user has vendor profile or can create one
   // if (hasVendorProfile || isOrganizer) {
@@ -509,6 +542,9 @@ const MyProfile: React.FC<MyProfileProps> = ({ userData }) => {
 
       case "tickets":
         return <MyTickets tickets={myTickets} />;
+
+      case "payments":
+        return <PaymentPlans orders={installmentOrders} loading={installmentOrdersLoading} />;
 
       case "saved":
         return <SavedEvents />;

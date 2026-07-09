@@ -25,6 +25,8 @@ interface TicketType {
   price: string;
   quantity: number;
   description: string;
+  allowInstallments: boolean;
+  maxInstallments: number;
 }
 
 interface AgendaItem {
@@ -115,7 +117,7 @@ const CreateEventPage = () => {
   }, [formData.communityId, myCommunities]);
 
   const [ticketTypes, setTicketTypes] = useState<TicketType[]>([
-    { id: '1', name: '', price: '', quantity: 0, description: '' }
+    { id: '1', name: '', price: '', quantity: 0, description: '', allowInstallments: false, maxInstallments: 3 }
   ]);
 
   const [agendaItems, setAgendaItems] = useState<AgendaItem[]>([]);
@@ -144,7 +146,7 @@ const CreateEventPage = () => {
   const addTicketType = () => {
     setTicketTypes([
       ...ticketTypes,
-      { id: Date.now().toString(), name: '', price: '', quantity: 0, description: '' }
+      { id: Date.now().toString(), name: '', price: '', quantity: 0, description: '', allowInstallments: false, maxInstallments: 3 }
     ]);
   };
 
@@ -225,6 +227,8 @@ const CreateEventPage = () => {
         price: t.price,
         quantity: t.quantity,
         description: t.description,
+        allowInstallments: false,
+        maxInstallments: 3,
       })));
     }
 
@@ -455,6 +459,8 @@ const CreateEventPage = () => {
           currency: 'NGN',
           quantity: t.quantity > 0 ? t.quantity : 1000,
           description: t.description,
+          allowInstallments: t.allowInstallments,
+          ...(t.allowInstallments && { maxInstallments: t.maxInstallments }),
         })),
         media: {
           coverImage: coverImageUrl || '',
@@ -1060,6 +1066,48 @@ const CreateEventPage = () => {
                           className="w-full px-4 py-3 bg-background border border-foreground/20 rounded-xl text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200"
                         />
                       </div>
+
+                      {parseFloat(ticket.price) > 0 && (
+                        <div className="pt-2 border-t border-foreground/10">
+                          <label className="flex items-center gap-3 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={ticket.allowInstallments}
+                              onChange={(e) =>
+                                handleTicketTypeChange(ticket.id, "allowInstallments", e.target.checked)
+                              }
+                              className="w-5 h-5 rounded border-2 border-foreground/20 accent-primary"
+                            />
+                            <span className="text-sm font-semibold text-foreground">
+                              Allow attendees to pay in installments
+                            </span>
+                          </label>
+                          {ticket.allowInstallments && (
+                            <div className="mt-3 ml-8">
+                              <label className="block text-sm text-foreground/70 mb-2">
+                                Maximum number of installments
+                              </label>
+                              <input
+                                type="number"
+                                value={ticket.maxInstallments}
+                                onChange={(e) =>
+                                  handleTicketTypeChange(
+                                    ticket.id,
+                                    "maxInstallments",
+                                    Math.min(12, Math.max(2, parseInt(e.target.value) || 2))
+                                  )
+                                }
+                                min="2"
+                                max="12"
+                                className="w-32 px-4 py-2 bg-background border border-foreground/20 rounded-xl text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200"
+                              />
+                              <p className="text-xs text-foreground/50 mt-2">
+                                Attendees pay a down payment upfront, then the rest in installments before the event.
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))}

@@ -17,6 +17,8 @@ export interface TicketType {
     salesEndDate?: string;
     description?: string;
     benefits?: string[];
+    allowInstallments?: boolean;
+    maxInstallments?: number;
 }
 
 export interface OrderItem {
@@ -34,6 +36,28 @@ export interface AttendeeInput {
     phone?: string;
     city?: string;
     location?: string;
+}
+
+export type InstallmentPlanStatus = 'active' | 'completed' | 'defaulted' | 'cancelled';
+export type InstallmentPaymentStatus = 'pending' | 'paid' | 'overdue' | 'failed';
+
+export interface InstallmentPaymentSchedule {
+    id: string;
+    sequence: number;
+    amount: number;
+    dueDate: string;
+    status: InstallmentPaymentStatus;
+    paymentReference?: string;
+    paidAt?: string;
+}
+
+export interface InstallmentPlanSchedule {
+    id: string;
+    installmentCount: number;
+    downPaymentAmount: number;
+    finalDueDate: string;
+    status: InstallmentPlanStatus;
+    payments: InstallmentPaymentSchedule[];
 }
 
 export interface BookingOrder {
@@ -56,16 +80,18 @@ export interface BookingOrder {
     currency: string;
     status: OrderStatus;
     paymentStatus: PaymentStatus;
-    paymentMethod?: PaymentMethod;
+    paymentMethod?: PaymentMethod | 'installment';
     promoCode?: string;
     expiresAt?: string;
     createdAt: string;
+    installmentPlan?: InstallmentPlanSchedule | null;
 }
 
 export interface InitiateBookingPayload {
     eventId: string;
     items: { ticketTypeId: string; quantity: number }[];
     guestEmail?: string;
+    installmentPlan?: { installmentCount: number; downPaymentPercent?: number };
 }
 
 export interface PaymentInitResponse {

@@ -5,8 +5,10 @@ import {
     AttendeeInput,
     PaymentInitResponse,
     TicketType,
-    UserTicket
+    UserTicket,
+    InstallmentPlanSchedule
 } from "@/types/booking";
+import { PaginatedResponse } from "@/types/event";
 
 interface ApiResponse<T> {
     status: string;
@@ -65,9 +67,30 @@ export const BookingService = {
     // Get user's tickets
     getUserTickets: async (params?: { status?: string; upcoming?: boolean, page?: number, limit?: number }): Promise<any> => {
         const response = await axiosInstance.get('/users/me/tickets', { params });
-        // Assuming the API returns paginated response in data.data or similar, 
+        // Assuming the API returns paginated response in data.data or similar,
         // adapting to match what UserService.getUserTickets was likely doing or what's expected.
         // Based on previous patterns, let's return response.data.data
+        return response.data.data;
+    },
+
+    // Get user's orders (includes installment plan schedule when present)
+    getUserOrders: async (params?: { page?: number; limit?: number }): Promise<PaginatedResponse<BookingOrder>> => {
+        const response = await axiosInstance.get<ApiResponse<PaginatedResponse<BookingOrder>>>('/users/me/orders', { params });
+        return response.data.data;
+    },
+
+    // Get an order's installment schedule
+    getInstallments: async (orderId: string): Promise<InstallmentPlanSchedule> => {
+        const response = await axiosInstance.get<ApiResponse<InstallmentPlanSchedule>>(`/bookings/${orderId}/installments`);
+        return response.data.data;
+    },
+
+    // Initialize payment for a single installment — routes through Paystack hosted checkout
+    payInstallment: async (orderId: string, installmentId: string, callbackUrl: string): Promise<PaymentInitResponse & { sequence: number; amount: number }> => {
+        const response = await axiosInstance.post<ApiResponse<PaymentInitResponse & { sequence: number; amount: number }>>(
+            `/bookings/${orderId}/installments/${installmentId}/pay`,
+            { callbackUrl }
+        );
         return response.data.data;
     },
 };

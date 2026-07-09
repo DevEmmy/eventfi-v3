@@ -187,6 +187,8 @@ const EventCheckoutPage: React.FC<EventCheckoutPageProps> = ({ eventId }) => {
   const [event, setEvent] = useState<Event | null>(null);
   const [order, setOrder] = useState<BookingOrder | null>(null);
   const [bookingSuccess, setBookingSuccess] = useState<BookingSuccessInfo | null>(null);
+  const [payInInstallments, setPayInInstallments] = useState(false);
+  const [installmentCount, setInstallmentCount] = useState(2);
 
   // Fetch event details
   useEffect(() => {
@@ -237,6 +239,15 @@ const EventCheckoutPage: React.FC<EventCheckoutPageProps> = ({ eventId }) => {
   const subtotal = ticketPrice * quantity;
   const serviceFee = subtotal * 0.05; // 5% service fee
   const total = subtotal + serviceFee;
+  const maxInstallments = selectedTicket?.maxInstallments || 12;
+  const canPayInInstallments = !!selectedTicket?.allowInstallments && total > 0;
+
+  // Client-side estimate only — mirrors the backend default (30% down, remainder split evenly).
+  // The backend recomputes the authoritative schedule when the order is created.
+  const estimatedDownPayment = Math.round(total * 0.3);
+  const estimatedInstallmentAmount = canPayInInstallments
+    ? Math.round((total - estimatedDownPayment) / (installmentCount - 1))
+    : 0;
   const isFree = total === 0;
 
   const handleAttendeeChange = (index: number, field: keyof AttendeeInput, value: string) => {
@@ -268,6 +279,7 @@ const EventCheckoutPage: React.FC<EventCheckoutPageProps> = ({ eventId }) => {
           eventId,
           items: [{ ticketTypeId: selectedTicketId, quantity }],
           ...(guestEmail && { guestEmail }),
+          ...(payInInstallments && canPayInInstallments && { installmentPlan: { installmentCount } }),
         });
         setOrder(activeOrder);
       }
@@ -289,6 +301,16 @@ const EventCheckoutPage: React.FC<EventCheckoutPageProps> = ({ eventId }) => {
           ticketCount: quantity,
           guestEmail: !user ? attendees[0]?.email : undefined,
         });
+      } else if (activeOrder.installmentPlan) {
+        // Pay the down payment (sequence 1) now — the rest is scheduled and paid later from "My Payment Plans"
+        const downPayment = activeOrder.installmentPlan.payments.find((p) => p.sequence === 1);
+        if (!downPayment) throw new Error("Installment plan is missing its down payment");
+        const payment = await BookingService.payInstallment(
+          activeOrder.id,
+          downPayment.id,
+          `${window.location.origin}/profile?tab=payments&payment_success=true`
+        );
+        window.location.href = payment.paymentUrl;
       } else {
         const payment = await BookingService.initializePayment(
           activeOrder.id,
@@ -421,6 +443,8 @@ const EventCheckoutPage: React.FC<EventCheckoutPageProps> = ({ eventId }) => {
                           if (isSoldOut) return;
                           setSelectedTicketId(ticket.id || "");
                           setOrder(null);
+                          setPayInInstallments(false);
+                          setInstallmentCount(2);
                         }}
                         disabled={isSoldOut}
                         className={`w-full p-4 rounded-xl border-2 text-left transition-all ${
@@ -593,6 +617,77 @@ const EventCheckoutPage: React.FC<EventCheckoutPageProps> = ({ eventId }) => {
                 </div>
               </div>
 
+              {/* Installment plan picker - only for tickets that support it */}
+              {canPayInInstallments && (
+                <div className="bg-foreground/5 rounded-2xl p-6 border border-foreground/10">
+                  <h2 className="text-xl font-bold font-[family-name:var(--font-clash-display)] mb-4 text-foreground">
+                    Payment Plan
+                  </h2>
+                  <div className="space-y-3">
+                    <label className={`flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                      !payInInstallments ? "border-primary bg-primary/10" : "border-foreground/20 hover:border-primary/50"
+                    }`}>
+                      <input
+                        type="radio"
+                        checked={!payInInstallments}
+                        onChange={() => setPayInInstallments(false)}
+                        className="w-5 h-5 accent-primary"
+                      />
+                      <div>
+                        <p className="font-semibold text-foreground">Pay in full</p>
+                        <p className="text-sm text-foreground/60">₦{total.toLocaleString()} today</p>
+                      </div>
+                    </label>
+                    <label className={`flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                      payInInstallments ? "border-primary bg-primary/10" : "border-foreground/20 hover:border-primary/50"
+                    }`}>
+                      <input
+                        type="radio"
+                        checked={payInInstallments}
+                        onChange={() => setPayInInstallments(true)}
+                        className="w-5 h-5 accent-primary"
+                      />
+                      <div>
+                        <p className="font-semibold text-foreground">Pay in installments</p>
+                        <p className="text-sm text-foreground/60">
+                          ₦{estimatedDownPayment.toLocaleString()} today, then the rest before the event
+                        </p>
+                      </div>
+                    </label>
+
+                    {payInInstallments && (
+                      <div className="pt-2 pl-4">
+                        <label className="block text-sm font-semibold text-foreground mb-2">
+                          Number of installments
+                        </label>
+                        <div className="flex items-center gap-3 mb-3">
+                          <button
+                            type="button"
+                            onClick={() => setInstallmentCount((c) => Math.max(2, c - 1))}
+                            disabled={installmentCount <= 2}
+                            className="w-9 h-9 rounded-full border-2 border-foreground/20 flex items-center justify-center text-foreground/70 hover:border-primary hover:text-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            -
+                          </button>
+                          <span className="w-6 text-center font-bold text-foreground">{installmentCount}</span>
+                          <button
+                            type="button"
+                            onClick={() => setInstallmentCount((c) => Math.min(maxInstallments, c + 1))}
+                            disabled={installmentCount >= maxInstallments}
+                            className="w-9 h-9 rounded-full border-2 border-foreground/20 flex items-center justify-center text-foreground/70 hover:border-primary hover:text-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            +
+                          </button>
+                        </div>
+                        <p className="text-sm text-foreground/60">
+                          ₦{estimatedDownPayment.toLocaleString()} down payment today, then {installmentCount - 1} payment{installmentCount - 1 > 1 ? "s" : ""} of ~₦{estimatedInstallmentAmount.toLocaleString()} every 2 weeks. All payments must clear before the event.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
               {/* Paystack payment notice - Only show if not free */}
               {!isFree && (
                 <div className="bg-foreground/5 rounded-2xl p-6 border border-foreground/10">
@@ -653,10 +748,18 @@ const EventCheckoutPage: React.FC<EventCheckoutPageProps> = ({ eventId }) => {
                   <div className="border-t border-foreground/10 pt-4 mb-6">
                     <div className="flex items-center justify-between">
                       <span className="text-lg font-bold text-foreground">Total</span>
-                      <span className="text-2xl font-bold text-primary">
+                      <span className={`font-bold text-primary ${payInInstallments && canPayInInstallments ? "text-lg" : "text-2xl"}`}>
                         {isFree ? "Free" : `₦${total.toLocaleString()}`}
                       </span>
                     </div>
+                    {payInInstallments && canPayInInstallments && (
+                      <div className="flex items-center justify-between mt-2">
+                        <span className="text-sm font-semibold text-foreground/70">Due today</span>
+                        <span className="text-2xl font-bold text-primary">
+                          ₦{estimatedDownPayment.toLocaleString()}
+                        </span>
+                      </div>
+                    )}
                   </div>
 
                   {/* Security Badge */}
@@ -682,7 +785,11 @@ const EventCheckoutPage: React.FC<EventCheckoutPageProps> = ({ eventId }) => {
                     isLoading={isProcessing}
                     leftIcon={Lock}
                   >
-                    {isFree ? "Confirm Tickets" : "Complete Payment"}
+                    {isFree
+                      ? "Confirm Tickets"
+                      : payInInstallments && canPayInInstallments
+                        ? `Pay ₦${estimatedDownPayment.toLocaleString()} Now`
+                        : "Complete Payment"}
                   </Button>
 
                   {/* Terms */}
