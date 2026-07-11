@@ -6,18 +6,19 @@ import { CalendarBlank, CheckCircle, Clock, Wallet } from '@phosphor-icons/react
 import Button from "@/components/Button";
 import { BookingService } from "@/services/booking";
 import customToast from "@/lib/toast";
-import { BookingOrder, InstallmentPaymentSchedule } from "@/types/booking";
+import { BookingOrder, InstallmentPaymentStatus } from "@/types/booking";
 
 interface PaymentPlansProps {
   orders: BookingOrder[];
   loading: boolean;
 }
 
-const statusBadge: Record<InstallmentPaymentSchedule["status"], { label: string; className: string }> = {
+const statusBadge: Record<InstallmentPaymentStatus, { label: string; className: string }> = {
   pending: { label: "Upcoming", className: "bg-foreground/10 text-foreground/60" },
   paid: { label: "Paid", className: "bg-green-500/10 text-green-600" },
   overdue: { label: "Overdue", className: "bg-red-500/10 text-red-500" },
   failed: { label: "Failed", className: "bg-red-500/10 text-red-500" },
+  refunded: { label: "Refunded", className: "bg-foreground/10 text-foreground/60" },
 };
 
 const planStatusBadge: Record<string, { label: string; className: string }> = {
@@ -32,8 +33,10 @@ const formatDate = (iso: string) =>
 
 const OrderCard: React.FC<{ order: BookingOrder; onPaid: () => void }> = ({ order, onPaid }) => {
   const [payingId, setPayingId] = useState<string | null>(null);
+  const [reinstating, setReinstating] = useState(false);
   const plan = order.installmentPlan!;
   const isActive = plan.status === "active";
+  const canReinstate = plan.status === "defaulted" && new Date(order.event.startDate) > new Date();
   const nextPayable = isActive
     ? plan.payments.find((p) => p.status === "pending" || p.status === "overdue" || p.status === "failed")
     : undefined;
@@ -50,6 +53,18 @@ const OrderCard: React.FC<{ order: BookingOrder; onPaid: () => void }> = ({ orde
     } catch (error: any) {
       customToast.error(error.response?.data?.message || "Failed to start payment");
       setPayingId(null);
+    }
+  };
+
+  const handleReinstate = async () => {
+    setReinstating(true);
+    try {
+      await BookingService.reinstateOrder(order.id);
+      customToast.success("Plan reinstated — pay the remaining balance to confirm your tickets");
+      onPaid();
+    } catch (error: any) {
+      customToast.error(error.response?.data?.message || "Failed to reinstate this plan");
+      setReinstating(false);
     }
   };
 
@@ -76,6 +91,11 @@ const OrderCard: React.FC<{ order: BookingOrder; onPaid: () => void }> = ({ orde
             {new Date(order.event.startDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
           </p>
         </div>
+        {canReinstate && (
+          <Button variant="outline" size="sm" isLoading={reinstating} onClick={handleReinstate} className="shrink-0">
+            Reinstate plan
+          </Button>
+        )}
       </div>
 
       <div className="space-y-2">

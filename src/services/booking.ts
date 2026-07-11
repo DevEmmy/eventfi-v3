@@ -93,4 +93,10 @@ export const BookingService = {
         );
         return response.data.data;
     },
+
+    // Reinstate a defaulted installment plan (only possible pre-event, if tickets are still available)
+    reinstateOrder: async (orderId: string): Promise<BookingOrder> => {
+        const response = await axiosInstance.post<ApiResponse<BookingOrder>>(`/bookings/${orderId}/reinstate`);
+        return response.data.data;
+    },
 };

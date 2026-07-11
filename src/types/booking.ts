@@ -39,7 +39,7 @@ export interface AttendeeInput {
 }
 
 export type InstallmentPlanStatus = 'active' | 'completed' | 'defaulted' | 'cancelled';
-export type InstallmentPaymentStatus = 'pending' | 'paid' | 'overdue' | 'failed';
+export type InstallmentPaymentStatus = 'pending' | 'paid' | 'overdue' | 'failed' | 'refunded';
 
 export interface InstallmentPaymentSchedule {
     id: string;
