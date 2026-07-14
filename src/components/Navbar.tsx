@@ -47,6 +47,7 @@ export default function Navbar() {
     { label: "Explore Events", href: "/explore-events" },
     // { label: "Marketplace", href: "/marketplace" },
     { label: "Communities", href: "/communities" },
+    { label: "Features", href: "/features" },
     { label: "About", href: "/about" },
   ];
 
