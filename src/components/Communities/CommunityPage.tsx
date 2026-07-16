@@ -126,7 +126,7 @@ const CommunityPage: React.FC<CommunityPageProps> = ({ slug, initialData }) => {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-5xl mx-auto">
           {/* Header */}
-          <div className="flex flex-col sm:flex-row sm:items-end gap-4 -mt-12 sm:-mt-16 pb-6 border-b border-foreground/10">
+          <div className="relative z-10 flex flex-col sm:flex-row sm:items-end gap-4 -mt-12 sm:-mt-16 pb-6 border-b border-foreground/10">
             <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-2xl bg-foreground/5 border-4 border-background shadow-lg overflow-hidden flex-shrink-0 flex items-center justify-center">
               {community.logo ? (
                 <Image

@@ -76,7 +76,7 @@ const MyCommunities: React.FC<MyCommunitiesProps> = ({ communities, onCreateComm
               )}
             </div>
             <div className="p-4">
-              <div className="flex items-start gap-3 -mt-10 mb-3">
+              <div className="relative z-10 flex items-start gap-3 -mt-10 mb-3">
                 <div className="w-14 h-14 rounded-xl bg-foreground/5 border-4 border-background shadow overflow-hidden flex-shrink-0 flex items-center justify-center">
                   {community.logo ? (
                     <Image src={community.logo} alt={community.name} width={56} height={56} className="w-full h-full object-cover" />

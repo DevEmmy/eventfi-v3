@@ -25,7 +25,7 @@ const CommunityCard: React.FC<{ community: CommunityListItem }> = ({ community }
         <Image src={community.bannerImage} alt={community.name} fill className="object-cover" />
       )}
     </div>
-    <div className="p-5 -mt-8">
+    <div className="relative z-10 p-5 -mt-8">
       <div className="w-16 h-16 rounded-2xl bg-foreground/5 border-4 border-background shadow-sm overflow-hidden flex items-center justify-center">
         {community.logo ? (
           <Image src={community.logo} alt={community.name} width={64} height={64} className="w-full h-full object-cover" />
