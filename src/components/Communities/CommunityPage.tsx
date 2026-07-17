@@ -126,8 +126,8 @@ const CommunityPage: React.FC<CommunityPageProps> = ({ slug, initialData }) => {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-5xl mx-auto">
           {/* Header */}
-          <div className="relative z-10 flex flex-col sm:flex-row sm:items-end gap-4 -mt-12 sm:-mt-16 pb-6 border-b border-foreground/10">
-            <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-2xl bg-foreground/5 border-4 border-background shadow-lg overflow-hidden flex-shrink-0 flex items-center justify-center">
+          <div className="relative z-10 flex flex-col sm:flex-row sm:items-end gap-4 pb-6 border-b border-foreground/10">
+            <div className="-mt-12 sm:-mt-16 w-24 h-24 sm:w-32 sm:h-32 rounded-2xl bg-foreground/5 border-4 border-background shadow-lg overflow-hidden flex-shrink-0 flex items-center justify-center">
               {community.logo ? (
                 <Image
                   src={community.logo}
@@ -143,7 +143,7 @@ const CommunityPage: React.FC<CommunityPageProps> = ({ slug, initialData }) => {
               )}
             </div>
 
-            <div className="flex-1 min-w-0 sm:pb-2">
+            <div className="flex-1 min-w-0 pt-3 sm:pt-0 sm:pb-2">
               <h1 className="text-2xl sm:text-3xl font-bold text-foreground">{community.name}</h1>
               <div className="flex items-center gap-2 text-sm text-foreground/60 mt-1">
                 <Users size={16} color="currentColor" weight="regular" />
