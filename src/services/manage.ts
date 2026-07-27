@@ -3,6 +3,8 @@ import {
     ManageDashboardResponse,
     AnalyticsResponse,
     AttendeesListResponse,
+    EventAttendee,
+    AddAttendeePayload,
     CheckInResponse,
     BulkEmailResponse,
     BulkSmsPayload,
@@ -65,6 +67,20 @@ export const ManageEventService = {
         const response = await axiosInstance.get<ApiResponse<AttendeesListResponse>>(
             `/events/${eventId}/attendees`,
             { params }
+        );
+        return response.data.data;
+    },
+
+    /**
+     * Manually register an attendee who didn't book online (walk-in, phone/in-person signup, etc.)
+     */
+    addAttendee: async (
+        eventId: string,
+        payload: AddAttendeePayload
+    ): Promise<EventAttendee> => {
+        const response = await axiosInstance.post<ApiResponse<EventAttendee>>(
+            `/events/${eventId}/attendees`,
+            payload
         );
         return response.data.data;
     },

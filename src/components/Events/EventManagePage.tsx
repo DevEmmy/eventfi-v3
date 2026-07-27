@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Button from "@/components/Button";
-import { CaretLeft, CalendarBlank, MapPin, Clock, Users, Ticket, Coins, ChartBar, PencilSimple, Trash, ShareNetwork, Copy, DotsThree, CaretUp, CaretDown, User, Envelope, Phone, Export, Eye, Plus, MagnifyingGlass, XCircle, PaperPlaneRight, FileText, CheckCircle, Gift, ChatText, Minus, Link, QrCode, UploadSimple } from '@phosphor-icons/react';
+import { CaretLeft, CalendarBlank, MapPin, Clock, Users, Ticket, Coins, ChartBar, PencilSimple, Trash, ShareNetwork, Copy, DotsThree, CaretUp, CaretDown, User, Envelope, Phone, Export, Eye, Plus, MagnifyingGlass, XCircle, PaperPlaneRight, FileText, CheckCircle, Gift, ChatText, Minus, Link, QrCode, UploadSimple, UserPlus } from '@phosphor-icons/react';
 import { QRCodeCanvas } from "qrcode.react";
 import { ManageEventService } from "@/services/manage";
 import { ChatService } from "@/services/chat";
@@ -96,6 +96,14 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
   const [attendeesList, setAttendeesList] = useState<EventAttendee[]>([]);
   const [attendeesTotal, setAttendeesTotal] = useState(0);
   const [attendeesTotalPages, setAttendesTotalPages] = useState(1);
+
+  // Manually add attendee (walk-in / offline registration) state
+  const [showAddAttendeeModal, setShowAddAttendeeModal] = useState(false);
+  const [newAttendeeName, setNewAttendeeName] = useState("");
+  const [newAttendeeEmail, setNewAttendeeEmail] = useState("");
+  const [newAttendeePhone, setNewAttendeePhone] = useState("");
+  const [newAttendeeTicketTypeId, setNewAttendeeTicketTypeId] = useState("");
+  const [isAddingAttendee, setIsAddingAttendee] = useState(false);
 
   // Team members from API
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
@@ -386,6 +394,48 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
         console.error("Check-in failed:", error);
         customToast.error(error.response?.data?.message || "Failed to check in attendee");
       }
+    }
+  };
+
+  const handleAddAttendee = async () => {
+    if (!newAttendeeName.trim() || !newAttendeeEmail.trim()) {
+      customToast.error("Name and email are required");
+      return;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(newAttendeeEmail.trim())) {
+      customToast.error("Please enter a valid email address");
+      return;
+    }
+    if (!newAttendeeTicketTypeId) {
+      customToast.error("Please select a ticket type");
+      return;
+    }
+
+    setIsAddingAttendee(true);
+    try {
+      const attendee = await ManageEventService.addAttendee(eventId, {
+        ticketTypeId: newAttendeeTicketTypeId,
+        name: newAttendeeName.trim(),
+        email: newAttendeeEmail.trim(),
+        phone: newAttendeePhone.trim() || undefined,
+      });
+
+      // Reflect the new attendee immediately without waiting on a refetch
+      setAttendeesList(prev => [attendee, ...prev]);
+      setAttendeesTotal(prev => prev + 1);
+
+      setShowAddAttendeeModal(false);
+      setNewAttendeeName("");
+      setNewAttendeeEmail("");
+      setNewAttendeePhone("");
+      setNewAttendeeTicketTypeId("");
+      customToast.success(`${attendee.name} registered successfully`);
+    } catch (error: any) {
+      console.error("Add attendee failed:", error);
+      customToast.error(error.response?.data?.message || "Failed to register attendee");
+    } finally {
+      setIsAddingAttendee(false);
     }
   };
 
@@ -984,6 +1034,18 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
                 <div className="flex items-center gap-2">
                   <Button
                     variant="primary"
+                    size="sm"
+                    leftIcon={UserPlus}
+                    onClick={() => {
+                      setNewAttendeeTicketTypeId(eventTicketTypes.length === 1 ? eventTicketTypes[0].id : "");
+                      setShowAddAttendeeModal(true);
+                    }}
+                  >
+                    <span className="hidden sm:inline">Add Attendee</span>
+                    <span className="sm:hidden">Add</span>
+                  </Button>
+                  <Button
+                    variant="secondary"
                     size="sm"
                     leftIcon={Envelope}
                     onClick={() => setShowBulkEmailModal(true)}
@@ -1605,6 +1667,112 @@ const EventManagePage: React.FC<EventManagePageProps> = ({ eventId }) => {
           )}
         </div>
       </div>
+
+      {/* Add Attendee Modal — manually register a walk-in / offline attendee */}
+      {showAddAttendeeModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+          <div className="bg-background border border-foreground/10 rounded-t-3xl sm:rounded-3xl max-w-lg w-full max-h-[92vh] sm:max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div className="p-5 sm:p-10">
+              {/* Header */}
+              <div className="flex items-start justify-between mb-6 sm:mb-8">
+                <div>
+                  <h3 className="text-xl sm:text-2xl font-bold font-[family-name:var(--font-clash-display)] text-foreground mb-1">
+                    Add Attendee
+                  </h3>
+                  <p className="text-sm text-foreground/60">
+                    Register someone who didn&apos;t sign up online — they&apos;ll get a confirmation email with their ticket.
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowAddAttendeeModal(false)}
+                  className="p-2 hover:bg-foreground/10 rounded-lg transition-colors shrink-0 ml-4"
+                >
+                  <XCircle size={24} color="currentColor" weight="regular" />
+                </button>
+              </div>
+
+              <div className="space-y-5">
+                {/* Ticket Type */}
+                <div>
+                  <label className="block text-sm font-semibold text-foreground mb-2">
+                    Ticket Type
+                  </label>
+                  <select
+                    value={newAttendeeTicketTypeId}
+                    onChange={(e) => setNewAttendeeTicketTypeId(e.target.value)}
+                    className="w-full px-4 py-3 bg-background border-2 border-foreground/20 rounded-xl text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200"
+                  >
+                    <option value="">Select a ticket type...</option>
+                    {eventTicketTypes.map((type) => (
+                      <option key={type.id} value={type.id}>
+                        {type.name}
+                      </option>
+                    ))}
+                  </select>
+                  {eventTicketTypes.length === 0 && (
+                    <p className="text-xs text-foreground/50 mt-2">
+                      This event has no ticket types set up yet.
+                    </p>
+                  )}
+                </div>
+
+                {/* Name */}
+                <div>
+                  <label className="block text-sm font-semibold text-foreground mb-2">
+                    Full Name
+                  </label>
+                  <input
+                    type="text"
+                    value={newAttendeeName}
+                    onChange={(e) => setNewAttendeeName(e.target.value)}
+                    placeholder="e.g. Jane Doe"
+                    className="w-full px-4 py-3 bg-background border-2 border-foreground/20 rounded-xl text-sm text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200"
+                  />
+                </div>
+
+                {/* Email */}
+                <div>
+                  <label className="block text-sm font-semibold text-foreground mb-2">
+                    Email Address
+                  </label>
+                  <input
+                    type="email"
+                    value={newAttendeeEmail}
+                    onChange={(e) => setNewAttendeeEmail(e.target.value)}
+                    placeholder="jane@example.com"
+                    className="w-full px-4 py-3 bg-background border-2 border-foreground/20 rounded-xl text-sm text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200"
+                  />
+                </div>
+
+                {/* Phone (optional) */}
+                <div>
+                  <label className="block text-sm font-semibold text-foreground mb-2">
+                    Phone Number <span className="text-foreground/40 font-normal">(optional)</span>
+                  </label>
+                  <input
+                    type="tel"
+                    value={newAttendeePhone}
+                    onChange={(e) => setNewAttendeePhone(e.target.value)}
+                    placeholder="+234..."
+                    className="w-full px-4 py-3 bg-background border-2 border-foreground/20 rounded-xl text-sm text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200"
+                  />
+                </div>
+
+                <Button
+                  variant="primary"
+                  size="lg"
+                  fullWidth
+                  leftIcon={UserPlus}
+                  onClick={handleAddAttendee}
+                  disabled={isAddingAttendee}
+                >
+                  {isAddingAttendee ? "Registering..." : "Register Attendee"}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Add Member Modal */}
       {showAddMemberModal && (

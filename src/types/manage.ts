@@ -220,6 +220,13 @@ export interface CancelEventPayload {
     refundPolicy: RefundPolicy;
 }
 
+export interface AddAttendeePayload {
+    ticketTypeId: string;
+    name: string;
+    email: string;
+    phone?: string;
+}
+
 export interface AttendeesQueryParams {
     page?: number;
     limit?: number;
