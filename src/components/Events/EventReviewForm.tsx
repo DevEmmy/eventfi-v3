@@ -6,6 +6,7 @@ import Button from "@/components/Button";
 import { Star, CaretLeft, CalendarBlank, MapPin, Clock, Image as ImageIcon, Trash } from '@phosphor-icons/react';
 import { EventService } from "@/services/events";
 import customToast from "@/lib/toast";
+import { uploadImage } from "@/hooks/useImageUpload";
 
 interface EventReviewFormProps {
   eventId: string;
@@ -26,23 +27,23 @@ const EventReviewForm: React.FC<EventReviewFormProps> = ({
   const [title, setTitle] = useState("");
   const [review, setReview] = useState("");
   const [photos, setPhotos] = useState<string[]>([]);
+  const [uploadingPhotos, setUploadingPhotos] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files) return;
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []).filter((f) => f.type.startsWith("image/"));
+    e.target.value = "";
+    if (files.length === 0) return;
 
-    Array.from(files).forEach((file) => {
-      if (file.type.startsWith("image/")) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const result = e.target?.result as string;
-          setPhotos((prev) => [...prev, result]);
-        };
-        reader.readAsDataURL(file);
-      }
-    });
+    setUploadingPhotos(true);
+    try {
+      const urls = await Promise.all(files.map((file) => uploadImage(file)));
+      const successful = urls.filter((url): url is string => !!url);
+      setPhotos((prev) => [...prev, ...successful].slice(0, 5));
+    } finally {
+      setUploadingPhotos(false);
+    }
   };
 
   const handleRemovePhoto = (index: number) => {
@@ -50,6 +51,10 @@ const EventReviewForm: React.FC<EventReviewFormProps> = ({
   };
 
   const handleSubmit = async () => {
+    if (uploadingPhotos) {
+      customToast.error("Please wait for photo uploads to finish");
+      return;
+    }
     if (rating === 0) {
       customToast.error("Please select a rating");
       return;
@@ -238,18 +243,19 @@ const EventReviewForm: React.FC<EventReviewFormProps> = ({
                   </div>
                 )}
                 {photos.length < 5 && (
-                  <label className="block">
+                  <label className={`block ${uploadingPhotos ? 'opacity-50 cursor-not-allowed' : ''}`}>
                     <input
                       type="file"
                       accept="image/*"
                       multiple
                       onChange={handlePhotoUpload}
                       className="hidden"
+                      disabled={uploadingPhotos}
                     />
                     <div className="flex items-center justify-center gap-2 px-6 py-4 border-2 border-dashed border-foreground/20 rounded-xl hover:border-primary transition-colors cursor-pointer">
                       <ImageIcon size={20} color="currentColor" weight="regular" />
                       <span className="text-foreground/70 font-medium">
-                        Add Photos ({photos.length}/5)
+                        {uploadingPhotos ? "Uploading..." : `Add Photos (${photos.length}/5)`}
                       </span>
                     </div>
                   </label>
@@ -274,7 +280,7 @@ const EventReviewForm: React.FC<EventReviewFormProps> = ({
                 variant="primary"
                 size="lg"
                 onClick={handleSubmit}
-                disabled={!isFormValid || isSubmitting}
+                disabled={!isFormValid || isSubmitting || uploadingPhotos}
                 fullWidth
               >
                 {isSubmitting ? "Submitting..." : "Submit Review"}

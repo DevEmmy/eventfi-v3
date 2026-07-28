@@ -17,6 +17,7 @@ import { EventSpeaker } from "@/services/events";
 import AIAssistPanel, { AIEventResult } from "./AIAssistPanel";
 import { CommunityService } from "@/services/community";
 import { CommunityChapter, CommunityRole, MyCommunity } from "@/types/community";
+import { uploadImage } from "@/hooks/useImageUpload";
 // ... existing imports
 
 interface TicketType {
@@ -300,28 +301,6 @@ const CreateEventPage = () => {
   };
 
   // ... existing code
-
-  const uploadImage = async (file: File): Promise<string | null> => {
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
-
-      const response = await fetch("/api/upload", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to upload image");
-      }
-
-      const data = await response.json();
-      return data.url;
-    } catch (error) {
-      console.error("Image upload failed:", error);
-      return null;
-    }
-  };
 
 
 

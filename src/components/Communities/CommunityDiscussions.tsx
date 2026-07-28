@@ -16,6 +16,7 @@ import customToast from "@/lib/toast";
 import { CommunityService } from "@/services/community";
 import { CommunityPost, CommunityPostComment, CommunityRole } from "@/types/community";
 import { useUserStore } from "@/store/useUserStore";
+import { uploadImage } from "@/hooks/useImageUpload";
 
 interface CommunityDiscussionsProps {
   communityId: string;
@@ -24,20 +25,6 @@ interface CommunityDiscussionsProps {
   onRequestFollow: () => void;
   followLoading?: boolean;
 }
-
-const uploadImage = async (file: File): Promise<string | null> => {
-  try {
-    const formData = new FormData();
-    formData.append("file", file);
-    const response = await fetch("/api/upload", { method: "POST", body: formData });
-    if (!response.ok) throw new Error("Failed to upload image");
-    const data = await response.json();
-    return data.url;
-  } catch (error) {
-    console.error("Image upload failed:", error);
-    return null;
-  }
-};
 
 const formatTimestamp = (dateStr: string) => {
   const date = new Date(dateStr);

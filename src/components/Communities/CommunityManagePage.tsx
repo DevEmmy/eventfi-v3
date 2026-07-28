@@ -32,6 +32,7 @@ import {
   CommunityVisibility,
 } from "@/types/community";
 import { Event } from "@/types/event";
+import { uploadImage } from "@/hooks/useImageUpload";
 
 interface CommunityManagePageProps {
   communityId: string;
@@ -41,20 +42,6 @@ const ROLE_LABELS: Record<string, string> = {
   OWNER: "Owner",
   ADMIN: "Admin",
   CHAPTER_LEAD: "Chapter Lead",
-};
-
-const uploadImage = async (file: File): Promise<string | null> => {
-  try {
-    const formData = new FormData();
-    formData.append("file", file);
-    const response = await fetch("/api/upload", { method: "POST", body: formData });
-    if (!response.ok) throw new Error("Failed to upload image");
-    const data = await response.json();
-    return data.url;
-  } catch (error) {
-    console.error("Image upload failed:", error);
-    return null;
-  }
 };
 
 const StatCard: React.FC<{ label: string; value: string | number }> = ({ label, value }) => (

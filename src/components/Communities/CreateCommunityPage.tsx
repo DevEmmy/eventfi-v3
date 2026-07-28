@@ -8,26 +8,7 @@ import Button from "@/components/Button";
 import { CommunityService } from "@/services/community";
 import { CommunityVisibility } from "@/types/community";
 import customToast from "@/lib/toast";
-
-const uploadImage = async (file: File): Promise<string | null> => {
-  try {
-    const formData = new FormData();
-    formData.append("file", file);
-
-    const response = await fetch("/api/upload", {
-      method: "POST",
-      body: formData,
-    });
-
-    if (!response.ok) throw new Error("Failed to upload image");
-
-    const data = await response.json();
-    return data.url;
-  } catch (error) {
-    console.error("Image upload failed:", error);
-    return null;
-  }
-};
+import { uploadImage } from "@/hooks/useImageUpload";
 
 const CreateCommunityPage: React.FC = () => {
   const router = useRouter();

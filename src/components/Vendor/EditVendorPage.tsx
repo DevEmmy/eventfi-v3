@@ -6,6 +6,7 @@ import Button from "@/components/Button";
 import { Storefront, FileText, MapPin, Image as ImageIcon, CaretLeft, CaretRight, Plus, Trash, Phone, Envelope, CheckCircle } from '@phosphor-icons/react';
 import { VendorService } from "@/services/vendor";
 import customToast from "@/lib/toast";
+import { useImageUpload, uploadImage } from "@/hooks/useImageUpload";
 
 const categoryDisplayMap: Record<string, string> = {
   PHOTOGRAPHY: "Photography",
@@ -85,6 +86,8 @@ const EditVendorPage = () => {
   const [currentSpecialty, setCurrentSpecialty] = useState("");
   const [activeSection, setActiveSection] = useState(0);
   const [isSaving, setIsSaving] = useState(false);
+  const { upload, uploading } = useImageUpload();
+  const [uploadingPortfolio, setUploadingPortfolio] = useState(false);
 
   const sections = [
     { id: "basic", label: "Basic Info", icon: FileText },
@@ -124,24 +127,32 @@ const EditVendorPage = () => {
     }));
   };
 
-  const handleImageUpload = (
+  const handleImageUpload = async (
     e: React.ChangeEvent<HTMLInputElement>,
-    type: "logo" | "coverImage" | "portfolio"
+    type: "logo" | "coverImage"
   ) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        if (type === "portfolio") {
-          setFormData((prev) => ({
-            ...prev,
-            portfolio: [...prev.portfolio, reader.result as string],
-          }));
-        } else {
-          setFormData((prev) => ({ ...prev, [type]: reader.result as string }));
-        }
-      };
-      reader.readAsDataURL(file);
+    e.target.value = "";
+    if (!file) return;
+
+    const url = await upload(file);
+    if (url) {
+      setFormData((prev) => ({ ...prev, [type]: url }));
+    }
+  };
+
+  const handlePortfolioUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    e.target.value = "";
+    if (files.length === 0) return;
+
+    setUploadingPortfolio(true);
+    try {
+      const urls = await Promise.all(files.map((file) => uploadImage(file)));
+      const successful = urls.filter((url): url is string => !!url);
+      setFormData((prev) => ({ ...prev, portfolio: [...prev.portfolio, ...successful] }));
+    } finally {
+      setUploadingPortfolio(false);
     }
   };
 
@@ -179,6 +190,10 @@ const EditVendorPage = () => {
   };
 
   const handleSaveChanges = async () => {
+    if (uploading || uploadingPortfolio) {
+      customToast.error("Please wait for image uploads to finish");
+      return;
+    }
     if (
       !formData.name ||
       !formData.category ||
@@ -313,7 +328,7 @@ const EditVendorPage = () => {
                   </button>
                 </div>
               ) : (
-                <label className="block">
+                <label className={`block ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`}>
                   <div className="w-32 h-32 border-2 border-dashed border-foreground/20 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-primary transition-all duration-200">
                     <ImageIcon
                       size={32}
@@ -322,7 +337,7 @@ const EditVendorPage = () => {
                       className="text-foreground/40 mb-2"
                     />
                     <span className="text-xs text-foreground/60 text-center px-2">
-                      Upload Logo
+                      {uploading ? "Uploading..." : "Upload Logo"}
                     </span>
                   </div>
                   <input
@@ -330,6 +345,7 @@ const EditVendorPage = () => {
                     accept="image/*"
                     onChange={(e) => handleImageUpload(e, "logo")}
                     className="hidden"
+                    disabled={uploading}
                   />
                 </label>
               )}
@@ -561,7 +577,7 @@ const EditVendorPage = () => {
                   </button>
                 </div>
               ) : (
-                <label className="block">
+                <label className={`block ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`}>
                   <div className="w-full h-64 border-2 border-dashed border-foreground/20 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-primary transition-all duration-200">
                     <ImageIcon
                       size={48}
@@ -570,7 +586,7 @@ const EditVendorPage = () => {
                       className="text-foreground/40 mb-3"
                     />
                     <span className="text-foreground/60 font-medium">
-                      Click to upload or drag and drop
+                      {uploading ? "Uploading..." : "Click to upload or drag and drop"}
                     </span>
                     <span className="text-sm text-foreground/40 mt-1">
                       PNG, JPG up to 10MB
@@ -581,6 +597,7 @@ const EditVendorPage = () => {
                     accept="image/*"
                     onChange={(e) => handleImageUpload(e, "coverImage")}
                     className="hidden"
+                    disabled={uploading}
                   />
                 </label>
               )}
@@ -610,7 +627,7 @@ const EditVendorPage = () => {
                   ))}
                 </div>
               )}
-              <label className="block">
+              <label className={`block ${uploadingPortfolio ? 'opacity-50 cursor-not-allowed' : ''}`}>
                 <div className="w-full py-8 border-2 border-dashed border-foreground/20 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-primary transition-all duration-200">
                   <ImageIcon
                     size={32}
@@ -619,15 +636,16 @@ const EditVendorPage = () => {
                     className="text-foreground/40 mb-2"
                   />
                   <span className="text-foreground/60 font-medium text-sm">
-                    Add Portfolio Image
+                    {uploadingPortfolio ? "Uploading..." : "Add Portfolio Image"}
                   </span>
                 </div>
                 <input
                   type="file"
                   accept="image/*"
-                  onChange={(e) => handleImageUpload(e, "portfolio")}
+                  onChange={handlePortfolioUpload}
                   className="hidden"
                   multiple
+                  disabled={uploadingPortfolio}
                 />
               </label>
             </div>
@@ -791,6 +809,7 @@ const EditVendorPage = () => {
                   rightIcon={CheckCircle}
                   onClick={handleSaveChanges}
                   isLoading={isSaving}
+                  disabled={isSaving || uploading || uploadingPortfolio}
                 >
                   Save Changes
                 </Button>

@@ -16,6 +16,7 @@ import customToast from "@/lib/toast";
 import { CalendarPlus, FileText, MapPin, Image as ImageIcon, Gear, CaretLeft, CaretRight, Plus, Clock, Trash, XCircle } from '@phosphor-icons/react';
 import { CommunityService } from "@/services/community";
 import { CommunityChapter, CommunityRole, MyCommunity } from "@/types/community";
+import { uploadImage } from "@/hooks/useImageUpload";
 
 interface TicketType {
   id: string;
@@ -268,28 +269,6 @@ const EditEventPage: React.FC<EditEventPageProps> = ({ eventId }) => {
     } else {
       setFormData((prev) => ({ ...prev, image: null }));
       customToast.error("Failed to upload image. Please try again.");
-    }
-  };
-
-  const uploadImage = async (file: File): Promise<string | null> => {
-    try {
-      const data = new FormData();
-      data.append("file", file);
-
-      const response = await fetch("/api/upload", {
-        method: "POST",
-        body: data,
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to upload image");
-      }
-
-      const result = await response.json();
-      return result.url;
-    } catch (error) {
-      console.error("Image upload failed:", error);
-      return null;
     }
   };
 

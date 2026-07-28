@@ -8,6 +8,7 @@ import Image from "next/image";
 import { useUserStore } from "@/store/useUserStore";
 import { UserService } from "@/services/user";
 import customToast from "@/lib/toast";
+import { useImageUpload } from "@/hooks/useImageUpload";
 
 const EditProfilePage = () => {
   const router = useRouter();
@@ -25,6 +26,7 @@ const EditProfilePage = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [usernameError, setUsernameError] = useState("");
   const [saveError, setSaveError] = useState("");
+  const { upload, uploading } = useImageUpload();
 
   // Load user data on mount
   useEffect(() => {
@@ -77,20 +79,14 @@ const EditProfilePage = () => {
     }
   };
 
-  const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      // Validate file size (max 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        alert("Image size must be less than 5MB");
-        return;
-      }
+    e.target.value = "";
+    if (!file) return;
 
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFormData((prev) => ({ ...prev, avatar: reader.result as string }));
-      };
-      reader.readAsDataURL(file);
+    const url = await upload(file);
+    if (url) {
+      setFormData((prev) => ({ ...prev, avatar: url }));
     }
   };
 
@@ -108,6 +104,10 @@ const EditProfilePage = () => {
 
   const handleSave = async () => {
     if (!isFormValid()) {
+      return;
+    }
+    if (uploading) {
+      customToast.error("Please wait for the photo upload to finish");
       return;
     }
 
@@ -225,11 +225,11 @@ const EditProfilePage = () => {
                   )}
                 </div>
                 <div className="flex-1">
-                  <label className="block">
+                  <label className={`block ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`}>
                     <div className="inline-flex items-center gap-2 px-4 py-2 border-2 border-foreground/20 rounded-xl cursor-pointer hover:border-primary transition-all duration-200">
                       <PencilSimple size={18} color="currentColor" weight="regular" />
                       <span className="text-sm font-medium text-foreground">
-                        {formData.avatar ? "Change Photo" : "Upload Photo"}
+                        {uploading ? "Uploading..." : formData.avatar ? "Change Photo" : "Upload Photo"}
                       </span>
                     </div>
                     <input
@@ -237,10 +237,11 @@ const EditProfilePage = () => {
                       accept="image/*"
                       onChange={handleAvatarUpload}
                       className="hidden"
+                      disabled={uploading}
                     />
                   </label>
                   <p className="text-xs text-foreground/60 mt-2">
-                    Recommended: Square image, at least 400x400px. Max 5MB.
+                    Recommended: Square image, at least 400x400px. Max 10MB.
                   </p>
                 </div>
               </div>
@@ -419,7 +420,7 @@ const EditProfilePage = () => {
               size="md"
               rightIcon={CheckCircle}
               onClick={handleSave}
-              disabled={!isFormValid() || isSaving}
+              disabled={!isFormValid() || isSaving || uploading}
               isLoading={isSaving}
             >
               Save Changes

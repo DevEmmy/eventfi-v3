@@ -4,10 +4,10 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Button from "@/components/Button";
 import { User, CaretRight } from '@phosphor-icons/react';
-import axios from "axios";
 import axiosInstance from "@/lib/axios";
 import toast from "@/lib/toast";
 import { useUserStore } from "@/store/useUserStore";
+import { useImageUpload } from "@/hooks/useImageUpload";
 
 const IdentityStep = () => {
   const router = useRouter();
@@ -17,7 +17,7 @@ const IdentityStep = () => {
   const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
   const [hasCustomPhoto, setHasCustomPhoto] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [uploading, setUploading] = useState(false);
+  const { upload, uploading } = useImageUpload();
 
   // Generate a DiceBear default avatar on mount
   useEffect(() => {
@@ -57,36 +57,14 @@ const IdentityStep = () => {
 
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      // Show preview
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setProfilePhoto(reader.result as string);
-        setHasCustomPhoto(true);
-      };
-      reader.readAsDataURL(file);
+    e.target.value = "";
+    if (!file) return;
 
-      // Upload to Cloudinary via backend
-      setUploading(true);
-      const formData = new FormData();
-      formData.append("file", file);
-
-      try {
-        const res = await axios.post("/api/upload", formData, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        });
-
-        setProfilePhoto(res.data.url);
-        setHasCustomPhoto(true);
-        toast.success("Image uploaded successfully");
-      } catch (error) {
-        console.error("Upload failed", error);
-        toast.error("Failed to upload image");
-      } finally {
-        setUploading(false);
-      }
+    const url = await upload(file);
+    if (url) {
+      setProfilePhoto(url);
+      setHasCustomPhoto(true);
+      toast.success("Image uploaded successfully");
     }
   };
 
