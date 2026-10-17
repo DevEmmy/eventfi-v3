@@ -13,7 +13,7 @@ import SpeakerManager, { hasSpeakers } from "./SpeakerManager";
 import { EventSpeaker, EventService as ESvc } from "@/services/events";
 import Button from "@/components/Button";
 import customToast from "@/lib/toast";
-import { CalendarPlus, FileText, MapPin, Image as ImageIcon, Gear, CaretLeft, CaretRight, Plus, Clock, Trash, XCircle } from '@phosphor-icons/react';
+import { CalendarPlus, FileText, MapPin, Image as ImageIcon, Gear, CaretLeft, CaretRight, Plus, Clock, Trash, XCircle, Info, ArrowRight } from '@phosphor-icons/react';
 import { CommunityService } from "@/services/community";
 import { CommunityChapter, CommunityRole, MyCommunity } from "@/types/community";
 import { uploadImage } from "@/hooks/useImageUpload";
@@ -27,6 +27,33 @@ interface TicketType {
   allowInstallments: boolean;
   maxInstallments: number;
 }
+
+// Snapshot of a ticket as saved in the DB, used to explain the impact of edits
+interface SavedTicket {
+  id: string;
+  name: string;
+  price: number;
+  sold: number;
+}
+
+interface TicketChangeImpact {
+  removedWithBuyers: SavedTicket[];
+  removedUnsold: SavedTicket[];
+  priceChanges: { ticket: SavedTicket; newName: string; newPrice: number }[];
+}
+
+const toSavedTickets = (tickets: any[]): SavedTicket[] =>
+  tickets
+    .filter((t) => t.id)
+    .map((t) => ({
+      id: t.id,
+      name: t.name || "",
+      price: Number(t.price) || 0,
+      sold: Math.max(0, (t.quantity ?? 0) - (t.remaining ?? t.quantity ?? 0)),
+    }));
+
+const formatNaira = (amount: number) =>
+  amount > 0 ? `₦${amount.toLocaleString()}` : "Free";
 
 interface AgendaItem {
   id: string;
@@ -114,6 +141,10 @@ const EditEventPage: React.FC<EditEventPageProps> = ({ eventId }) => {
     { id: "1", name: "", price: "", quantity: 0, description: "", allowInstallments: false, maxInstallments: 3 },
   ]);
 
+  const [savedTickets, setSavedTickets] = useState<SavedTicket[]>([]);
+  const [ticketImpact, setTicketImpact] = useState<TicketChangeImpact | null>(null);
+  const [ticketReassignments, setTicketReassignments] = useState<Record<string, string>>({});
+
   const [agendaItems, setAgendaItems] = useState<AgendaItem[]>([]);
 
   const [activeSection, setActiveSection] = useState(0);
@@ -191,6 +222,7 @@ const EditEventPage: React.FC<EditEventPageProps> = ({ eventId }) => {
         setSpeakers(spkrs);
 
         if (event.tickets && event.tickets.length > 0) {
+          setSavedTickets(toSavedTickets(event.tickets));
           setTicketTypes(
             event.tickets.map((t: any, i: number) => ({
               id: t.id || String(i + 1),
@@ -401,10 +433,41 @@ const EditEventPage: React.FC<EditEventPageProps> = ({ eventId }) => {
     customToast.success("Draft saved locally! (Implementation pending)");
   };
 
-  const handleUpdate = async () => {
+  const getTicketChangeImpact = (): TicketChangeImpact => {
+    const currentById = new Map(ticketTypes.map((t) => [t.id, t]));
+    const impact: TicketChangeImpact = { removedWithBuyers: [], removedUnsold: [], priceChanges: [] };
+    for (const saved of savedTickets) {
+      const current = currentById.get(saved.id);
+      if (!current) {
+        (saved.sold > 0 ? impact.removedWithBuyers : impact.removedUnsold).push(saved);
+      } else if (saved.sold > 0 && (parseFloat(current.price) || 0) !== saved.price) {
+        impact.priceChanges.push({ ticket: saved, newName: current.name, newPrice: parseFloat(current.price) || 0 });
+      }
+    }
+    return impact;
+  };
+
+  // Shows the ticket-impact modal first when the edit affects existing tickets
+  const handleUpdateClick = () => {
     if (isUpdating || uploading) return;
     if (!validateForm()) return;
 
+    const impact = getTicketChangeImpact();
+    if (impact.removedWithBuyers.length || impact.removedUnsold.length || impact.priceChanges.length) {
+      setTicketReassignments(
+        Object.fromEntries(impact.removedWithBuyers.map((t) => [t.id, ticketTypes[0].id]))
+      );
+      setTicketImpact(impact);
+      return;
+    }
+    handleUpdate();
+  };
+
+  const handleUpdate = async (reassignments: Record<string, string> = {}) => {
+    if (isUpdating || uploading) return;
+    if (!validateForm()) return;
+
+    setTicketImpact(null);
     setIsUpdating(true);
 
     try {
@@ -463,6 +526,7 @@ const EditEventPage: React.FC<EditEventPageProps> = ({ eventId }) => {
             description: item.description || undefined,
             order: index,
           })),
+        ...(Object.keys(reassignments).length > 0 && { ticketReassignments: reassignments }),
       };
 
       const updatedEvent = await EventService.updateEvent(eventId, payload);
@@ -470,6 +534,7 @@ const EditEventPage: React.FC<EditEventPageProps> = ({ eventId }) => {
       // Sync ticketTypes with the real DB IDs returned by the server so that
       // a subsequent edit doesn't treat existing tickets as new ones.
       if (updatedEvent?.tickets && updatedEvent.tickets.length > 0) {
+        setSavedTickets(toSavedTickets(updatedEvent.tickets));
         setTicketTypes(
           updatedEvent.tickets.map((t: any) => ({
             id: t.id,
@@ -1309,7 +1374,7 @@ const EditEventPage: React.FC<EditEventPageProps> = ({ eventId }) => {
                   variant="primary"
                   size="md"
                   rightIcon={CalendarPlus}
-                  onClick={handleUpdate}
+                  onClick={handleUpdateClick}
                   isLoading={isUpdating}
                 >
                   Update Event
@@ -1330,6 +1395,132 @@ const EditEventPage: React.FC<EditEventPageProps> = ({ eventId }) => {
           </div>
         </div>
       </div>
+      {/* Ticket changes impact modal */}
+      {ticketImpact && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+          <div className="bg-background border border-foreground/10 rounded-t-3xl sm:rounded-3xl max-w-lg w-full max-h-[92vh] sm:max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div className="p-5 sm:p-8">
+              <div className="flex items-start justify-between mb-6">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                    <Info size={22} className="text-primary" weight="fill" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold font-[family-name:var(--font-clash-display)] text-foreground mb-1">
+                      Review ticket changes
+                    </h3>
+                    <p className="text-sm text-foreground/60">
+                      Here&apos;s what will happen to your tickets and existing buyers when you save.
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setTicketImpact(null)}
+                  className="p-1 text-foreground/50 hover:text-foreground transition-colors"
+                  aria-label="Close"
+                >
+                  <XCircle size={24} />
+                </button>
+              </div>
+
+              <div className="space-y-5">
+                {ticketImpact.removedWithBuyers.length > 0 && (
+                  <div>
+                    <h4 className="text-sm font-semibold text-foreground mb-2">Deleted tickets with buyers</h4>
+                    <p className="text-xs text-foreground/60 mb-3">
+                      These tickets will be removed. Their buyers keep their orders and are moved to the
+                      ticket you choose. If that ticket doesn&apos;t have enough spots left, its quantity is
+                      increased to fit them.
+                    </p>
+                    <div className="space-y-3">
+                      {ticketImpact.removedWithBuyers.map((t) => (
+                        <div key={t.id} className="p-3 rounded-xl border border-foreground/10 bg-foreground/[0.02]">
+                          <div className="flex items-center justify-between gap-2 mb-2">
+                            <span className="text-sm font-medium text-foreground line-through decoration-foreground/40">
+                              {t.name}
+                            </span>
+                            <span className="text-xs text-foreground/60">
+                              {t.sold} {t.sold === 1 ? "buyer" : "buyers"}
+                            </span>
+                          </div>
+                          <label className="flex items-center gap-2 text-xs text-foreground/60">
+                            <ArrowRight size={14} className="shrink-0" />
+                            <span className="shrink-0">Move to</span>
+                            <select
+                              value={ticketReassignments[t.id] ?? ticketTypes[0]?.id}
+                              onChange={(e) =>
+                                setTicketReassignments((prev) => ({ ...prev, [t.id]: e.target.value }))
+                              }
+                              className="flex-1 min-w-0 px-3 py-2 bg-background border border-foreground/20 rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                            >
+                              {ticketTypes.map((tt) => (
+                                <option key={tt.id} value={tt.id}>
+                                  {tt.name || "Untitled ticket"} ({formatNaira(parseFloat(tt.price) || 0)})
+                                </option>
+                              ))}
+                            </select>
+                          </label>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {ticketImpact.priceChanges.length > 0 && (
+                  <div>
+                    <h4 className="text-sm font-semibold text-foreground mb-2">Price changes</h4>
+                    <p className="text-xs text-foreground/60 mb-3">
+                      New buyers pay the new price. Existing buyers keep their tickets and details, and are not
+                      charged or refunded the difference.
+                    </p>
+                    <div className="space-y-2">
+                      {ticketImpact.priceChanges.map(({ ticket, newName, newPrice }) => (
+                        <div
+                          key={ticket.id}
+                          className="flex items-center justify-between gap-2 p-3 rounded-xl border border-foreground/10 bg-foreground/[0.02]"
+                        >
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium text-foreground truncate">{newName || ticket.name}</p>
+                            <p className="text-xs text-foreground/60">
+                              {ticket.sold} existing {ticket.sold === 1 ? "buyer" : "buyers"} retained
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-1.5 text-sm shrink-0">
+                            <span className="text-foreground/50 line-through">{formatNaira(ticket.price)}</span>
+                            <ArrowRight size={14} className="text-foreground/50" />
+                            <span className="font-semibold text-foreground">{formatNaira(newPrice)}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {ticketImpact.removedUnsold.length > 0 && (
+                  <div>
+                    <h4 className="text-sm font-semibold text-foreground mb-2">Deleted tickets</h4>
+                    <p className="text-xs text-foreground/60 mb-2">No one has bought these yet, so they&apos;ll simply be removed.</p>
+                    <ul className="text-sm text-foreground/80 list-disc pl-5 space-y-1">
+                      {ticketImpact.removedUnsold.map((t) => (
+                        <li key={t.id}>{t.name}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 mt-8">
+                <Button variant="ghost" size="md" onClick={() => setTicketImpact(null)}>
+                  Go back
+                </Button>
+                <Button variant="primary" size="md" onClick={() => handleUpdate(ticketReassignments)} isLoading={isUpdating}>
+                  Confirm &amp; update
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

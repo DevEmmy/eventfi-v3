@@ -74,7 +74,10 @@ export const EventService = {
      * @param data Partial event data to update
      * @returns Updated event
      */
-    updateEvent: async (id: string, data: Partial<CreateEventPayload>): Promise<Event> => {
+    updateEvent: async (
+        id: string,
+        data: Partial<CreateEventPayload> & { ticketReassignments?: Record<string, string> }
+    ): Promise<Event> => {
         const response = await axiosInstance.patch<ApiResponse<Event>>(`/events/${id}`, data);
         return response.data.data;
     },
